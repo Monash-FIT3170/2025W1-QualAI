@@ -1,4 +1,4 @@
-whisper
+openai-whisper
 torch
 sentence-transformers
 spacy
