@@ -1,0 +1,4 @@
+whisper
+torch
+sentence-transformers
+spacy
