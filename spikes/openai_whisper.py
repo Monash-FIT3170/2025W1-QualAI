@@ -1,0 +1,31 @@
+#
+# A simple spike for testing the usage of the OpenAI-whisper model for transcribing speech into text.
+#
+# Author: Kays Beslen, 32467176
+# Last modified: 26/03/25
+#
+
+import whisper
+
+def transcribe(audio_filepath: str) -> str:
+    """
+        Transcribes the audio located at the provided filepath into text using the OpenAI-whisper model.
+
+            :param audio_filepath: the filepath of the audio file to be transcribed
+
+            :return: the transcribed text
+    """
+    # Load the base OpenAI-whisper model.
+    model = whisper.load_model("base")
+
+    # Initial pre-processing of the audio.
+    audio = whisper.load_audio(audio_filepath)
+    audio = whisper.pad_or_trim(audio)
+
+    # Transcribe the audio into text.
+    result = model.transcribe(audio)
+    return result["text"]
+
+
+if __name__ == '__main__':
+    print(transcribe("resources/hello.mp3"))
