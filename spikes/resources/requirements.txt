@@ -2,3 +2,4 @@ openai-whisper
 torch
 sentence-transformers
 spacy
+neo4j

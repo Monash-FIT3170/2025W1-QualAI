@@ -3,7 +3,7 @@
 #
 # A spike for testing the usage of the OpenAI-whisper model for transcribing speech into text.
 #
-# Author: Kays Beslen, 32467176
+# Author: Kays Beslen
 # Last modified: 26/03/25
 #
 
