@@ -79,7 +79,7 @@ def remove_node_by_name(client: Driver, name: str) -> None:
         session.run(
             """
             MATCH (n)
-            WHERE n.name = '$name'
+            WHERE n.name = $name
             DELETE n
             """,
             name=name
@@ -99,10 +99,10 @@ if __name__ == '__main__':
     cl = get_client("bolt://localhost:7687", "neo4j", "password")
 
     transcription = transcribe("../resources/hello.mp3")
-    data = chunk_and_embed(transcription)
+    datum = chunk_and_embed(transcription)[0]
 
-    store_vector(cl, data[0][0], data[0][1])
-    print(search(cl, data[0][1], 1))
+    store_vector(cl, datum[0].strip(), datum[1])
+    print(search(cl, datum[1], 1))
 
     remove_node_by_name(cl, "Hello.")
 
