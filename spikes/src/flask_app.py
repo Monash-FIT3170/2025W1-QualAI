@@ -12,7 +12,7 @@ from flask import Flask
 
 def create_app() -> Flask:
     """
-        Creates an HTML endpoint to interface with the Flask server over.
+        Initialises a Flask HTML web server.
 
         :return Flask: the Flask server application
     """
