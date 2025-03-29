@@ -3,3 +3,5 @@ torch
 sentence-transformers
 spacy
 neo4j
+flask
+pytest

@@ -4,7 +4,7 @@
 # A spike for testing the usage of the OpenAI-whisper model for transcribing speech into text.
 #
 # Author: Kays Beslen
-# Last modified: 26/03/25
+# Last modified: 29/03/25
 #
 
 import whisper
@@ -26,7 +26,7 @@ def transcribe(audio_filepath: str) -> str:
     audio = whisper.pad_or_trim(audio)
 
     # Transcribe the audio into text.
-    result = model.transcribe(audio)
+    result = whisper.transcribe(model=model, audio=audio)
     return result["text"]
 
 

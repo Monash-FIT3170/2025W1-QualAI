@@ -5,12 +5,11 @@
 # well as testing the usage of chunking models from the spacy framework.
 #
 # Author: Kays Beslen
-# Last modified: 26/03/25
+# Last modified: 29/03/25
 #
 
 import spacy
 
-from numpy import ndarray
 from sentence_transformers import SentenceTransformer
 from torch import Tensor
 

@@ -16,7 +16,7 @@ from sentence_transformer import chunk_and_embed
 
 def get_client(url: str, username: str, password: str) -> Driver:
     """
-        Retrieves a client for the neo4j database.
+        Retrieves a client for the Neo4j database.
 
             :param str url:         the location of the database server
             :param str username:    the user's username
@@ -29,7 +29,7 @@ def get_client(url: str, username: str, password: str) -> Driver:
 
 def store_vector(client: Driver, name: str, vector: list[Tensor]) -> None:
     """
-        Stores a vector in the neo4j database.
+        Stores a vector in the Neo4j database.
 
             :param Driver client:           the database client
             :param str name:                a name for the vector to be stored
@@ -46,7 +46,7 @@ def store_vector(client: Driver, name: str, vector: list[Tensor]) -> None:
 
 def search(client: Driver, vector: list[Tensor], limit: int = 5) -> list[str]:
     """
-        Searches the neo4j database for the vectors nearest to the one provided, using the cosine metric.
+        Searches the Neo4j database for the vectors nearest to the one provided, using the cosine metric.
 
             :param Driver client:       the database client
             :param list[Tensor] vector: the search query vector
@@ -68,9 +68,27 @@ def search(client: Driver, vector: list[Tensor], limit: int = 5) -> list[str]:
         return [datum['e.name'] for datum in result.data()]
 
 
+def remove_node_by_name(client: Driver, name: str) -> None:
+    """
+        Searches the Neo4j database for any nodes matching the provided name, and removes them.
+
+            :param Driver client:   the database client
+            :param str name:        the name of the nodes to be matched and removed
+    """
+    with client.session() as session:
+        session.run(
+            """
+            MATCH (n)
+            WHERE n.name = '$name'
+            DELETE n
+            """,
+            name=name
+        )
+
+
 def close_client(client: Driver) -> None:
     """
-        Closes the connection to the database.
+        Closes the connection to the Neo4j database.
 
             :param Driver client: the database client
     """
@@ -85,5 +103,7 @@ if __name__ == '__main__':
 
     store_vector(cl, data[0][0], data[0][1])
     print(search(cl, data[0][1], 1))
+
+    remove_node_by_name(cl, "Hello.")
 
     close_client(cl)
