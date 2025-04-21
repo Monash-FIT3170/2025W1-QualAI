@@ -10,9 +10,9 @@ class MongoInteractor:
     """
     def __init__(self):
         """
-            Initializes the MongoInteractor class for interacting with the MongoDB database with the URI key
+            Initializes the MongoInteractor class for interacting with the MongoDB database client
         """
-        self.uri = MONGO_URI
+        self.client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
 
     def retrieve_single_file(self, database_name: str, collection_name: str, file_identifier: str, identifier_key: str="title", data_key: str = "content"):
         """
@@ -26,7 +26,7 @@ class MongoInteractor:
 
             :return: The data for the specified file
         """
-        client = MongoClient(self.uri, server_api=ServerApi('1'))
+        client = self.client
         db = client[database_name]
         collection = db[collection_name]
         query = {identifier_key : file_identifier}
@@ -49,7 +49,7 @@ class MongoInteractor:
 
             :return: An array containing the data for all files that match the set of keys
         """
-        client = MongoClient(self.uri, server_api=ServerApi('1'))
+        client = self.client
         db = client[database_name]
         collection = db[collection_name]
         query = {identifier_key : file_identifier}
