@@ -9,3 +9,4 @@ Rohan Shetty: rshe0040@student.monash.edu\
 Duleesha Gunaratne: dgun0024@student.monash.edu\
 Rachana Devi: rdev0023@student.monash.edu\
 Jaemin Park: jpar0073@student.monash.edu
+Gunni Singh: gsin0055@student.monash.edu
