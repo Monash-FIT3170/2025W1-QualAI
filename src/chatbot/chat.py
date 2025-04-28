@@ -1,6 +1,6 @@
 import requests 
 import re
-from config import JWS_KEY, API_URL
+from src.config.config import JWS_KEY, API_URL
 
 class Chatbot: 
     """
