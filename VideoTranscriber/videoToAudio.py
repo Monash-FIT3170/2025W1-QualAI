@@ -1,6 +1,5 @@
 from pathlib import Path
 from moviepy import VideoFileClip
-#Need to run pip install moviepy
 
 def convert_media(file_path : str) -> str:
     input_path = Path(file_path)
