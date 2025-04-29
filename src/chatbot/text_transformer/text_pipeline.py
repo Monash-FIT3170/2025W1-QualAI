@@ -30,11 +30,11 @@ class TextPipeline():
         """
         collection_data = self._mongodb.Collection(database_name, collection_name)
         documents = collection_data.get_all_documents()
-        print(documents)
 
-        #text_data = file_data[data_key]
-        # vector_data = self._vectoriser.chunk_and_embed_text(text_data)
-        # self._neo4jdb.store_multiple_vectors(vector_data)
+        for file in documents:
+            text_data = file[data_key]
+            vector_data = self._vectoriser.chunk_and_embed_text(text_data)
+            self._neo4jdb.store_multiple_vectors(vector_data)
 
     def process_chunk(self, database_name: str, collection_name: str, file_identifier: str, data_key: str) -> None:
         """
