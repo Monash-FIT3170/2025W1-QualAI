@@ -72,6 +72,14 @@ class DocumentStore:
         def __init__(self, database: DocumentStore.Database, collection_name: str) -> None:
             self.__collection = database.client().get_collection(collection_name)
 
+        def get_all_documents(self) -> Mapping[str, Any]:
+            """
+            Retrieves all documents within this collection.
+
+            :return: A mapping for all documents within this collection
+            """
+            return self.__collection.find()
+
         def add_document(self, document_name: str, document_key: str, document: dict) -> None:
             """
             Inserts the provided document into the collection.

@@ -10,8 +10,8 @@ from src.config.config import MONGO_URI
 if __name__ == "__main__":
     
     database = 'chatbot'
-    collection_id = "files"
-    fileIdentifier = "biomedical_interview"
+    collection_id = "biomedical_interview"
+    fileIdentifier = collection_id
 
     # Text data to be saved and vectorised, generated using chatgpt
     text_content = "Thank you for joining us today. To start off, could you tell me a bit about your current role and your work in biomedical research? " \
@@ -76,8 +76,9 @@ if __name__ == "__main__":
     neoInteractor = Neo4JInteractor()
 
     # Text to search for 
-    search_text = vectors[0][0]
+    search_text = "Are these results reliable"
     search_vector = text_converter.chunk_and_embed_text(search_text)[0][1]
+    print(search_vector)
     print(neoInteractor.search(search_vector))
 
     # Deletes all vectors from neo4j for most recent text, creates a clean slate
