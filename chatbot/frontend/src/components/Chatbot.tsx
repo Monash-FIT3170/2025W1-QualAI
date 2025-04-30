@@ -81,20 +81,20 @@ const Chatbot: React.FC = () => {
 
   // main chat window
   return (
-    <div className="fixed right-8 bottom-8 w-96 h-[600px] flex flex-col border border-gray-300 rounded-2xl overflow-hidden shadow-xl z-50">
+    <div className="fixed right-8 bottom-8 w-96 h-[600px] flex flex-col rounded-2xl overflow-hidden shadow-xl z-50">
       {/* header with robot icon and centered text */}
       <div className="bg-[#474646] text-white p-4 flex-shrink-0 relative">
         <div className="flex items-center justify-center">
-          <img src={robotIcon} alt="AI Assistant" className="w-8 h-8 mr-2 absolute left-4" />
-          <h2 className="text-lg font-semibold text-center">Chatbot</h2>
+          <img src={robotIcon} alt="AI Assistant" className="w-10 h-10 mr-2 absolute left-4" />
+          <h2 className="text-3xl font-semibold text-center">Chatbot</h2> {/* Changed text-x1 to text-2xl */}
         </div>
-        {/* close button (the x) */}
+        {/* close button (the x) - removed background/box */}
         <button 
           onClick={() => setIsOpen(false)}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white focus:outline-none"
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white focus:outline-none bg-transparent border-none p-0"
           aria-label="Close chat"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
