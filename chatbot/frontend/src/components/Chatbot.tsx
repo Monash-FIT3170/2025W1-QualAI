@@ -17,6 +17,7 @@ const Chatbot: React.FC = () => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null); // ref for the input field
 
   // bot's dummy responses - it's not that smart yet :((
   const dummyResponses = [
@@ -40,18 +41,22 @@ const Chatbot: React.FC = () => {
     // fake delay to make it seem like the bot is working
     setTimeout(() => {
       const randomResponse = dummyResponses[Math.floor(Math.random() * dummyResponses.length)];
-    // add bot's reply
+      // add bot's reply
       setMessages(prev => [...prev, { content: randomResponse, isUser: false }]);
       setIsLoading(false);
+      inputRef.current?.focus(); // focus the input after bot responds
     }, 800);
   };
 
-// auto-scroll to newest message
+  // auto-scroll to newest message and focus input when not loading
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (!isLoading) {
+      inputRef.current?.focus();
+    }
+  }, [messages, isLoading]);
 
-// if chat is closed, just show the robot icon on the side
+  // if chat is closed, just show the robot icon on the side
   if (!isOpen) {
     return (
       <div 
@@ -74,7 +79,7 @@ const Chatbot: React.FC = () => {
     );
   }
 
-// main chat window
+  // main chat window
   return (
     <div className="fixed right-8 bottom-8 w-96 h-[600px] flex flex-col border border-gray-300 rounded-2xl overflow-hidden shadow-xl z-50">
       {/* header with robot icon and centered text */}
@@ -104,7 +109,7 @@ const Chatbot: React.FC = () => {
               <div className="flex items-center mb-1">
                 <img src={robotIcon} alt="AI" className="w-5 h-5 mr-2" />
                 <span className="text-sm text-gray-600">AI</span>
-              </div>
+              </div>    
             )}
             {/* the actual message bubble */}
             <div 
@@ -144,6 +149,7 @@ const Chatbot: React.FC = () => {
         <div className="flex items-center">
         {/* message input */}
           <input
+            ref={inputRef} // reference to the input element
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -151,6 +157,7 @@ const Chatbot: React.FC = () => {
             className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none placeholder-[#737373] text-gray-800"
             placeholder="Type a message..."
             disabled={isLoading}
+            autoFocus // automatically focus when component mounts
           />
         {/* send button */}
           <button
