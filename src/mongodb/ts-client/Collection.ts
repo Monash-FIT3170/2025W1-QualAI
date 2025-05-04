@@ -1,4 +1,4 @@
-import {Collection as Col, Document} from "mongodb";
+import {Collection as Col, Document, WithId} from "mongodb";
 import {Database} from "./Database";
 
 /**
@@ -84,10 +84,26 @@ export class Collection {
      *
      * @param documentKey the unique identifier associated with the document
      *
-     * @return a promise containing the document with the specified key, once resolved
+     * @return a promise containing the document with the specified key once resolved, if it exists; else, a promise
+     *  containing null
      */
-    public async findDocument(documentKey: string): Promise<Document> {
-        return await this._collection.findOne({"key": documentKey});
+    public async findDocument(documentKey: string): Promise<Document | null> {
+        const document: WithId<Document> | null = await this._collection.findOne({"key": documentKey});
+
+        if ( !document ) {
+            return null;
+        }
+
+        // Stripping the _id field of the document, since it is unused.
+        const {_id, ...doc} = document;
+        return doc;
+    }
+
+    /** @return a list of all documents in this collection */
+    public async documents(): Promise<Document[]> {
+        const documents: WithId<Document>[] = await this._collection.find({}).toArray();
+        // Stripping the _id field of each document, since it is unused.
+        return documents.map(({_id, ...doc}) => doc);
     }
 
     /**

@@ -16,7 +16,7 @@ dotenv.config();
  */
 export class DocumentStore {
     /** The URI to access the MongoDB client. */
-    private static readonly URI: string = process.env.MONGO_URI;
+    private static readonly URI: string = process.env.MONGO_URI ?? "mongodb://localhost:27017";
 
     /** The MongoDB client being wrapped. */
     private readonly _client: MongoClient;
