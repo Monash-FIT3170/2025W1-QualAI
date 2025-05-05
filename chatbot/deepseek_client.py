@@ -22,7 +22,7 @@ class Chatbot:
         }
 
     @staticmethod
-    def remove_think_blocks(self, text: str) -> str:
+    def remove_think_blocks(text: str) -> str:
         """
         Removes all text enclosed in deepseek-r1 model's think blocks 
 
@@ -53,7 +53,9 @@ class Chatbot:
             ]
         }
         response = requests.post(API_URL, headers=self.headers, json=data)
-        return response.json()["choices"][0]["message"]["content"]
+        reply = response.json()["choices"][0]["message"]["content"]
+        reply = self.remove_think_blocks(reply) # Removing think blocks
+        return reply 
 
     def chat_with_model_context_injection(self, context_text, message):
         """
