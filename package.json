@@ -1,0 +1,20 @@
+{
+  "name": "2025w1-qualai",
+  "version": "1.0.0",
+  "description": "Felix Chung: fchu006@student.monash.edu\\\r Terence Bai: tbai0012@student.monash.edu\\\r Jonathan Farrand: jfar0026@student.monash.edu\\\r Kays Beslen: kbes0005@student.monash.edu\\\r Kade Lucy: kluc0006@student.monash.edu\\\r Luka Boskovic: lbos0001@student.monash.edu\\\r Rohan Shetty: rshe0040@student.monash.edu\\\r Duleesha Gunaratne: dgun0024@student.monash.edu\\\r Rachana Devi: rdev0023@student.monash.edu\\\r Jaemin Park: jpar0073@student.monash.edu",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Monash-FIT3170/2025W1-QualAI.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Monash-FIT3170/2025W1-QualAI/issues"
+  },
+  "homepage": "https://github.com/Monash-FIT3170/2025W1-QualAI#readme"
+}
