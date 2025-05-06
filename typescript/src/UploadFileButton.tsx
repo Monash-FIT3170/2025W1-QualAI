@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 
 type UploadFileButtonProps = {
-  onFileSelected: (file: File) => void;
+  onFileSelected?: (file: File) => void;
 };
 
 const UploadFileButton: React.FC<UploadFileButtonProps> = ({ onFileSelected }) => {
@@ -11,23 +11,37 @@ const UploadFileButton: React.FC<UploadFileButtonProps> = ({ onFileSelected }) =
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      onFileSelected(file);
+    if (!file) return;
+
+    // Optional callback
+    onFileSelected?.(file);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await fetch("http://localhost:5000/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      console.log("Server response:", result);
+    } catch (err) {
+      console.error("Upload failed", err);
     }
   };
 
   return (
     <>
-      <button onClick={handleButtonClick}>
-        Select File
-      </button>
+      <button onClick={handleButtonClick}>Select File</button>
       <input
         type="file"
         ref={fileInputRef}
         style={{ display: 'none' }}
-        onChange={handleFileChange}
+        onChange={handleFileUpload}
       />
     </>
   );
