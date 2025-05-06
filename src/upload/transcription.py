@@ -32,6 +32,3 @@ class AudioTranscriber:
         result = whisper.transcribe(model=self.model, audio=audio)
         return result["text"]
  
-if __name__ == "__main__":
-    transcriber = AudioTranscriber()
-    print(transcriber.transcribe("sample_audio/greetings.mp3"))
