@@ -87,11 +87,11 @@ export class Collection {
      * @return a promise containing the document with the specified key once resolved, if it exists; else, a promise
      *  containing null
      */
-    public async findDocument(documentKey: string): Promise<Document | null> {
+    public async findDocument(documentKey: string): Promise<Document> {
         const document: WithId<Document> | null = await this._collection.findOne({"key": documentKey});
 
         if ( !document ) {
-            return null;
+            return {};
         }
 
         // Stripping the _id field of the document, since it is unused.
