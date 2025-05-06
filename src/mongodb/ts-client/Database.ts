@@ -11,9 +11,9 @@ import {Collection} from "./Collection";
  */
 export class Database {
     /** The database client being wrapped. */
-    private readonly _database : Db;
+    private readonly _database: Db;
 
-    private constructor(databaseClient : Db) {
+    private constructor(databaseClient: Db) {
         this._database = databaseClient;
     }
 
@@ -25,7 +25,7 @@ export class Database {
      *
      * @return the {@link Database} instance wrapping the provided client
      */
-    public static fromClient(databaseClient : Db) : Database {
+    public static fromClient(databaseClient: Db) : Database {
         return new this(databaseClient);
     }
 
@@ -40,7 +40,7 @@ export class Database {
      *
      * @return the {@link Database} instance wrapping the instantiated {@link Db} client
      */
-    public static fromName(documentStore : DocumentStore, databaseName : string) : Database {
+    public static fromName(documentStore: DocumentStore, databaseName: string) : Database {
         return new this(documentStore.client().db(databaseName));
     }
 
@@ -51,7 +51,7 @@ export class Database {
      *
      * @return a promise containing the created {@link Collection} instance, when resolved
      */
-    public async createCollection(collectionName : string) : Promise<Collection> {
+    public async createCollection(collectionName: string) : Promise<Collection> {
         return await Collection.fromName(this, collectionName);
     }
 

@@ -32,7 +32,7 @@ export class DocumentStore {
      *
      * @return the created database
      */
-    public createDatabase(databaseName: string) : Database {
+    public createDatabase(databaseName: string): Database {
         return Database.fromClient(this._client.db(databaseName));
     }
 
