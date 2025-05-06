@@ -1,7 +1,7 @@
 from neo4j import GraphDatabase, Driver
 from torch import Tensor
 
-from config import NEO4J_URL, NEO4J_USERNAME, NEO4J_PASSWORD
+from src.config.config import NEO4J_URL, NEO4J_USERNAME, NEO4J_PASSWORD
 
 
 class Neo4JInteractor:
@@ -90,4 +90,11 @@ class Neo4JInteractor:
                 """,
                 name=name
             )
+    
+    def clear_database(self):
+        """
+            Clears the entire Neo4j database by deleting all nodes and relationships.
+        """
+        with self._driver.session() as session:
+            session.run("MATCH (n) DETACH DELETE n")
 
