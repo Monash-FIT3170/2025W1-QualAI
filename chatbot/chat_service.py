@@ -1,8 +1,10 @@
 from flask import Flask
 from flask import request, jsonify 
 from deepseek_client import Chatbot
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 chatbot = Chatbot()
 
 @app.route('/chat', methods=['POST'])
