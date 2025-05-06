@@ -1,5 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, use } from 'react';
 import robotIcon from '../assets/robot.png'; // our robot avatar icon guy 
+import { fetchChat } from './chat_client'; // function to fetch chat responses from the backend
+
 
 // this is what each message will look like
 interface Message {
@@ -19,17 +21,8 @@ const Chatbot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null); // ref for the input field
 
-  // bot's dummy responses - it's not that smart yet :((
-  const dummyResponses = [
-    "I've analyzed your question about this transcript.",
-    "Based on this database, I found 3 relevant sentences.",
-    "There's an interesting part talking about friendship that repeats a lot.",
-    "That's a really good question, I think that...",
-    "This is the last message we have as dummy data :(("
-  ];
-
   // when we hit send
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return; // don't send empty messages or while loading
     
     // add our message to the chat
@@ -38,14 +31,18 @@ const Chatbot: React.FC = () => {
     setInputValue(''); // clear the input
     setIsLoading(true); // bot is "thinking"
 
-    // fake delay to make it seem like the bot is working
-    setTimeout(() => {
-      const randomResponse = dummyResponses[Math.floor(Math.random() * dummyResponses.length)];
-      // add bot's reply
-      setMessages(prev => [...prev, { content: randomResponse, isUser: false }]);
+    try {
+      const response = await fetchChat(inputValue); // fetch response from chatbot service
+      setMessages(prev => [...prev, { content: response, isUser: false }]);       // add bot's reply
+    } catch (error) {
+      setMessages(prev => [
+        ...prev,
+        { content: 'Sorry, something went wrong. Please try again.', isUser: false }
+      ]);
+    } finally {
       setIsLoading(false);
       inputRef.current?.focus(); // focus the input after bot responds
-    }, 800);
+    }
   };
 
   // auto-scroll to newest message and focus input when not loading
