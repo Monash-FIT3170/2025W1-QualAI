@@ -90,4 +90,11 @@ class Neo4JInteractor:
                 """,
                 name=name
             )
+    
+    def clear_database(self):
+        """
+            Clears the entire Neo4j database by deleting all nodes and relationships.
+        """
+        with self._driver.session() as session:
+            session.run("MATCH (n) DETACH DELETE n")
 
