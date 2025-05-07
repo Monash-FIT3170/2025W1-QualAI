@@ -1,5 +1,5 @@
-import {Collection as Col, Document, WithId} from "mongodb";
-import {Database} from "./Database";
+import { Collection as Col, Document, WithId } from "mongodb";
+import { Database } from "./Database";
 
 /**
  * A collection is a class wrapping a MongoDB {@link Col} instance.

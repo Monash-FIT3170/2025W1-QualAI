@@ -1,6 +1,6 @@
-import {Db} from "mongodb";
-import {DocumentStore} from "./DocumentStore";
-import {Collection} from "./Collection";
+import { Db } from "mongodb";
+import { DocumentStore } from "./DocumentStore";
+import { Collection } from "./Collection";
 
 /**
  * A database is a class wrapping a MongoDB {@link Db} instance.
@@ -25,7 +25,7 @@ export class Database {
      *
      * @return the {@link Database} instance wrapping the provided client
      */
-    public static fromClient(databaseClient: Db) : Database {
+    public static fromClient(databaseClient: Db): Database {
         return new this(databaseClient);
     }
 
@@ -40,7 +40,7 @@ export class Database {
      *
      * @return the {@link Database} instance wrapping the instantiated {@link Db} client
      */
-    public static fromName(documentStore: DocumentStore, databaseName: string) : Database {
+    public static fromName(documentStore: DocumentStore, databaseName: string): Database {
         return new this(documentStore.client().db(databaseName));
     }
 
@@ -56,7 +56,7 @@ export class Database {
     }
 
     /** The database client being wrapped by this class. */
-    public client() : Db {
+    public client(): Db {
         return this._database;
     }
 }

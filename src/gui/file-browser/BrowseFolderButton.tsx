@@ -28,7 +28,6 @@ const BrowseFolderButton: React.FC<BrowseFolderButtonProps> = ({ onFilesSelected
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileChange}
-        webkitdirectory="true" // enables folder selection
         multiple
       />
     </>
