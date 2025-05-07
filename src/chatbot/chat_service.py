@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import request, jsonify 
-from src.chatbot.deepseek_client import Chatbot
+from src.chatbot.chat import Chatbot
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -22,7 +22,8 @@ def chat():
         return jsonify({'error': 'No message provided'}), 400
     
     try:
-        response = chatbot.chat_with_model(message)
+        response = chatbot.chat(message)
         return jsonify({'response': response}), 200
+    
     except Exception as e:
         return jsonify({'error': str(e)}), 500

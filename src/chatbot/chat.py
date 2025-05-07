@@ -1,80 +1,42 @@
-import requests 
-import re
-from src.config.config import JWS_KEY, API_URL
+from src.chatbot.deepseek_client import DeepSeekClient
+from src.chatbot.text_transformer.text_vectoriser import TextVectoriser
+from src.chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
 
 class Chatbot: 
     """
-    A class for interacting with the deepseek-r1 model via API
-    Supports basic chat functionality and context injection
+    A class to process chat messages and get responses from the deepseek-r1 model via client
 
     :author: Felix Chung
     """
 
     def __init__(self):
         """
-        Initializes the Chatbot class with API URL and JWS key
+        Initializes the Chatbot class by with instances of the DeepSeekClient, TextVectoriser, and Neo4JInteractor classes.
         """
-        self.api_url = API_URL
-        self.jws_key = JWS_KEY
-        self.headers = {
-            'Authorization': f'Bearer {JWS_KEY}',
-            'Content-Type': 'application/json'
-        }
+        self.deepseek_client = DeepSeekClient()
+        self.text_converter = TextVectoriser()
+        self.neoInteractor = Neo4JInteractor()
 
-    @staticmethod
-    def remove_think_blocks(self, text: str) -> str:
+    def chat(self, query: str) -> str:
         """
-        Removes all text enclosed in deepseek-r1 model's think blocks 
-
-        :param text: the text to clean 
-
-        :return: the cleaned text with think block removed
-        """
-        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
-
-    def chat_with_model(self, message):
-        """
-        Sends a basic message to the model and returns the response.
+        Processes a chat message and returns the model's response.
+        Chunks, vectorises the query then searches in Neo4JInteractor for context.  
 
         :param message: The message to send to the model.
         :return: The JSON response from the API.
         """
-        headers = {
-            'Authorization': f'Bearer {JWS_KEY}',
-            'Content-Type': 'application/json'
-        }
-        data = {
-            "model": "deepseek-r1:1.5b",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": message
-                }
-            ]
-        }
-        response = requests.post(API_URL, headers=self.headers, json=data)
-        return response.json()["choices"][0]["message"]["content"]
 
-    def chat_with_model_context_injection(self, context_text, message):
+        search_vector = self.text_converter.chunk_and_embed_text(query)[0][1]
+        context = self.neoInteractor.search(search_vector)
+        if len(context) > 0:
+            response = self.deepseek_client.chat_with_model_context_injection(context, query)
+        else:
+            response = self.deepseek_client.chat_with_model(query)
+        
+        return response
+    
+    def close_connections(self) -> None:
         """
-        Sends a message to the model with additional context injected as a system message.
-
-        :param context_text: The external context (e.g., from a document).
-        :param message: The user’s question.
-        :return: The JSON response from the API.
+        Closes the connections to the Neo4j database.
         """
-        data = {
-            "model": "deepseek-r1:1.5b",
-            "messages": [
-                {
-                    "role": "system",
-                    "content": f"You are a helpful research assistant that provides short, to the point answers. Answer questions using the following context: \n\n{context_text} \n\n The context ends here. \n\n Now, please answer the following question: "
-                },
-                {
-                    "role": "user",
-                    "content": message
-                }
-            ]
-        }
-        response = requests.post(API_URL, headers=self.headers, json=data)
-        return response.json()["choices"][0]["message"]["content"]
+        self.neoInteractor.close_driver()
