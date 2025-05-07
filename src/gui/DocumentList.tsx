@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Collection } from "./mongodb/ts-client/Collection";
+import { Collection } from "../mongodb/ts-client/Collection";
 import { Document } from "mongodb";
 
 /**
