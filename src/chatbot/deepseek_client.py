@@ -11,8 +11,7 @@ from .text_transformer.text_vectoriser import TextVectoriser
 from src.mongodb.py_client.document_store import DocumentStore
 
 
-
-class Chatbot: 
+class DeepSeekClient: 
     """
     A class for interacting with the deepseek-r1 model via API
     Supports basic chat functionality and context injection
@@ -96,7 +95,7 @@ class Chatbot:
    
 if __name__ == "__main__":
     # create chatbot instance
-    chatbot = Chatbot()
+    chatbot = DeepSeekClient()
     
     # # Defines the path to the desired file, may have to change to suit your current mongo layout
     database = 'chatbot'
