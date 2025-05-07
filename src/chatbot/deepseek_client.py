@@ -1,14 +1,15 @@
 import requests 
 import re
-from config import JWS_KEY, API_URL
+from src.config.config import JWS_KEY, API_URL, MONGO_URI
 
 # main testing imports 
-from text_transformer.text_pipeline import TextPipeline
+from .text_transformer.text_pipeline import TextPipeline
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-from text_transformer.neo4j_interactor import Neo4JInteractor
-from text_transformer.text_vectoriser import TextVectoriser
-from config import MONGO_URI
+from .text_transformer.neo4j_interactor import Neo4JInteractor
+from .text_transformer.text_vectoriser import TextVectoriser
+from src.mongodb.py_client.document_store import DocumentStore
+
 
 
 class Chatbot: 
@@ -126,10 +127,14 @@ if __name__ == "__main__":
 
 
     # Insert file data into Mongo database
-    client = MongoClient(MONGO_URI, server_api=ServerApi('1'))
-    db = client[database]
-    collection = db[collection_id]
-    collection.insert_one({"title" : fileIdentifier, "content" : text_content})
+    client = DocumentStore()
+    db = client.get_database(database)
+    collection = db.get_collection(collection_id)
+    file = {"title" : fileIdentifier, "content" : text_content}
+    try:
+        collection.add_document(fileIdentifier, fileIdentifier, file)
+    except KeyError:
+        pass
 
     # Create pipeline
     pipeline = TextPipeline()
@@ -162,4 +167,4 @@ if __name__ == "__main__":
         neoInteractor.remove_node_by_name(title)
 
     # Deletes the file from the mongo database
-    collection.delete_one({"title" : fileIdentifier})
+    collection.remove_document(fileIdentifier)

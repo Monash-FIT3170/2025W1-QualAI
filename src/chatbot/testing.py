@@ -43,13 +43,13 @@ if __name__ == "__main__":
 
     # Get collection
     doc_store = DocumentStore()
-    database = doc_store.get_database(database)
-    if database is None:
-        database = doc_store.create_database(database)
+    db = doc_store.get_database(database)
+    if db is None:
+        db = doc_store.create_database(database)
 
-    collection = database.get_collection(collection_id)
+    collection = db.get_collection(collection_id)
     if collection is None:
-        collection = database.create_collection(collection_id)
+        collection = db.create_collection(collection_id)
 
 
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     file = collection.find_document(fileIdentifier)
 
     # Create pipeline to convert data
-    pipeline = TextPipeline()
+    pipeline = TextPipeline(mongodb=doc_store)
 
     # # Process and store text
     pipeline.process_and_store_single_file(database, collection_id, fileIdentifier)
