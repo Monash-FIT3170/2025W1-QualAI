@@ -3,9 +3,9 @@ import robotIcon from '../assets/robot.png'; // our robot avatar icon guy
 import { fetchChat } from './chat_client'; // function to fetch chat responses from the backend
 
 /**
- * A React component for an interactive AI chatbot interface
- *
+ * @file Chatbox.tsx
  * @author Rohan Shetty
+ * @description A React component for an interactive AI chatbot interface
  */
 interface Message {
   /**
