@@ -2,15 +2,29 @@ import React, { useState, useRef, useEffect, use } from 'react';
 import robotIcon from '../assets/robot.png'; // our robot avatar icon guy 
 import { fetchChat } from './chat_client'; // function to fetch chat responses from the backend
 
-
-// this is what each message will look like
+/**
+ * A React component for an interactive AI chatbot interface
+ *
+ * @author Rohan Shetty
+ */
 interface Message {
-  content: string;  // the actual words
-  isUser: boolean; // who's talking - us or the bot
+  /**
+   * The text content of the message
+   */
+  content: string; 
+  /**
+   * Flag indicating if the message is from the user (true) or the bot (false)
+   */
+  isUser: boolean;
 }
 
 const Chatbot: React.FC = () => {
-    // state stuff - keeping track of what's happening
+  /**
+   * Initialises the Chatbot component with default state values
+   * 
+   * @remarks
+   * Manages chat window state, message history, loading states, and UI references
+   */
   const [isOpen, setIsOpen] = useState(true); // is chat open or not
   const [isHoveringClosed, setIsHoveringClosed] = useState(false); // hovering over closed icon?
   const [messages, setMessages] = useState<Message[]>([ // all our chat history
@@ -21,7 +35,13 @@ const Chatbot: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null); // ref for the input field
 
-  // when we hit send
+  /**
+   * Handles sending a message to the chatbot service
+   * 
+   * @remarks
+   * Processes user input, sends to backend API, and manages the response flow
+   * Includes error handling for API failures
+   */
   const handleSendMessage = async () => {
     if (!inputValue.trim() || isLoading) return; // don't send empty messages or while loading
     
@@ -45,7 +65,13 @@ const Chatbot: React.FC = () => {
     }
   };
 
-  // auto-scroll to newest message and focus input when not loading
+  /**
+   * Manages auto-scrolling and input focus
+   * 
+   * @remarks
+   * Automatically scrolls to the newest message and maintains input focus
+   * Triggers on message updates and loading state changes
+   */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     if (!isLoading) {
@@ -53,7 +79,11 @@ const Chatbot: React.FC = () => {
     }
   }, [messages, isLoading]);
 
-  // if chat is closed, just show the robot icon on the side
+  /**
+   * Renders the minimized chat icon when chat is closed
+   * 
+   * @returns JSX for the closed chat state
+   */
   if (!isOpen) {
     return (
       <div 
@@ -76,7 +106,14 @@ const Chatbot: React.FC = () => {
     );
   }
 
-  // main chat window
+  /**
+   * Renders the full chat interface
+   * 
+   * @returns JSX for the main chat window including:
+   * - Header with title and close button
+   * - Message display area
+   * - Input field with send button
+   */
   return (
     <div className="fixed right-8 bottom-8 w-96 h-[600px] flex flex-col rounded-2xl overflow-hidden shadow-xl z-50">
       {/* header with robot icon and centered text */}
