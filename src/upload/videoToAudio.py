@@ -2,6 +2,11 @@ from pathlib import Path
 from moviepy import VideoFileClip
 
 def convert_media(file_path : str) -> str:
+    """
+    Accepts a file path as an input and converts it to an mp3.
+
+    :return: A file path to the created mp3 file.
+    """
     input_path = Path(file_path)
     
     # Check if the file is already an mp3, then just return the same file path

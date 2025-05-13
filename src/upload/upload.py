@@ -7,6 +7,12 @@ CORS(app)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
+    """
+    Is called when "upload file" button is clicked. Prompts the user to browse for an audio file.
+    The file path will then be passed into the Transcriber to be eventually added to the database.
+
+    :return: Whether was a success or if there was an error.
+    """
     uploaded_file = request.files.get('file')
     if not uploaded_file:
         return jsonify({"error": "No file uploaded"}), 400
@@ -25,7 +31,11 @@ def upload_file():
         return jsonify({"error": str(e)}), 500
 
 def process_file(path: str) -> str:
-    # Read/process the file however you want
+    """
+    Accepts a file path as an input to be sent to the transcriber.
+
+    :return: TEMPORARY, outputs the file length, the mp3 won't need to be saved in the future.
+    """
     with open(path, 'r') as f:
         content = f.read()
     print("HIIIIIIIIIIIIIIIIIIII")
