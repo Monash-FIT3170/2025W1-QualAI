@@ -22,73 +22,91 @@ class Neo4JInteractor:
         """
         self._driver.close()
 
-    def store_multiple_vectors(self, vectors: list[tuple[str, list[float]]]) -> None:
+    def store_multiple_vectors(self, vectors: list[tuple[str, list[float]]], file_id) -> None:
         """
             Stores multiple vectors in the Neo4j database.
 
                 :param list[tuple[str, list[float]]] vectors: A list containing the tuple pair of string and its corresponding vector
         """
         for vector_data in vectors:
-            name = vector_data[0]
+            text_chunk = vector_data[0]
             vector = vector_data[1]
-            self.store_vector(name, vector)
+            self.store_vector(text_chunk, file_id, vector)
 
     
-    def store_vector(self, name: str, vector: list[Tensor]) -> None:
+    def store_vector(self, text_chunk: str, file_id: str, vector: list[Tensor]) -> None:
         """
             Stores a vector in the Neo4j database.
-
-                :param str name:                a name for the vector to be stored
+                :param str file_id: the id of the file that the text chunk is coming from
+                :param str text_chunk:                a text chunk for the vector to be stored
                 :param list[Tensor] vector:     the vector to be stored
+                
         """
         client = self._driver
         with client.session() as session:
             session.run(
                 """
-                CREATE (e:Embedding {name: $name, vector: $vector})
+                CREATE (e:Embedding {text_chunk: $text_chunk, file_id: $file_id, vector: $vector})
                 """,
-                name=name, vector=vector
+                text_chunk=text_chunk, vector=vector, file_id=file_id 
             )
 
-    def search(self, vector: list[float], limit: int = 5) -> list[str]:
+    def search_text_chunk(self, vector: list[float], limit: int = 5) -> list[str]:
         """
             Searches the Neo4j database for the vectors nearest to the one provided, using the cosine metric.
 
                 :param list[Tensor] vector: the search query vector
                 :param int limit:           the maximum number of results to return
 
-                :return list[str]: the names of the nearest vectors to the one provided
+                :return list[str]: the text chunks of the nearest vectors to the one provided
         """
         client = self._driver
         with client.session() as session:
             result = session.run(
                 """
                 MATCH (e:Embedding)
-                RETURN e.name
+                RETURN e.text_chunk
                 ORDER BY vector.similarity.cosine(e.vector, $vector) DESC
                 LIMIT $limit
                 """,
                 vector=vector, limit=limit
             )
 
-            return [datum['e.name'] for datum in result.data()]
+            return [datum['e.text_chunk'] for datum in result.data()]
         
-    
-    def remove_node_by_name(self, name: str) -> None:
+    def remove_node_by_file_id(self, file_id: str) -> None:
         """
-            Searches the Neo4j database for any nodes matching the provided name, and removes them.
+            Searches the Neo4j database for any nodes matching the provided file_id, and removes them.
 
-                :param str name: the name of the nodes to be matched and removed
+                :param str file_id: the file_id to be matched and removed
         """
         client = self._driver
         with client.session() as session:
             session.run(
                 """
                 MATCH (n)
-                WHERE n.name = $name
+                WHERE n.file_id = $file_id
                 DELETE n
                 """,
-                name=name
+                file_id = file_id
+            )
+        
+    
+    def remove_node_by_text(self, text_chunk: str) -> None:
+        """
+            Searches the Neo4j database for any nodes matching the provided name, and removes them.
+
+                :param str text_chunk: the text chunk of the nodes to be matched and removed
+        """
+        client = self._driver
+        with client.session() as session:
+            session.run(
+                """
+                MATCH (n)
+                WHERE n.text_chunk = $text_chunk
+                DELETE n
+                """,
+                text_chunk=text_chunk
             )
     
     def clear_database(self):

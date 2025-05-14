@@ -32,7 +32,7 @@ class TextPipeline():
             self._vectoriser = TextVectoriser()
     
 
-    def process_and_store_single_file(self, database_name: str, collection_name: str, file_identifier: str, identifier_key: str = "title", data_key: str = "content") -> None:
+    def process_and_store_single_file(self, database_name: str, collection_name: str, file_identifier: str, data_key: str = "content") -> None:
         """
             Accesses data from mongodb, converts it to vector data and then saves it in neo4j
 
@@ -56,5 +56,5 @@ class TextPipeline():
 
         text_data = file_data[data_key]
         vector_data = self._vectoriser.chunk_and_embed_text(text_data)
-        self._neo4jdb.store_multiple_vectors(vector_data)
+        self._neo4jdb.store_multiple_vectors(vector_data, file_identifier)
 
