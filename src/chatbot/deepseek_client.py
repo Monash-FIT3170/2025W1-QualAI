@@ -95,6 +95,7 @@ class DeepSeekClient:
    
 if __name__ == "__main__":
     # create chatbot instance
+    Neo4JInteractor().clear_database()
     chatbot = DeepSeekClient()
     
     # # Defines the path to the desired file, may have to change to suit your current mongo layout
@@ -153,17 +154,14 @@ if __name__ == "__main__":
     # Text to search for 
     search_vector = text_converter.chunk_and_embed_text(query_message)[0][1]
         
-    context = neoInteractor.search(search_vector)
+    context = neoInteractor.search_text_chunk(search_vector)
     
     response = chatbot.chat_with_model_context_injection(context, query_message)
 
     print(response)
-
-    # Deletes all vectors from neo4j for most recent text, creates a clean slate
-    for vector_data in vectors:
-        title = vector_data[0]
-        vector = vector_data[1]
-        neoInteractor.remove_node_by_name(title)
+    
+    #Deletes all vectors from neo4j for most recent text, creates a clean slate
+    neoInteractor.clear_database()
 
     # Deletes the file from the mongo database
     collection.remove_document(fileIdentifier)
