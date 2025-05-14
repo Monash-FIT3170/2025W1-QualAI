@@ -93,7 +93,7 @@ class TestTextTransformer(unittest.TestCase):
         for vector_data in self.vectors:
             title = vector_data[0]
             vector = vector_data[1]
-            self.chatbot.neoInteractor.remove_node_by_name(title)
+            self.chatbot.neoInteractor.remove_node_by_text(title)
 
         # Deletes the file from the mongo database
         self.collection.remove_document(self.fileIdentifier)
