@@ -43,10 +43,10 @@ class TestTextTransformer(unittest.TestCase):
         text = "Hello World. This is an important test."
         vectors = self.text_vectoriser.chunk_and_embed_text(text)
 
-        self.neo4j_interactor.store_multiple_vectors(vectors)
+        self.neo4j_interactor.store_multiple_vectors(vectors, "file_id")
 
         search_vector = self.text_vectoriser.chunk_and_embed_text(text)[0][1]
-        result = self.neo4j_interactor.search(search_vector)
+        result = self.neo4j_interactor.search_text_chunk(search_vector)
 
         self.assertGreater(len(result), 0, "There should be at least one vector stored in the database.")
 
@@ -92,12 +92,12 @@ class TestTextTransformer(unittest.TestCase):
         search_vector = self.text_vectoriser.chunk_and_embed_text(search_text)[0][1]
 
         self.assertEqual(search_text,
-                         self.neo4j_interactor.search(search_vector)[0], "The search result should match the expected text.")
+                         self.neo4j_interactor.search_text_chunk(search_vector)[0], "The search result should match the expected text.")
 
         for vector_data in vectors:
             title = vector_data[0]
             vector = vector_data[1]
-            self.neo4j_interactor.remove_node_by_name(title)
+            self.neo4j_interactor.remove_node_by_text(title)
 
         collection.remove_document(fileIdentifier)
 
