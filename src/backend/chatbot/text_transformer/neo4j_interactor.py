@@ -22,7 +22,7 @@ class Neo4JInteractor:
         """
         self._driver.close()
 
-    def store_multiple_vectors(self, vectors: list[tuple[str, list[float]]], file_id) -> None:
+    def store_multiple_vectors(self, vectors: list[tuple[str, list[Tensor]]], file_id) -> None:
         """
             Stores multiple vectors in the Neo4j database.
 

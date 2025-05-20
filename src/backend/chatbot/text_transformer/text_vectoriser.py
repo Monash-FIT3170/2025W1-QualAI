@@ -45,7 +45,7 @@ class TextVectoriser:
         return list(zip(chunks, embeddings))
 
 
-    def chunk_and_embed_text(self, text: str) -> list[tuple[str, list[float]]]:
+    def chunk_and_embed_text(self, text: str) -> list[tuple[str, list[Tensor]]]:
         """
             Chunks text and generates a vector embedding for each chunk. See #chunk_text and #embed_chunks.
         """
