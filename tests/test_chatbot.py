@@ -1,9 +1,9 @@
 import unittest
 
-from src.chatbot.text_transformer.text_pipeline import TextPipeline
-from src.chatbot.text_transformer.text_vectoriser import TextVectoriser
-from src.chatbot.chat import Chatbot
-from src.mongodb.py_client.document_store import DocumentStore 
+from backend.chatbot.text_transformer import TextPipeline
+from backend.chatbot.text_transformer.text_vectoriser import TextVectoriser
+from backend.chatbot import Chatbot
+from backend.mongodb.DocumentStore import DocumentStore
 
 class TestTextTransformer(unittest.TestCase):
     """ 

@@ -48,23 +48,20 @@ export class Collection {
     /**
      * Adds a document to the collection.
      *
-     * @param documentName the name of the document
-     * @param documentKey the unique identifier associated with the document
-     * @param document the document itself
+     * @param documentName the unique name of the document
+     * @param content the text content of the document
      *
      * @return a void promise that is resolved once the document is successfully inserted into the collection
      */
-    public async addDocument(documentName: string, documentKey: string, document: Document): Promise<void> {
-        // Checking if the key is unique within the collection.
-        if ( await this._collection.findOne({"key": documentKey}) ) {
+    public async addDocument(documentName: string, content: string): Promise<void> {
+        // Checking if the name is unique within the collection.
+        if ( await this._collection.findOne({"name": documentName}) ) {
             throw new Error(
-                "The provided document key, " + documentKey + ", must be unique between all documents within the " +
+                "The provided document name, " + documentName + ", must be unique between all documents within the " +
                 "collection."
             )
         }
-
-        document["name"] = documentName;
-        document["key"] = documentKey;
+        const document = {"name" : documentName, "content" : content};
         await this._collection.insertOne(document)
     }
 
