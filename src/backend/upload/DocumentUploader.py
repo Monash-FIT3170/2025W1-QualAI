@@ -2,20 +2,20 @@ import os
 
 from flask import Flask, request, jsonify
 
-from AudioTranscriber import AudioTranscriber
-from backend.chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
-from backend.chatbot.text_transformer.text_vectoriser import TextVectoriser
-from backend.mongodb.DocumentStore import DocumentStore
+from upload.AudioTranscriber import AudioTranscriber
+from chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
+from chatbot.text_transformer.text_vectoriser import TextVectoriser
+from mongodb.DocumentStore import DocumentStore
 
 
 class DocumentUploader:
   
     def __init__(
-        self, collection: DocumentStore.Collection, vector_database: Neo4JInteractor, vectoriser: TextVectoriser
-    ) -> None:
+        self, collection: DocumentStore.Collection):#, vector_database: Neo4JInteractor, vectoriser: TextVectoriser
+  #  ) -> None:
         self.__collection = collection
-        self.__vector_database = vector_database
-        self.__vectoriser = vectoriser
+       # self.__vector_database = vector_database
+      #  self.__vectoriser = vectoriser
 
     def register_routes(self, app: Flask) -> None:
         @app.route('/upload', methods=['POST'])
@@ -57,4 +57,4 @@ class DocumentUploader:
         audio_transcriber = AudioTranscriber()
         transcribed_text = audio_transcriber.transcribe(path)
         self.__collection.add_document(name, transcribed_text)
-        self.__vector_database.store_multiple_vectors(self.__vectoriser.chunk_and_embed_text(transcribed_text), name)
+        #self.__vector_database.store_multiple_vectors(self.__vectoriser.chunk_and_embed_text(transcribed_text), name)

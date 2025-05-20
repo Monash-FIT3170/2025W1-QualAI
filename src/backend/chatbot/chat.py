@@ -1,6 +1,6 @@
-from backend.chatbot.deepseek_client import DeepSeekClient
-from backend.chatbot.text_transformer.text_vectoriser import TextVectoriser
-from backend.chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
+from deepseek_client import DeepSeekClient
+from chatbot.text_transformer.text_vectoriser import TextVectoriser
+from chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
 
 class Chatbot: 
     """

@@ -2,7 +2,7 @@ import unittest
 
 from backend.chatbot.text_transformer import TextPipeline
 from backend.chatbot.text_transformer.text_vectoriser import TextVectoriser
-from backend.chatbot import Chatbot
+from chatbot import Chatbot
 from backend.mongodb.DocumentStore import DocumentStore
 
 class TestTextTransformer(unittest.TestCase):

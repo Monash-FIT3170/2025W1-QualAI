@@ -6,7 +6,7 @@ from pymongo import MongoClient
 from pymongo.synchronous.cursor import Cursor
 from pymongo.synchronous.database import Database
 
-from backend.config import config
+from config import config
 
 
 class DocumentStore:
