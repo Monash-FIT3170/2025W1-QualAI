@@ -5,6 +5,8 @@ services:
     build: ./frontend
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    args:
+      FRONTEND_PORT: ${FRONTEND_PORT}
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -25,9 +27,13 @@ services:
       - NEO4J_URI=bolt://${NEO4J_HOST}:${NEO4J_PORT}
       - NEO4J_USER=${NEO4J_USER}
       - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - OLLAMA_PORT=${OLLAMA_PORT}
+    args:
+      BACKEND_PORT: ${BACKEND_PORT}
     depends_on:
       - mongodb
       - neo4j
+      - ollama
 
   mongodb:
     image: mongo:6
@@ -46,6 +52,27 @@ services:
     volumes:
       - neo4j-data:/data
 
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "${OLLAMA_PORT}:${OLLAMA_PORT}"
+    volumes:
+      - ollama-data:/root/.ollama
+    restart: unless-stopped
+
+  ollama-init:
+    image: ollama/ollama
+    depends_on:
+      - ollama
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "sleep 5 && ollama pull deepseek-llm:chat"
+    volumes:
+      - ollama-data:/root/.ollama
+
+
 volumes:
   mongo-data:
   neo4j-data:
+  ollama-data:
