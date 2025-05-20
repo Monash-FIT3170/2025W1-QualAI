@@ -29,6 +29,23 @@ class DeepSeekClient:
             'Authorization': f'Bearer {JWS_KEY}',
             'Content-Type': 'application/json'
         }
+        self.payload = {
+            "model": "deepseek-r1:1.5b"
+            }
+        
+    def set_parameters(self, temperature: float = 0.8, top_k: int = 40, top_p: float = 0.9, num_ctx: int = 2048):
+        """
+        Sets the parameters for the model.
+
+        :param temperature: The temperature for sampling.
+        :param top_k: The top-k sampling parameter.
+        :param num_ctx: The number of context tokens.
+        :param num_gen: The number of generated tokens.
+        """
+        self.payload["temperature"] = temperature
+        self.payload["top_k"] = top_k
+        self.payload["top_p"] = top_p
+        self.payload["num_ctx"] = num_ctx
 
     @staticmethod
     def remove_think_blocks(text: str) -> str:
@@ -41,27 +58,34 @@ class DeepSeekClient:
         """
         return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
 
-    def chat_with_model(self, message):
+    def chat_with_model(self, message, system_prompt = None, context = None):
         """
         Sends a basic message to the model and returns the response.
 
         :param message: The message to send to the model.
         :return: The JSON response from the API.
         """
-        headers = {
-            'Authorization': f'Bearer {JWS_KEY}',
-            'Content-Type': 'application/json'
-        }
-        data = {
-            "model": "deepseek-r1:1.5b",
-            "messages": [
-                {
-                    "role": "user",
-                    "content": message
-                }
-            ]
-        }
-        response = requests.post(API_URL, headers=self.headers, json=data)
+        self.payload["messages"] = []
+        
+        system_message = ""
+        
+        if system_prompt: 
+            system_message += system_prompt + '. '
+            
+        if context:
+            system_message += f" Context: {context}"
+            
+        self.payload["messages"].append({
+            "role": "system",
+            "content": system_message
+        })
+            
+        self.payload["messages"].append({
+            "role": "user",
+            "content": message
+        })
+                
+        response = requests.post(API_URL, headers=self.headers, json=self.payload)        
         reply = response.json()["choices"][0]["message"]["content"]
         reply = self.remove_think_blocks(reply) # Removing think blocks
         return reply 
@@ -74,20 +98,18 @@ class DeepSeekClient:
         :param message: The user’s question.
         :return: The JSON response from the API.
         """
-        data = {
-            "model": "deepseek-r1:1.5b",
-            "messages": [
+        self.payload["messages"] = [
                 {
                     "role": "system",
-                    "content": f"You are a helpful research assistant that provides short, to the point answers. Answer questions using the following context: \n\n{context_text} \n\n The context ends here. \n\n Now, please answer the following question: "
+                    "content": context_text
                 },
                 {
                     "role": "user",
                     "content": message
                 }
             ]
-        }
-        response = requests.post(API_URL, headers=self.headers, json=data)
+        
+        response = requests.post(API_URL, headers=self.headers, json=self.payload)
         reply = response.json()["choices"][0]["message"]["content"]
         reply = self.remove_think_blocks(reply) # Removing think blocks
         return reply 
@@ -95,7 +117,6 @@ class DeepSeekClient:
    
 if __name__ == "__main__":
     # create chatbot instance
-    Neo4JInteractor().clear_database()
     chatbot = DeepSeekClient()
     
     # # Defines the path to the desired file, may have to change to suit your current mongo layout
@@ -154,14 +175,17 @@ if __name__ == "__main__":
     # Text to search for 
     search_vector = text_converter.chunk_and_embed_text(query_message)[0][1]
         
-    context = neoInteractor.search_text_chunk(search_vector)
+    context = neoInteractor.search(search_vector)
     
     response = chatbot.chat_with_model_context_injection(context, query_message)
 
     print(response)
-    
-    #Deletes all vectors from neo4j for most recent text, creates a clean slate
-    neoInteractor.clear_database()
+
+    # Deletes all vectors from neo4j for most recent text, creates a clean slate
+    for vector_data in vectors:
+        title = vector_data[0]
+        vector = vector_data[1]
+        neoInteractor.remove_node_by_name(title)
 
     # Deletes the file from the mongo database
     collection.remove_document(fileIdentifier)
