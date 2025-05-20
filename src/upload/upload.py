@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import os
+from transcription import AudioTranscriber
 
 app = Flask(__name__)
 CORS(app)
@@ -24,11 +25,12 @@ def upload_file():
         filepath = os.path.join('uploads', uploaded_file.filename)
         uploaded_file.save(filepath)
 
-        result = process_file(filepath)
-        return jsonify({"status": "success", "result": result})
+        process_file(filepath)
+
+        #delete the file after
+
     except Exception as e:
         print("Error during file upload:", e)
-        return jsonify({"error": str(e)}), 500
 
 def process_file(path: str) -> str:
     """
@@ -36,9 +38,8 @@ def process_file(path: str) -> str:
 
     :return: TEMPORARY, outputs the file length, the mp3 won't need to be saved in the future.
     """
-    with open(path, 'r') as f:
-        content = f.read()
-    print("HIIIIIIIIIIIIIIIIIIII")
-    return f"File length: {len(content)}"
+    audio_transcriber = AudioTranscriber()
+    transcribed_text = audio_transcriber.transcribe(path)
+    
 
 app.run()
