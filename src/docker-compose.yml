@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    working_dir: /app
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    volumes:
+      - ./backend:/app
+    environment:
+      - MONGO_URI=mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}
+      - NEO4J_URI=bolt://${NEO4J_HOST}:${NEO4J_PORT}
+      - NEO4J_USER=${NEO4J_USER}
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+    depends_on:
+      - mongodb
+      - neo4j
+
+  mongodb:
+    image: mongo:6
+    ports:
+      - "${MONGO_PORT}:${MONGO_PORT}"
+    volumes:
+      - mongo-data:/data/db
+
+  neo4j:
+    image: neo4j:5
+    ports:
+      - "${NEO4J_WEB_PORT}:${NEO4J_WEB_PORT}"
+      - "${NEO4J_PORT}:${NEO4J_PORT}"
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}
+    volumes:
+      - neo4j-data:/data
+
+volumes:
+  mongo-data:
+  neo4j-data:
