@@ -1,6 +1,6 @@
-from src.mongodb.py_client.document_store import DocumentStore
-from src.chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
-from src.chatbot.text_transformer.text_vectoriser import TextVectoriser
+from mongodb.DocumentStore import DocumentStore
+from chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
+from chatbot.text_transformer.text_vectoriser import TextVectoriser
 
 class TextPipeline():
     """

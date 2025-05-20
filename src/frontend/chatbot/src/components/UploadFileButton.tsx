@@ -16,7 +16,7 @@ const UploadFileButton: React.FC<UploadFileButtonProps> = ({ onFileSelected }) =
     if (!file) return;
 
     // Optional callback
-    onFileSelected?.(file);
+    //onFileSelected?.(file);
 
     const formData = new FormData();
     formData.append("file", file);

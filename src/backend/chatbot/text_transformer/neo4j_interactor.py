@@ -1,7 +1,7 @@
 from neo4j import GraphDatabase, Driver
 from torch import Tensor
 
-from src.config.config import NEO4J_URL, NEO4J_USERNAME, NEO4J_PASSWORD
+from config.config import NEO4J_URL, NEO4J_USERNAME, NEO4J_PASSWORD
 
 
 class Neo4JInteractor:
@@ -22,7 +22,7 @@ class Neo4JInteractor:
         """
         self._driver.close()
 
-    def store_multiple_vectors(self, vectors: list[tuple[str, list[float]]], file_id) -> None:
+    def store_multiple_vectors(self, vectors: list[tuple[str, list[Tensor]]], file_id) -> None:
         """
             Stores multiple vectors in the Neo4j database.
 

@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Mapping, Any
 
-from src.config import config
-
 from pymongo import MongoClient
+from pymongo.synchronous.cursor import Cursor
 from pymongo.synchronous.database import Database
+
+from config import config
 
 
 class DocumentStore:
@@ -42,6 +43,7 @@ class DocumentStore:
             """
             if collection_name in self.__database.list_collection_names():
                 return self.create_collection(collection_name)
+            return None
 
         def create_collection(self, collection_name: str) -> DocumentStore.Collection:
             """
@@ -72,7 +74,7 @@ class DocumentStore:
         def __init__(self, database: DocumentStore.Database, collection_name: str) -> None:
             self.__collection = database.client().get_collection(collection_name)
 
-        def get_all_documents(self) -> Mapping[str, Any]:
+        def get_all_documents(self) -> Cursor[Mapping[str, Any]]:
             """
             Retrieves all documents within this collection.
 
@@ -80,22 +82,21 @@ class DocumentStore:
             """
             return self.__collection.find()
 
-        def add_document(self, document_name: str, document_key: str, document: dict) -> None:
+        def add_document(self, document_name: str, content: str) -> None:
             """
             Inserts the provided document into the collection.
 
-            :param document_key: the unique key associated with the provided document
-            :param document: the document to be added into the collection
+            :param document_name: the name associated with the provided document
+            :param content: the document content to be added to the collection
 
             :raises KeyError: if the provided document key is not unique amongst all documents in this collection
             """
-            if self.find_document(document_key) is not None:
+            if self.find_document(document_name) is not None:
                 raise KeyError(
-                    f"The provided document key, {document_key}, must be unique between all documents within the "
+                    f"The provided document key, {document_name}, must be unique between all documents within the "
                     f"collection."
                 )
-            document["name"] = document_name
-            document["key"] = document_key
+            document: dict[str, str] = {"name": document_name, "content": content}
             self.__collection.insert_one(document)
 
         def find_document(self, document_key: str) -> Mapping[str, Any] | None:
@@ -131,6 +132,7 @@ class DocumentStore:
         """
         if database_name in self.__client.list_database_names():
             return self.create_database(database_name)
+        return None
 
     def create_database(self, database_name: str) -> DocumentStore.Database:
         """
@@ -146,11 +148,3 @@ class DocumentStore:
         """
         return self.__client
 
-
-if __name__ == "__main__":
-    ds = DocumentStore()
-    db = ds.create_database("test_db")
-    collection = db.create_collection("test")
-    doc = {"content": "hello"}
-    collection.add_document("test-doc", "test", doc)
-    print(collection.find_document("test"))

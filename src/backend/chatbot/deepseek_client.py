@@ -1,6 +1,6 @@
 import requests 
 import re
-from src.config.config import JWS_KEY, API_URL, MONGO_URI
+from config.config import JWS_KEY, API_URL, MONGO_URI
 
 # main testing imports 
 from .text_transformer.text_pipeline import TextPipeline
@@ -8,7 +8,7 @@ from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from .text_transformer.neo4j_interactor import Neo4JInteractor
 from .text_transformer.text_vectoriser import TextVectoriser
-from src.mongodb.py_client.document_store import DocumentStore
+from mongodb.DocumentStore import DocumentStore
 
 
 class DeepSeekClient: 
