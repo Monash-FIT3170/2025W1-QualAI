@@ -46,6 +46,15 @@ services:
     volumes:
       - neo4j-data:/data
 
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui  
+    ports:
+      - "3000:8080"
+    volumes:
+      - open-webui-data:/app/backend/data
+
 volumes:
   mongo-data:
   neo4j-data:
+  open-webui-data:

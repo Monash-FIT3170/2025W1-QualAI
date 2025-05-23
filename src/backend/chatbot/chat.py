@@ -1,4 +1,4 @@
-from deepseek_client import DeepSeekClient
+from chatbot.deepseek_client import DeepSeekClient
 from chatbot.text_transformer.text_vectoriser import TextVectoriser
 from chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
 
@@ -9,13 +9,15 @@ class Chatbot:
     :author: Felix Chung
     """
 
-    def __init__(self):
+    def __init__(
+            self, deepseek_client: DeepSeekClient, vector_database: Neo4JInteractor, vectoriser: TextVectoriser
+        ):
         """
         Initializes the Chatbot class by with instances of the DeepSeekClient, TextVectoriser, and Neo4JInteractor classes.
         """
-        self.deepseek_client = DeepSeekClient()
-        self.text_converter = TextVectoriser()
-        self.neoInteractor = Neo4JInteractor()
+        self.__deepseek_client = deepseek_client
+        self.__text_converter = vectoriser
+        self.__neoInteractor = vector_database
 
     def chat(self, query: str) -> str:
         """
@@ -26,17 +28,11 @@ class Chatbot:
         :return: The JSON response from the API.
         """
 
-        search_vector = self.text_converter.chunk_and_embed_text(query)[0][1]
-        context = self.neoInteractor.search_text_chunk(search_vector)
+        search_vector = self.__text_converter.chunk_and_embed_text(query)[0][1]
+        context = self.__neoInteractor.search_text_chunk(search_vector)
         if len(context) > 0:
-            response = self.deepseek_client.chat_with_model_context_injection(context, query)
+            response = self.__deepseek_client.chat_with_model_context_injection(context, query)
         else:
-            response = self.deepseek_client.chat_with_model(query)
+            response = self.__deepseek_client.chat_with_model(query)
         
         return response
-    
-    def close_connections(self) -> None:
-        """
-        Closes the connections to the Neo4j database.
-        """
-        self.neoInteractor.close_driver()
