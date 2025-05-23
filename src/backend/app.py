@@ -1,10 +1,10 @@
 from flask import Flask
 from flask_cors import CORS
 
-from chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
-from chatbot.text_transformer.text_vectoriser import TextVectoriser
-from mongodb.DocumentStore import DocumentStore
-from upload.DocumentUploader import DocumentUploader
+from backend.chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
+from backend.chatbot.text_transformer.text_vectoriser import TextVectoriser
+from backend.mongodb.DocumentStore import DocumentStore
+from backend.upload.DocumentUploader import DocumentUploader
 
 
 def initialise_collection() -> DocumentStore.Collection:

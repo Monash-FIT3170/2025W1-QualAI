@@ -2,10 +2,10 @@ import os
 
 from flask import Flask, request, jsonify
 
-from upload.AudioTranscriber import AudioTranscriber
-from chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
-from chatbot.text_transformer.text_vectoriser import TextVectoriser
-from mongodb.DocumentStore import DocumentStore
+from backend.upload.AudioTranscriber import AudioTranscriber
+from backend.chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
+from backend.chatbot.text_transformer.text_vectoriser import TextVectoriser
+from backend.mongodb.DocumentStore import DocumentStore
 
 
 class DocumentUploader:
