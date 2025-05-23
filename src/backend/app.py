@@ -1,8 +1,9 @@
 from flask import Flask
 from flask_cors import CORS
 
-from chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
-from chatbot.text_transformer.text_vectoriser import TextVectoriser
+from chat.bot import Chatbot
+from chat.text_transformer.neo4j_interactor import Neo4JInteractor
+from chat.text_transformer.text_vectoriser import TextVectoriser
 from mongodb.DocumentStore import DocumentStore
 from upload.DocumentUploader import DocumentUploader
 
@@ -22,12 +23,21 @@ def register_upload_routes(app: Flask) -> None:
     collection = initialise_collection()
     vector_db, vectoriser = initialise_vector_database()
     document_uploader = DocumentUploader(collection, vector_db, vectoriser)
+    chat_bot = Chatbot(vector_db, vectoriser)
+
     document_uploader.register_routes(app)
+    chat_bot.register_routes(app)
 
 
 def start_app() -> None:
     app = Flask(__name__)
     CORS(app)
+
+    @app.route('/health', methods=['GET'])
+    def health():
+        return "OK", 200
+
+
     register_upload_routes(app)
     app.run(host="0.0.0.0", port=5000)
 

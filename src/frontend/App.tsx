@@ -1,7 +1,8 @@
 import './App.css'
 import Chatbot from "./chatbot/components/Chatbot";
 import UploadFileButton from "./chatbot/components/UploadFileButton";
-
+import DocumentList from "./DocumentList";
+import {DocumentStore} from "./mongodb/DocumentStore";
 
 function App() {
   return (

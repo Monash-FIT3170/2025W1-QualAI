@@ -1,7 +1,7 @@
 from neo4j import GraphDatabase
 from torch import Tensor
 
-from config.config import NEO4J_USERNAME, NEO4J_URL, NEO4J_PASSWORD
+from config.config import NEO4J_URL
 
 
 class Neo4JInteractor:
@@ -14,7 +14,8 @@ class Neo4JInteractor:
         """
             Initialises NEO4JInteractor with driver to be used
         """
-        self._driver = GraphDatabase.driver(NEO4J_URL, auth=(NEO4J_USERNAME, NEO4J_PASSWORD))    
+        self._driver = GraphDatabase.driver(NEO4J_URL, auth=("neo4j", "testing123"))
+        self.__create_vector_index()
     
     def close_driver(self) -> None:
         """
@@ -33,7 +34,6 @@ class Neo4JInteractor:
             vector = vector_data[1]
             self.store_vector(text_chunk, file_id, vector)
 
-    
     def store_vector(self, text_chunk: str, file_id: str, vector: list[Tensor]) -> None:
         """
             Stores a vector in the Neo4j database.
@@ -42,6 +42,11 @@ class Neo4JInteractor:
                 :param list[Tensor] vector:     the vector to be stored
                 
         """
+
+        # Flatten and convert to float
+        if isinstance(vector[0], Tensor):  # if it's a list of Tensors
+            vector = [float(x) for x in vector[0]]
+
         client = self._driver
         with client.session() as session:
             session.run(
@@ -50,6 +55,25 @@ class Neo4JInteractor:
                 """,
                 text_chunk=text_chunk, vector=vector, file_id=file_id 
             )
+
+    def __create_vector_index(self, vector_dimension: int = 384):
+        """
+        Creates a vector index on the 'vector' property of Embedding nodes.
+
+        :param vector_dimension: Dimensionality of the stored vectors.
+        """
+        client = self._driver
+        with client.session() as session:
+            session.run("""
+            CREATE VECTOR INDEX embedding_vector_index IF NOT EXISTS
+            FOR (e:Embedding) ON (e.vector)
+            OPTIONS { 
+                indexConfig: {
+                    `vector.dimensions`: $dims,
+                    `vector.similarity_function`: 'cosine'
+                }
+            }
+            """, dims=vector_dimension)
 
     def search_text_chunk(self, vector: list[float], limit: int = 5) -> list[str]:
         """
@@ -88,10 +112,9 @@ class Neo4JInteractor:
                 WHERE n.file_id = $file_id
                 DELETE n
                 """,
-                file_id = file_id
+                file_id=file_id
             )
-        
-    
+
     def remove_node_by_text(self, text_chunk: str) -> None:
         """
             Searches the Neo4j database for any nodes matching the provided name, and removes them.
@@ -115,4 +138,3 @@ class Neo4JInteractor:
         """
         with self._driver.session() as session:
             session.run("MATCH (n) DETACH DELETE n")
-

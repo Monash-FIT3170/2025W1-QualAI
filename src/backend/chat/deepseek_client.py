@@ -22,7 +22,7 @@ class DeepSeekClient:
         """
         Initializes the Chatbot class with API URL and JWS key
         """
-        self.api_url = API_URL
+        self.api_url = "http://ollama:11434/api/chat"
         self.jws_key = JWS_KEY
         self.headers = {
             'Authorization': f'Bearer {JWS_KEY}',
@@ -47,10 +47,6 @@ class DeepSeekClient:
         :param message: The message to send to the model.
         :return: The JSON response from the API.
         """
-        headers = {
-            'Authorization': f'Bearer {JWS_KEY}',
-            'Content-Type': 'application/json'
-        }
         data = {
             "model": "deepseek-r1:1.5b",
             "messages": [
@@ -60,7 +56,8 @@ class DeepSeekClient:
                 }
             ]
         }
-        response = requests.post(API_URL, headers=self.headers, json=data)
+        response = requests.post(self.api_url, headers=self.headers, json=data)
+        print(response.json())
         reply = response.json()["choices"][0]["message"]["content"]
         reply = self.remove_think_blocks(reply) # Removing think blocks
         return reply 
@@ -86,19 +83,19 @@ class DeepSeekClient:
                 }
             ]
         }
-        response = requests.post(API_URL, headers=self.headers, json=data)
-        reply = response.json()["choices"][0]["message"]["content"]
+        response = requests.post(self.api_url, json=data)
+        reply = response.json()["message"]["content"]
         reply = self.remove_think_blocks(reply) # Removing think blocks
         return reply 
     
    
 if __name__ == "__main__":
-    # create chatbot instance
+    # create chat instance
     Neo4JInteractor().clear_database()
     chatbot = DeepSeekClient()
     
     # # Defines the path to the desired file, may have to change to suit your current mongo layout
-    database = 'chatbot'
+    database = 'chat'
     collection_id = "files"
     fileIdentifier = "biomedical_interview"
 

@@ -3,8 +3,8 @@ import os
 from flask import Flask, request, jsonify
 
 from upload.AudioTranscriber import AudioTranscriber
-from chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
-from chatbot.text_transformer.text_vectoriser import TextVectoriser
+from chat.text_transformer.neo4j_interactor import Neo4JInteractor
+from chat.text_transformer.text_vectoriser import TextVectoriser
 from mongodb.DocumentStore import DocumentStore
 
 

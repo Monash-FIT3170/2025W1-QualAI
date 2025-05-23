@@ -1,8 +1,8 @@
 import unittest
 
-from backend.chatbot.text_transformer import TextPipeline
-from backend.chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
-from backend.chatbot.text_transformer.text_vectoriser import TextVectoriser
+from backend.chat.text_transformer import TextPipeline
+from backend.chat.text_transformer.neo4j_interactor import Neo4JInteractor
+from backend.chat.text_transformer.text_vectoriser import TextVectoriser
 from backend.mongodb.DocumentStore import DocumentStore
 
 class TestTextTransformer(unittest.TestCase):
@@ -54,7 +54,7 @@ class TestTextTransformer(unittest.TestCase):
         """
         Testthat the entire pipeline operates correctly and stores the data in the neo4j database.
         """
-        database = 'chatbot'
+        database = 'chat'
         collection_id = "qualitative_analysis"
         fileIdentifier = "biomedical_interview"
 

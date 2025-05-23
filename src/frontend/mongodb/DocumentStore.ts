@@ -2,10 +2,6 @@
 import { MongoClient } from "mongodb";
 import { Database } from "./Database";
 
-// TODO: Move this to the appropriate location.
-import * as dotenv from "dotenv";
-dotenv.config();
-
 /**
  * A document store is a class wrapping a {@link MongoClient} instance.
  *
@@ -16,7 +12,7 @@ dotenv.config();
  */
 export class DocumentStore {
     /** The URI to access the MongoDB client. */
-    private static readonly URI: string = process.env.MONGO_URI ?? "mongodb://localhost:27017";
+    private static readonly URI: string = "mongodb://localhost:27017";
 
     /** The MongoDB client being wrapped. */
     private readonly _client: MongoClient;
