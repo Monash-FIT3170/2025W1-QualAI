@@ -1,7 +1,7 @@
 from neo4j import GraphDatabase
 from torch import Tensor
 
-from backend.config.config import NEO4J_USERNAME, NEO4J_URL, NEO4J_PASSWORD
+from config.config import NEO4J_USERNAME, NEO4J_URL, NEO4J_PASSWORD
 
 
 class Neo4JInteractor:

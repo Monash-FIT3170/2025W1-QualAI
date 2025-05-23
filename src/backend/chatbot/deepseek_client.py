@@ -2,8 +2,8 @@ import re
 
 import requests
 
-from backend.config.config import JWS_KEY, API_URL
-from backend.mongodb.DocumentStore import DocumentStore
+from config.config import JWS_KEY, API_URL
+from mongodb.DocumentStore import DocumentStore
 from .text_transformer.neo4j_interactor import Neo4JInteractor
 # main testing imports
 from .text_transformer.text_pipeline import TextPipeline

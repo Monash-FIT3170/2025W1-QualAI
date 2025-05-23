@@ -1,9 +1,9 @@
-from backend.mongodb.DocumentStore import DocumentStore
-from backend.chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
-from backend.chatbot.text_transformer.text_vectoriser import TextVectoriser
+from mongodb.DocumentStore import DocumentStore
+from chatbot.text_transformer.neo4j_interactor import Neo4JInteractor
+from chatbot.text_transformer.text_vectoriser import TextVectoriser
 
 class TextPipeline():
-    """
+    """`
     A class for transforming text data from mongodb to neo4j
 
     :author: Jonathan Farrand
