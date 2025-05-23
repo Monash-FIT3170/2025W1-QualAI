@@ -1,10 +1,10 @@
-import React, { useRef } from 'react';
+import {FC, useRef} from 'react';
 
 type UploadFileButtonProps = {
   onFileSelected?: (file: File) => void;
 };
 
-const UploadFileButton: React.FC<UploadFileButtonProps> = ({ onFileSelected }) => {
+const UploadFileButton: FC<UploadFileButtonProps> = ({ onFileSelected }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleButtonClick = () => {

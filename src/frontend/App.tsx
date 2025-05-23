@@ -1,9 +1,7 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import Chatbot from './components/Chatbot';
-import UploadFileButton from './components/UploadFileButton';
+import Chatbot from "./chatbot/components/Chatbot";
+import UploadFileButton from "./chatbot/components/UploadFileButton";
+
 
 function App() {
   return (
