@@ -6,7 +6,7 @@ import axios from 'axios';
  */
 
 // Base configuration for axios instance
-const API_URL = 'http://127.0.0.1:5000'
+const API_URL = 'http://127.0.0.1:5001'
 
 /**
  * Axios instance configured for chatbot API requests

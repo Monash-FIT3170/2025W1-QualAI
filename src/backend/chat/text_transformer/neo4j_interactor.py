@@ -1,9 +1,6 @@
 from neo4j import GraphDatabase
 from torch import Tensor
 
-from config.config import NEO4J_URL
-
-
 class Neo4JInteractor:
     """
         A class for accessing and interacting with neo4j
@@ -14,7 +11,7 @@ class Neo4JInteractor:
         """
             Initialises NEO4JInteractor with driver to be used
         """
-        self._driver = GraphDatabase.driver(NEO4J_URL, auth=("neo4j", "testing123"))
+        self._driver = GraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
         self.__create_vector_index()
     
     def close_driver(self) -> None:

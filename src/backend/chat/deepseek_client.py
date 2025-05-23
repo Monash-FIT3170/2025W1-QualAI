@@ -1,3 +1,4 @@
+import json
 import re
 
 import requests
@@ -56,11 +57,27 @@ class DeepSeekClient:
                 }
             ]
         }
+
         response = requests.post(self.api_url, headers=self.headers, json=data)
-        print(response.json())
-        reply = response.json()["choices"][0]["message"]["content"]
-        reply = self.remove_think_blocks(reply) # Removing think blocks
-        return reply 
+
+        # NDJSON: split by lines and parse each one
+        messages = []
+        for line in response.text.strip().splitlines():
+            try:
+                obj = json.loads(line)
+                msg = obj.get("message", {}).get("content")
+                if msg:
+                    messages.append(msg)
+            except json.JSONDecodeError as e:
+                print("Skipping malformed JSON line:", line, e)
+
+        # Join all message content
+        full_reply = "".join(messages)
+
+        # Strip internal <think>...</think> tags or anything custom
+        reply = self.remove_think_blocks(full_reply)
+
+        return reply
 
     def chat_with_model_context_injection(self, context_text, message):
         """
@@ -83,10 +100,27 @@ class DeepSeekClient:
                 }
             ]
         }
-        response = requests.post(self.api_url, json=data)
-        reply = response.json()["message"]["content"]
-        reply = self.remove_think_blocks(reply) # Removing think blocks
-        return reply 
+        response = requests.post(self.api_url, headers=self.headers, json=data)
+
+        # NDJSON: split by lines and parse each one
+        messages = []
+        for line in response.text.strip().splitlines():
+            try:
+                obj = json.loads(line)
+                msg = obj.get("message", {}).get("content")
+                if msg:
+                    messages.append(msg)
+            except json.JSONDecodeError as e:
+                print("Skipping malformed JSON line:", line, e)
+
+        # Join all message content
+        full_reply = "".join(messages)
+
+        # Strip internal <think>...</think> tags or anything custom
+        reply = self.remove_think_blocks(full_reply)
+
+        return reply
+
     
    
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 import os
+from typing import Any
 
 from flask import Flask, request, jsonify
 
@@ -19,7 +20,7 @@ class DocumentUploader:
 
     def register_routes(self, app: Flask) -> None:
         @app.route('/upload', methods=['POST'])
-        def upload_file():
+        def upload_file() -> tuple[Any, int]:
             """
             Is called when "upload file" button is clicked. Prompts the user to browse for an audio file.
             The file path will then be passed into the Transcriber to be eventually added to the database.
@@ -45,10 +46,9 @@ class DocumentUploader:
 
             except Exception as e:
                 print("Error during file upload:", e)
+                return jsonify({"error": str(e)}), 500
 
-            return None
-
-    def __process_file(self, path: str, name: str) -> None:
+    def __process_file(self, path: str, name: str) -> tuple[Any, int]:
         """
         Accepts a file path as an input to be sent to the transcriber.
 
@@ -58,3 +58,4 @@ class DocumentUploader:
         transcribed_text = audio_transcriber.transcribe(path)
         self.__collection.add_document(name, transcribed_text)
         self.__vector_database.store_multiple_vectors(self.__vectoriser.chunk_and_embed_text(transcribed_text), name)
+        return jsonify({"status": "ok"}), 200
