@@ -1,10 +1,8 @@
-version: "3.9"
-
 services:
   frontend:
     build: ./frontend
     ports:
-      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - "5173:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -12,40 +10,52 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
     depends_on:
-      - backend
+      backend:
+        condition: service_started
 
   backend:
     build: ./backend
     ports:
-      - "${BACKEND_PORT}:${BACKEND_PORT}"
+      - "5001:5001"
     volumes:
       - ./backend:/app
     environment:
-      - MONGO_URI=mongodb://${MONGO_HOST}:${MONGO_PORT}/${MONGO_DB}
-      - NEO4J_URI=bolt://${NEO4J_HOST}:${NEO4J_PORT}
-      - NEO4J_USER=${NEO4J_USER}
-      - NEO4J_PASSWORD=${NEO4J_PASSWORD}
+      - OLLAMA_API=http://ollama:11434
+      - MONGO_URI=mongodb://mongodb:27017/transcriptions
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password
     depends_on:
-      - mongodb
       - neo4j
+      - ollama
+      - mongodb
 
   mongodb:
     image: mongo:6
     ports:
-      - "${MONGO_PORT}:${MONGO_PORT}"
+      - "27017:27017"
     volumes:
-      - mongo-data:/data/db
+      - mongo_data:/data/db
 
   neo4j:
     image: neo4j:5
     ports:
-      - "${NEO4J_WEB_PORT}:${NEO4J_WEB_PORT}"
-      - "${NEO4J_PORT}:${NEO4J_PORT}"
+      - "7474:7474"
+      - "7687:7687"
     environment:
-      - NEO4J_AUTH=${NEO4J_USER}/${NEO4J_PASSWORD}
+      - NEO4J_AUTH=neo4j/password
     volumes:
-      - neo4j-data:/data
+      - neo4j_data:/data
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
 
 volumes:
-  mongo-data:
-  neo4j-data:
+  mongo_data:
+  neo4j_data:
+  ollama_data:

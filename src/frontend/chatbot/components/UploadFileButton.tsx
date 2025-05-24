@@ -1,10 +1,10 @@
-import React, { useRef } from 'react';
+import {FC, useRef} from 'react';
 
 type UploadFileButtonProps = {
   onFileSelected?: (file: File) => void;
 };
 
-const UploadFileButton: React.FC<UploadFileButtonProps> = ({ onFileSelected }) => {
+const UploadFileButton: FC<UploadFileButtonProps> = ({ onFileSelected }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleButtonClick = () => {
@@ -22,7 +22,7 @@ const UploadFileButton: React.FC<UploadFileButtonProps> = ({ onFileSelected }) =
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:5000/upload", {
+      const response = await fetch("http://localhost:5001/upload", {
         method: "POST",
         body: formData,
       });

@@ -1,13 +1,13 @@
 import unittest
 
-from backend.chatbot.text_transformer import TextPipeline
-from backend.chatbot.text_transformer.text_vectoriser import TextVectoriser
+from backend.chat.text_transformer import TextPipeline
+from backend.chat.text_transformer.text_vectoriser import TextVectoriser
 from chatbot import Chatbot
 from backend.mongodb.DocumentStore import DocumentStore
 
 class TestTextTransformer(unittest.TestCase):
     """ 
-    A class for testing chatbot backend functionality.
+    A class for testing chat backend functionality.
     Integration testing between deepseek-r1 client and Neo4J interactor
 
     Author: Felix Chung   
@@ -20,10 +20,10 @@ class TestTextTransformer(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         """
-        Set up the test environment by vectorising and storing sample text, creating chatbot instance
+        Set up the test environment by vectorising and storing sample text, creating chat instance
         """
         # # Defines the path to the desired file, may have to change to suit your current mongo layout
-        database = 'chatbot'
+        database = 'chat'
         collection_id = "files"
         self.fileIdentifier = "biomedical_interview"
 
@@ -49,7 +49,7 @@ class TestTextTransformer(unittest.TestCase):
         "we’re starting to get an unprecedented view into cellular heterogeneity, which could fundamentally change how we approach disease diagnostics and treatment. T" \
         "hank you. That’s incredibly insightful. Best of luck with your ongoing work! Thank you. It was a pleasure speaking with you."
 
-        # Create chatbot instance
+        # Create chat instance
         self.chatbot = Chatbot()
 
         text_converter = TextVectoriser()
@@ -77,10 +77,10 @@ class TestTextTransformer(unittest.TestCase):
 
     def test_request(self):
         """
-        Test that the chatbot can process a request and return a response.
+        Test that the chat can process a request and return a response.
         """
         query_message = "Hi!"
-        response = self.chatbot.chat(query_message)
+        response = self.chatbot.chat_with_model(query_message)
         self.assertIsInstance(response, str, "Response should be a string.")
         self.assertGreater(len(response), 0, "Response should not be empty.")
 

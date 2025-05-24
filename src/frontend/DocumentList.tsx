@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Collection } from "../mongodb/ts-client/Collection";
+import {useState, useEffect, FC} from 'react';
+
 import { Document } from "mongodb";
+import {Collection} from "./mongodb/Collection";
 
 /**
  * This functional component enlists each document in the provided collection in a column, and allows a user to rename
@@ -10,7 +11,7 @@ import { Document } from "mongodb";
  *
  * @author Kays Beslen
  */
-const DocumentList: React.FC<{ collection: Collection }> = ({ collection }) => {
+const DocumentList: FC<{ collection: Collection }> = ({ collection }) => {
     const [documents, setDocuments] = useState<Document[]>([]);
     const [idx, setIdx] = useState<number | null>(null);
 

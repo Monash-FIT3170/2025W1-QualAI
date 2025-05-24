@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect, use } from 'react';
-import robotIcon from '../assets/robot.png'; // our robot avatar icon guy 
+import {useState, useRef, useEffect, FC} from 'react';
+// @ts-ignore
+import robotIcon from '../assets/robot.png'; // our robot avatar icon guy
 import { fetchChat } from './chat_client'; // function to fetch chat responses from the backend
 
 /**
@@ -18,7 +19,7 @@ interface Message {
   isUser: boolean;
 }
 
-const Chatbot: React.FC = () => {
+const Chatbot: FC = () => {
   /**
    * Initialises the Chatbot component with default state values
    * 
