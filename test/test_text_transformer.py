@@ -10,7 +10,7 @@ class TestTextTransformer(unittest.TestCase):
     
     A class for testing the text transformer functionality.
     Author: Jonathan Farrand
-    This class contains unit tests for the TextPipeline, Neo4JInteractor, and TextVectoriser classes.
+    This class contains unit test for the TextPipeline, Neo4JInteractor, and TextVectoriser classes.
     
     """
     

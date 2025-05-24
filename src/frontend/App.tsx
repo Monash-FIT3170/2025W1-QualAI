@@ -1,18 +1,29 @@
-import './App.css'
-import Chatbot from "./chatbot/components/Chatbot";
-import UploadFileButton from "./chatbot/components/UploadFileButton";
-import DocumentList from "./DocumentList";
-import {DocumentStore} from "./mongodb/DocumentStore";
+import { Toaster } from "@/components/ui/sonner";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import LandingPage from "./components/LandingPage";
+import ProjectPage from "./components/ProjectPage";
+import NotFound from "./items/pages/NotFound";
 
-function App() {
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="container mx-auto p-4">
-        <UploadFileButton/>
-        <Chatbot/>
-      </div>
-    </div>
-  );
-}
+const queryClient = new QueryClient();
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/project" element={<ProjectPage />} />
+          <Route path="/project/new" element={<ProjectPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;
