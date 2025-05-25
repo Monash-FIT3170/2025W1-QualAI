@@ -27,7 +27,6 @@ class AudioTranscriber:
             :return str: the transcribed text
         """
         audio = whisper.load_audio(audio_filepath)
-        audio = whisper.pad_or_trim(audio)
 
         result = whisper.transcribe(model=self.model, audio=audio)
         return result["text"]
