@@ -1,7 +1,8 @@
 
 import Sidebar from './Sidebar';
 import Chatbot from './Chatbot';
-import RichTextEditor from '@/items/editor/RichTextEditor';
+import RichTextEditor from '@/editor/RichTextEditor';
+
 
 const ProjectPage = () => {
   return (

@@ -1,6 +1,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { Upload } from 'lucide-react';
+import UploadFileButton from './UploadFileButton';
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -37,7 +38,7 @@ const Sidebar = () => {
           <p>Drop files here</p>
           <p className="text-sm text-gray-400 mt-2">Or</p>
           <button className="mt-2 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-            Browse
+            <UploadFileButton/>
           </button>
         </div>
       </div>

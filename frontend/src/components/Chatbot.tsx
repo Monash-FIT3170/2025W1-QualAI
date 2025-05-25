@@ -1,6 +1,6 @@
 import {useState, useRef, useEffect, FC} from 'react';
 // @ts-ignore
-import robotIcon from '../assets/robot.png'; // our robot avatar icon guy
+import robotIcon from './assets/robot.png'; // our robot avatar icon guy
 import { fetchChat } from './chat_client'; // function to fetch chat responses from the backend
 
 /**
