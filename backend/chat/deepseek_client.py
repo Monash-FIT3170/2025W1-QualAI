@@ -92,7 +92,7 @@ class DeepSeekClient:
             "messages": [
                 {
                     "role": "system",
-                    "content": f"You are a helpful research assistant that provides short, to the point answers. Answer questions using the following context: \n\n{context_text} \n\n The context ends here. \n\n Now, please answer the following question: "
+                    "content": f"SYSTEM PROMPT: You are a helpful research asssistant providing information based on context given about an interview. Return short response that get straight to the point. \n\nContext: {context_text} \n\n."
                 },
                 {
                     "role": "user",
