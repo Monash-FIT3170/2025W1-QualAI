@@ -2,9 +2,10 @@ import {FC, useRef} from 'react';
 
 type UploadFileButtonProps = {
   onFileSelected?: (file: File) => void;
+  onUploadComplete?: () => void;
 };
 
-const UploadFileButton: FC<UploadFileButtonProps> = ({ onFileSelected }) => {
+const UploadFileButton: FC<UploadFileButtonProps> = ({ onFileSelected, onUploadComplete }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleButtonClick = () => {
@@ -29,9 +30,11 @@ const UploadFileButton: FC<UploadFileButtonProps> = ({ onFileSelected }) => {
 
       const result = await response.json();
       console.log("Server response:", result);
+      onUploadComplete?.();
     } catch (err) {
       console.error("Upload failed", err);
     }
+    
   };
 
   return (
