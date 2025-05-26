@@ -133,7 +133,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
           {option.icon}
         </Toggle>
       ))}
-      <button onClick={handleFileUpdate}>Save Changes</button>
+      <button onClick={handleFileUpdate} className="rounded-md px-2 hover:bg-gray-200">Save Changes</button>
     </div>
   );
 };

@@ -39,11 +39,11 @@ const UploadFileButton: FC<UploadFileButtonProps> = ({ onFileSelected, onUploadC
 
   return (
     <>
-      <button onClick={handleButtonClick}>Select File</button>
+      <button onClick={handleButtonClick} style={{ color: 'white'}}>Select File</button>
       <input
         type="file"
         ref={fileInputRef}
-        style={{ display: 'none' }}
+        style={{ display: 'none'}}
         onChange={handleFileUpload}
       />
     </>
