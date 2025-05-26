@@ -1,5 +1,5 @@
 // RichTextEditor.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
@@ -8,6 +8,7 @@ import MenuBar from './MenuBar';
 
 interface RichTextEditorProps {
   initialContent?: string;
+  fileKey?: string;
   onChange?: (content: { html: string; text: string }) => void;
   className?: string;
 }
@@ -16,6 +17,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   initialContent = '',
   onChange,
   className = '',
+  fileKey,
 }) => {
   const editor = useEditor({
     extensions: [
@@ -61,10 +63,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
-      <MenuBar editor={editor} />
+      <MenuBar editor={editor} fileKey={fileKey}/>
       <div className="flex-grow">
         <EditorContent editor={editor} />
       </div>
+      
     </div>
   );
 };

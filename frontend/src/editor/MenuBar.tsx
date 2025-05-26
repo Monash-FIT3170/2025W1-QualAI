@@ -17,15 +17,48 @@ import {
 } from 'lucide-react';
 import Toggle from './Toggle';
 
+
 interface MenuBarProps {
   editor: Editor | null;
+  fileKey: string;
 }
 
-const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
+
+
+const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   if (!editor) {
     return null;
   }
-  
+
+  const handleFileUpdate = () => {
+    if (!editor || !fileKey) {
+    console.warn("Cannot save: missing editor or fileKey");
+    return;
+  }
+    const content = editor.getHTML(); 
+    console.log('Saving fileKey:', fileKey);
+    console.log('Saving content:', content);
+    fetch(`http://localhost:5001/edit/${fileKey}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content }),
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to save document');
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('Save successful:', data);
+      })
+      .catch(err => {
+        console.error('Save error:', err);
+      });
+  };
+
   const options = [
     {
       icon: <Heading1 className="size-4" />,
@@ -100,6 +133,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
           {option.icon}
         </Toggle>
       ))}
+      <button onClick={handleFileUpdate}>Save Changes</button>
     </div>
   );
 };

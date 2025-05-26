@@ -109,6 +109,14 @@ class DocumentStore:
             """
             return self.__collection.find_one({"key": document_key})
         
+        def update_document(self, document_key: str, new_content: str) -> None:
+            """
+            Updates the content of the document with the provided key within the collection.
+            :param document_key: a unique identifier associated with the document
+            :param new_content: the new content to be set for the document
+            """
+            self.__collection.update_one({"key": document_key}, {"$set": {"content": new_content}})
+        
         def remove_document(self, document_key: str) -> None:
             """
             Removes the document with the provided key from the collection.

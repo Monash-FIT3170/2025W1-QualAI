@@ -27,8 +27,12 @@ class AudioTranscriber:
             :return str: the transcribed text
         """
         audio = whisper.load_audio(audio_filepath)
-        audio = whisper.pad_or_trim(audio)
-
         result = whisper.transcribe(model=self.model, audio=audio)
+        
+        # audio = whisper.pad_or_trim(audio)
+        # result = whisper.transcribe(model=self.model, audio=audio)
         return result["text"]
  
+if __name__ == "__main__":
+    transcriber = AudioTranscriber()
+    transcriber.transcribe(r"backend\uploads\I Have a Dream speech by Martin Luther King .Jr HD (subtitled).mp3")

@@ -2,12 +2,13 @@
 import Sidebar from './Sidebar';
 import Chatbot from './Chatbot';
 import RichTextEditor from '@/editor/RichTextEditor';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 
 const ProjectPage = () => {
   const [files, setFiles] = useState<{ key: string }[]>([]);
   const [selectedFileContent, setSelectedFileContent] = useState('');
+  const [selectedFileKey, setSelectedFileKey] = useState<string | null>(null);
 
   const fetchFiles = () => {
     fetch('http://localhost:5001/documents')
@@ -26,6 +27,7 @@ const ProjectPage = () => {
       .then(res => res.json())
       .then(data => {
         setSelectedFileContent(data.content); // Set content for editor
+        setSelectedFileKey(fileKey); // Set the selected file key
       })
       .catch(console.error);
   };
@@ -37,7 +39,7 @@ const ProjectPage = () => {
       onFileSelect={handleFileSelect}
       onRefreshFiles={fetchFiles}/>
       <main className="flex-1 p-6">
-        <RichTextEditor initialContent={selectedFileContent} />
+        <RichTextEditor initialContent={selectedFileContent} fileKey={selectedFileKey} />
       </main>
       <Chatbot />
     </div>
