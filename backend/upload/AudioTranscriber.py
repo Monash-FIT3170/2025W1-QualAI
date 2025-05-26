@@ -35,4 +35,4 @@ class AudioTranscriber:
  
 if __name__ == "__main__":
     transcriber = AudioTranscriber()
-    transcriber.transcribe(r"backend\uploads\I Have a Dream speech by Martin Luther King .Jr HD (subtitled).mp3")
+    
