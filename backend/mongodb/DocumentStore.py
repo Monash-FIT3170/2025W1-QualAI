@@ -96,7 +96,7 @@ class DocumentStore:
                     f"The provided document key, {document_name}, must be unique between all documents within the "
                     f"collection."
                 )
-            document: dict[str, str] = {"name": document_name, "content": content}
+            document: dict[str, str] = {"key": document_name, "content": content}
             self.__collection.insert_one(document)
 
         def find_document(self, document_key: str) -> Mapping[str, Any] | None:
