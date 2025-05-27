@@ -9,6 +9,27 @@ import UploadFileButton from './UploadFileButton';
 const Sidebar = ({ files = [], onFileSelect, onRefreshFiles }) => {
   const navigate = useNavigate();
 
+  const handleDelete = async(fileKey) => {
+    if(!window.confirm('Are you sure you want to permanently remove the file?')) return;
+
+    try {
+      const response = await fetch(`http://localhost:5001/delete/${fileKey}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        console.log(`Deleted file: ${fileKey}`);
+        onRefreshFiles?.();
+      } else {
+        const error = await response.json();
+        alert(`Delete failed: ${error.error}`);
+      }
+    } catch(err) {
+      console.error("Delete Failed", err);
+      alert("Delete Failed")
+    }
+  };
+
   return (
     <div className="w-64 bg-secondary/50 p-4 flex flex-col">
       <div className="flex items-center gap-2 mb-8 cursor-pointer" onClick={() => navigate('/')}>
@@ -36,10 +57,11 @@ const Sidebar = ({ files = [], onFileSelect, onRefreshFiles }) => {
               {file.key}
             </div>
             <div className = "flex items-center gap-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"> 
-              <Pencil
-                className="size-6 p-1 rounded-md hover:bg-gray-200 curser-pointer"
-              />
               <Trash 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(file.key)
+              }}
                 className="size-6 p-1 rounded-md hover:bg-gray-200 curser-pointer"
               />
             </div>

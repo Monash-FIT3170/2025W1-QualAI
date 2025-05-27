@@ -8,6 +8,7 @@ from mongodb.DocumentStore import DocumentStore
 from upload.DocumentUploader import DocumentUploader
 from editor.DocumentRetriever import DocumentRetriever
 from editor.DocumentEditor import DocumentEditor
+from editor.DocumentRemover import DocumentRemover
 
 
 def initialise_collection() -> DocumentStore.Collection:
@@ -28,11 +29,13 @@ def register_upload_routes(app: Flask) -> None:
     chat_bot = Chatbot(vector_db, vectoriser)
     document_retriever = DocumentRetriever(collection)
     document_editor = DocumentEditor(collection, vector_db, vectoriser)
+    document_remover = DocumentRemover(collection, vector_db)
 
     document_uploader.register_routes(app)
     chat_bot.register_routes(app)
     document_retriever.register_routes(app)
     document_editor.register_routes(app)
+    document_remover.register_routes(app)
 
         
 
