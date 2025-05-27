@@ -32,11 +32,19 @@ const ProjectPage = () => {
       .catch(console.error);
   };
 
+  const handleFileDelete = (fileKey : string) : void => {
+      if ( selectedFileKey == fileKey ) {
+          setSelectedFileContent("");
+          setSelectedFileKey(null);
+      }
+  }
+
   return (
     <div className="min-h-screen flex">
       <Sidebar 
       files={files}
       onFileSelect={handleFileSelect}
+      onFileDelete={handleFileDelete}
       onRefreshFiles={fetchFiles}/>
       <main className="flex-1 p-6">
         <RichTextEditor initialContent={selectedFileContent} fileKey={selectedFileKey} />

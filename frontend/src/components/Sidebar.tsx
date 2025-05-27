@@ -6,12 +6,13 @@ import {
   Pencil } from 'lucide-react';
 import UploadFileButton from './UploadFileButton';
 
-const Sidebar = ({ files = [], onFileSelect, onRefreshFiles }) => {
+const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }) => {
   const navigate = useNavigate();
 
-  const handleDelete = async(fileKey) => {
+  const handleDelete = async(fileKey : string) => {
     if(!window.confirm('Are you sure you want to permanently remove the file?')) return;
 
+    onFileDelete(fileKey);
     try {
       const response = await fetch(`http://localhost:5001/delete/${fileKey}`, {
         method: 'DELETE'
