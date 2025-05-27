@@ -8,7 +8,7 @@ RUN apt-get update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
+COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 RUN python -m spacy download en_core_web_sm
 
