@@ -1,10 +1,32 @@
 import React, { useState, useEffect } from 'react';  
 import { useNavigate } from 'react-router-dom';
-import { Upload } from 'lucide-react';
+import { 
+  Upload, 
+  Trash,
+  Pencil } from 'lucide-react';
 import UploadFileButton from './UploadFileButton';
 
-const Sidebar = ({ files = [], onFileSelect, onRefreshFiles }) => {
+const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }) => {
   const navigate = useNavigate();
+
+  const handleDelete = async(fileKey : string) => {
+    if(!window.confirm('Are you sure you want to permanently remove the file?')) return;
+
+    onFileDelete(fileKey);
+    try {
+      const response = await fetch(`http://localhost:5001/delete/${fileKey}`, {
+        method: 'DELETE'
+      });
+
+      // Allows for files to be refreshed and remove deleted file from sidebar
+      if (response.ok) {
+        console.log(`Deleted file: ${fileKey}`);
+        onRefreshFiles?.();
+      } 
+    } catch(err) {
+      console.error("Delete Failed", err);
+    }
+  };
 
   return (
     <div className="w-64 bg-secondary/50 p-4 flex flex-col">
@@ -24,10 +46,23 @@ const Sidebar = ({ files = [], onFileSelect, onRefreshFiles }) => {
         {files.map((file, index) => (
           <div
             key={index}
-            className="px-4 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
-            onClick={() => onFileSelect(file.key)} // pass selected file key up
+            className="group flex items-center justify-between -4 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
           >
-            {file.key}
+            <div
+              className = "cursor-pointer flex-1 truncate"
+              onClick={() => onFileSelect(file.key)} // pass selected file key up
+            >
+              {file.key}
+            </div>
+            <div className = "flex items-center gap-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"> 
+              <Trash 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDelete(file.key)
+              }}
+                className="size-6 p-1 rounded-md hover:bg-gray-200 curser-pointer"
+              />
+            </div>
           </div>
         ))}
       </div>
