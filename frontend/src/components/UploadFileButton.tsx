@@ -1,4 +1,4 @@
-import {FC, useRef, useState } from 'react';
+import {FC, useRef, useState, useEffect } from 'react';
 
 type UploadFileButtonProps = {
   onFileSelected?: (file: File) => void;
@@ -8,6 +8,21 @@ type UploadFileButtonProps = {
 const UploadFileButton: FC<UploadFileButtonProps> = ({ onFileSelected, onUploadComplete }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [dotCount, setDotCount] = useState(1);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isUploading) {
+      interval = setInterval(() => {
+        setDotCount((prev) => (prev % 3) + 1);
+      }, 500);
+    } else {
+      setDotCount(1);
+    }
+
+    return () => clearInterval(interval)
+  }, [isUploading]);
 
   const handleButtonClick = () => {
     if (!isUploading) {
@@ -47,7 +62,7 @@ const UploadFileButton: FC<UploadFileButtonProps> = ({ onFileSelected, onUploadC
   return (
     <>
       <button onClick={handleButtonClick} style={{ color: 'white'}} disabled={isUploading}>
-        {isUploading ? 'Transcribing File...' : 'Select File'}
+        {isUploading ? `Uploading${'.'.repeat(dotCount)}` : 'Select File'}
       </button>
       <input
         type="file"
