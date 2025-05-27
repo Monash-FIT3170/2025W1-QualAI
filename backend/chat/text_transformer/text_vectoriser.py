@@ -18,20 +18,36 @@ class TextVectoriser:
         """
         self._chunker = spacy.load(chunker_name)
         self._model = SentenceTransformer(model_name)
-
-    def chunk_text(self, text: str) -> list[str]:
+    
+    def chunk_text(self, text:str, max_length: int = 200, overlap: int = 50) -> list[str]:
         """
-            Chunks the provided text into semantically meaningful divisions. In this case, we are chunking by sentences.
-
+            Chunks the text into semanitcally meaningful divisions, with a maxium given length. 
+            Gives overlap between chunks to ensure provide further context to the model
+            
             :param str text: the text to be chunked
-
+            :param int max_length: the maximum length of each chunk
+            :param int overlap: the number of tokens to overlap between chunks
+            
             :return list[str]: a list containing the chunks processed from the text
-
         """
         chunker = self._chunker
-        chunks = chunker(text)
-        return [sentence.text for sentence in chunks.sents]
-    
+        doc = chunker(text)
+
+        tokens = [token.text_with_ws for token in doc]
+        chunks = []
+        start = 0
+
+        while start < len(tokens):
+            end = start + max_length
+            chunk_tokens = tokens[start:end]
+            chunk_text = "".join(chunk_tokens).strip()
+            chunks.append(chunk_text)
+
+            # Shift start index back by overlap to include previous context
+            start = end - overlap if end - overlap > start else end 
+
+        return chunks
+
     def embed_text(self, chunks: list[str]) -> list[tuple[str, list[Tensor]]]:
         """
             Generates a vector embedding for each of the provided chunks of text using a sentence transformer model.
@@ -50,4 +66,3 @@ class TextVectoriser:
             Chunks text and generates a vector embedding for each chunk. See #chunk_text and #embed_chunks.
         """
         return self.embed_text(self.chunk_text(text))
-    
