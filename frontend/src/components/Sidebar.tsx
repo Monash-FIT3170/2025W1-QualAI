@@ -18,16 +18,13 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }) => 
         method: 'DELETE'
       });
 
+      // Allows for files to be refreshed and remove deleted file from sidebar
       if (response.ok) {
         console.log(`Deleted file: ${fileKey}`);
         onRefreshFiles?.();
-      } else {
-        const error = await response.json();
-        alert(`Delete failed: ${error.error}`);
-      }
+      } 
     } catch(err) {
       console.error("Delete Failed", err);
-      alert("Delete Failed")
     }
   };
 
