@@ -60,7 +60,6 @@ class Chatbot:
 
             try:
                 response = self.chat_with_model(message)
-                print(response)
                 return jsonify({'response': response}), 200
 
             except Exception as e:
