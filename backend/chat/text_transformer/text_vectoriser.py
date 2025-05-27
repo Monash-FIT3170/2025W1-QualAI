@@ -19,7 +19,7 @@ class TextVectoriser:
         self._chunker = spacy.load(chunker_name)
         self._model = SentenceTransformer(model_name)
     
-    def chunk_text(self, text:str, max_length: int = 200, overlap: int = 50) -> list[str]:
+    def chunk_text(self, text:str, max_length: int = 300, overlap: int = 100) -> list[str]:
         """
             Chunks the text into semanitcally meaningful divisions, with a maxium given length. 
             Gives overlap between chunks to ensure provide further context to the model

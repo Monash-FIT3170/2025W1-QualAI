@@ -72,7 +72,7 @@ class Neo4JInteractor:
             }
             """, dims=vector_dimension)
 
-    def search_text_chunk(self, vector: list[float], limit: int = 5) -> list[str]:
+    def search_text_chunk(self, vector: list[float], limit: int = 2) -> list[str]:
         """
             Searches the Neo4j database for the vectors nearest to the one provided, using the cosine metric.
 
