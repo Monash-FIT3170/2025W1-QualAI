@@ -35,7 +35,7 @@ class Chatbot:
         """
 
         search_vector = self.text_converter.chunk_and_embed_text(query)[0][1]
-        context = self.neoInteractor.search_text_chunk(search_vector)
+        context = self.neoInteractor.search_text_chunk(search_vector, limit=3)
         if len(context) > 0:
             response = self.deepseek_client.chat_with_model_context_injection(context, query)
         else:
