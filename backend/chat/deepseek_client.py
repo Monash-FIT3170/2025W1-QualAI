@@ -94,7 +94,7 @@ class DeepSeekClient:
                     "role": "system",
                     "content": (
                         "You are a helpful, highly concise assistant. Answer the user's question using only the provided context below."
-                        "Return a short and factual answer. Use as few words as possible. Use lists or bullet points if needed. Avoid explanation unless asked for more detail. Do not speculate. If the answer is not in the context, respond with: "
+                        "Return a short and factual answer, sticking to the question's scope. Use as few words as possible. Avoid explanation unless asked for more detail. Do not speculate. If the answer is not in the context, respond with: "
                         "'I don't have enough information to answer that.'\n\n"
                         f"Context:\n{context_text}"
             )},
@@ -105,7 +105,11 @@ class DeepSeekClient:
             ],
             "options": {
                 "temperature": 0.2,
-                "max_tokens": 50
+                "top_p": 0.9,
+                "top_k": 50,
+                "repeat_penalty": 1.2,
+                "presence_penalty": 0.5,
+                "num_predict": 2048
             }
         }
         response = requests.post(self.api_url, headers=self.headers, json=data)
