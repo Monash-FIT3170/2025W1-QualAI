@@ -40,6 +40,60 @@ class DeepSeekClient:
         :return: the cleaned text with think block removed
         """
         return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    
+    def chat_extract_triples(self, text: str) -> list[tuple[str, str, str]]:
+        """
+        Uses the LLM to extract triples from a message in the output format:
+
+        (Subject, Predicate, Object)
+
+        :param text: The text we are to extract triple from 
+        :return: A list of triples 
+        """
+
+        # TODO: modify data with options to fine-tune
+        data = {
+            "model" : "deepseek-r1:1.5b",
+            "messages" : [
+                {
+                    "role" : "system",
+                    "content" : (
+                        "You are an AI helping humans extract knowledge triples about all relevant people, things, concepts, etc."
+                        " Extract all of the knowledge triples from the text provided to you by the user below. DO NOT DO ANYTHING BUT EXTRACT THESE TRIPLES."
+                        " A knowledge triple is a clause that contains a subject, a predicate, and an object. "
+                        " The subject is the entity being described, the predicate is the property of the subject that is being described, and the object is the value of the property."
+                        " These triples are to be outputted in the format '(SUBJECT, PREDICATE, OBJECT)', using the '|' character in between triples.\n\n"
+                        
+                        "EXAMPLE\n"
+                        "Barack Obama was born in Honolulu, a city of the US.\n\n"
+                        "Output: (Barack Obama, was born in, Honolulu)|(Honolulu, is in, US)|(Honolulu, is a, city)\n"
+                        "END OF EXAMPLE\n\n"
+
+                        "EXAMPLE\n"
+                        "I'm going to the store.\n\n"
+                        "Output: NONE\n"
+                        "END OF EXAMPLE\n\n"
+
+                        "EXAMPLE\n"
+                        "Hi Jae! Did you know that Jae likes to cook steak whilst listening to music. Also, he recently got a new job which his teacher Rio, introduced him to.\n"
+                        "Output: (Jae, like to cook, steak)|(Jae, listens to, music)|(Jae, has a, job)|(Jae, is taught by, Rio)|(Rio, has a student called, Jae)\n"
+                        "END OF EXAMPLE\n\n"
+                        "EXAMPLE\n"
+                    )
+                }, 
+                {
+                    "role" : "user",
+                    "content" : f"{text}"
+                }
+            ]
+        }
+
+        response = requests.post(self.api_url, headers = self.headers, json = data)
+
+        print(response)
+        pass
+        
+
 
     def chat_with_model(self, message):
         """
@@ -52,8 +106,8 @@ class DeepSeekClient:
             "model": "deepseek-r1:1.5b",
             "messages": [
                 {
-                    "role": "user",
-                    "content": message
+                    "role": "system",
+                    "content": ""
                 }
             ]
         }
