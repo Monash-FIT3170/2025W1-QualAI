@@ -1,7 +1,8 @@
-from chat.text_transformer.neo4j_interactor import Neo4JInteractor
-from chat.text_transformer.text_vectoriser import TextVectoriser
-from mongodb.DocumentStore import DocumentStore
 from flask import Flask, jsonify
+
+from chat.text_transformer.neo4j_interactor import Neo4JInteractor
+from mongodb.DocumentStore import DocumentStore
+
 
 class DocumentRemover:
     """

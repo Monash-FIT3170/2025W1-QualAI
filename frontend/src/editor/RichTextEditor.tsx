@@ -63,7 +63,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div className={`flex flex-col h-full ${className}`}>
-      <MenuBar editor={editor} fileKey={fileKey}/>
+      <MenuBar editor={editor} fileKey={fileKey ?? ""}/>
       <div className="flex-grow">
         <EditorContent editor={editor} />
       </div>
