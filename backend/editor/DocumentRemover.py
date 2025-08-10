@@ -34,7 +34,7 @@ class DocumentRemover:
 
         :params app: Flask application running the system
         """
-        @app.route('/delete/<string:file_key>', methods=['DELETE'])
+        @app.route('/delete/<path:file_key>', methods=['DELETE'])
         def delete_file(file_key: str):
             """
             Attempts to remove the file with associated file_key 

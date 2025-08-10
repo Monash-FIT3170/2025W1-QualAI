@@ -22,7 +22,7 @@ class DocumentRetriever:
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
             
-        @app.route('/documents/<string:file_key>', methods=['GET'])
+        @app.route('/documents/<path:file_key>', methods=['GET'])
         def get_document(file_key):
             try:
                 doc = self.__collection.find_document(file_key)  

@@ -13,7 +13,7 @@ type SidebarProps = {
 const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : SidebarProps) => {
   const navigate = useNavigate();
 
-  const [editingFileKey, seteditingFileKey] = useState<string | null>(null);
+  const [editingFileKey, setEditingFileKey] = useState<string | null>(null);
   const [newFileKey, setNewFileKey] = useState("");
 
   const handleDelete = async(fileKey : string) => {
@@ -87,7 +87,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : Si
               <Pencil
                   onClick={(e) => {
                     e.stopPropagation();
-                    seteditingFileKey(file.key);
+                    setEditingFileKey(file.key);
                     setNewFileKey(file.key);
                   }}
                   className="size-6 p-1 rounded-md hover:bg-gray-200 cursor-pointer"
@@ -111,7 +111,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : Si
           <Upload className="mx-auto mb-2" />
           <p>Drop files here</p>
           <p className="text-sm text-gray-400 mt-2">Or</p>
-          <div className="mt-2 px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+          <div style={{ display: "flex", flexDirection: "column", gap: "5px" }} >
             <UploadFileButton onUploadComplete={onRefreshFiles} />
           </div>
         </div>
@@ -129,7 +129,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : Si
           />
           <div className="flex justify-end gap-2">
             <button
-                onClick={() => seteditingFileKey(null)}
+                onClick={() => setEditingFileKey(null)}
                 className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
             >
               Cancel
@@ -137,7 +137,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : Si
             <button
                 onClick={async () => {
                   await handleRename(editingFileKey, newFileKey);
-                  seteditingFileKey(null);
+                  setEditingFileKey(null);
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
