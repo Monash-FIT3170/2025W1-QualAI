@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { Pencil, Trash, Upload } from 'lucide-react';
+import { Upload } from 'lucide-react';
 import UploadFileButton from './UploadFileButton';
 import { useState } from "react";
+import FileTree, { buildTree, NodeType } from "@/components/FileTree.tsx";
 
 type SidebarProps = {
   files: { key : string }[];
@@ -14,14 +15,19 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : Si
   const navigate = useNavigate();
 
   const [editingFileKey, setEditingFileKey] = useState<string | null>(null);
+  const [editingFileType, setEditingFileType] = useState<NodeType | null>(null);
   const [newFileKey, setNewFileKey] = useState("");
 
-  const handleDelete = async(fileKey : string) => {
+  const handleDelete = async(fileKey : string, type: NodeType | null) => {
+    if ( !type ) {
+      // TODO: Error handling.
+      return;
+    }
     if(!window.confirm('Are you sure you want to permanently remove the file?')) return;
 
     onFileDelete(fileKey);
     try {
-      const response = await fetch(`http://localhost:5001/delete/${fileKey}`, {
+      const response = await fetch(`http://localhost:5001/` + (type == "file" ? "delete/" : "delete-dir/") + fileKey, {
         method: 'DELETE'
       });
 
@@ -35,9 +41,13 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : Si
     }
   };
 
-  const handleRename = async (fileKey : string, newFileKey: string) => {
+  const handleRename = (fileKey: string) => async (newFileKey: string, type: NodeType | null) => {
+    if ( !type ) {
+      // TODO: Error handling.
+      return;
+    }
     try {
-      const response = await fetch(`http://localhost:5001/rename/${fileKey}`, {
+      const response = await fetch(`http://localhost:5001/` + (type == "file" ? "rename/" : "rename-dir/") + fileKey, {
         method: 'PATCH',
         headers: {
           "Content-Type": "application/json",
@@ -72,38 +82,12 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : Si
       </div>
 
       <div className="flex-1">
-        {files.map((file, index) => (
-          <div
-            key={index}
-            className="group flex items-center justify-between -4 py-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors"
-          >
-            <div
-              className = "cursor-pointer flex-1 truncate"
-              onClick={() => onFileSelect(file.key)} // pass selected file key up
-            >
-              {file.key}
-            </div>
-            <div className = "flex items-center gap-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <Pencil
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingFileKey(file.key);
-                    setNewFileKey(file.key);
-                  }}
-                  className="size-6 p-1 rounded-md hover:bg-gray-200 cursor-pointer"
-              />
-            </div>
-            <div className = "flex items-center gap-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"> 
-              <Trash 
-              onClick={(e) => {
-                e.stopPropagation();
-                handleDelete(file.key)
-              }}
-                className="size-6 p-1 rounded-md hover:bg-gray-200 curser-pointer"
-              />
-            </div>
-          </div>
-        ))}
+        <FileTree treeData={buildTree(files.map(obj => obj.key))} onDelete={handleDelete} onSelect={onFileSelect} onEdit={(name : string, type: NodeType) => {
+            setEditingFileKey(name);
+            setNewFileKey(name);
+            setEditingFileType(type);
+          }
+        } />
       </div>
 
       <div className="mt-4">
@@ -136,7 +120,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : Si
             </button>
             <button
                 onClick={async () => {
-                  await handleRename(editingFileKey, newFileKey);
+                  await handleRename(editingFileKey)(newFileKey, editingFileType);
                   setEditingFileKey(null);
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"

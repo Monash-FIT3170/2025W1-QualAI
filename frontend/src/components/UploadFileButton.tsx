@@ -9,13 +9,15 @@ type UploadFileButtonProps = {
 const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUploadComplete, onRefresh }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const folderInputRef = useRef<HTMLInputElement>(null);
+
+    const [ isFolderUploading, setIsFolderUploading ] = useState(false);
     const [ isUploading, setIsUploading ] = useState(false);
     const [ dotCount, setDotCount ] = useState(1);
 
     useEffect(() => {
         let interval : NodeJS.Timeout;
 
-        if ( isUploading ) {
+        if ( isUploading || isFolderUploading ) {
             interval = setInterval(() => {
                 setDotCount((prev) => (prev % 3) + 1);
             }, 500);
@@ -27,12 +29,12 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
     }, [ isUploading ]);
 
     const handleButtonClick = (folder : boolean = false) => () => {
-        if ( !isUploading ) {
+        if ( !isUploading && !isFolderUploading ) {
             !folder ? fileInputRef.current?.click() : folderInputRef.current?.click();
         }
     };
 
-    const handleFileUpload = async (event : React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = (folder : boolean = false) => async (event : React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if ( !files ) return;
 
@@ -44,7 +46,8 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
         onFileSelected?.(file);
       }
 
-        setIsUploading(true);
+
+        folder ? setIsFolderUploading(true) : setIsUploading(true);
 
         try {
             const response = await fetch("http://localhost:5001/upload", {
@@ -59,19 +62,19 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
         } catch ( err ) {
             console.error("Upload failed", err);
         } finally {
-            setIsUploading(false);
+            folder ? setIsFolderUploading(false) : setIsUploading(false);
         }
 
     };
 
     return (
         <>
-            <button onClick={ handleButtonClick() } style={ { backgroundColor: "blue", width: "100%", color : 'white', padding: "5px 0px", borderRadius: "4px" } } disabled={ isUploading }>
+            <button onClick={ handleButtonClick() } style={ { backgroundColor: "blue", width: "100%", color : 'white', padding: "5px 0px", borderRadius: "4px" } } disabled={ isUploading || isFolderUploading }>
               { isUploading ? `Uploading${ '.'.repeat(dotCount) }` : 'Select File' }
             </button>
 
-            <button onClick={ handleButtonClick(true) } style={ { backgroundColor: "blue", width: "100%", color : 'white', padding: "5px 0px", borderRadius: "4px" } } disabled={ isUploading }>
-              { isUploading ? `Uploading${ '.'.repeat(dotCount) }` : 'Select Folder' }
+            <button onClick={ handleButtonClick(true) } style={ { backgroundColor: "blue", width: "100%", color : 'white', padding: "5px 0px", borderRadius: "4px" } } disabled={ isUploading || isFolderUploading }>
+              { isFolderUploading ? `Uploading${ '.'.repeat(dotCount) }` : 'Select Folder' }
             </button>
 
 
@@ -79,7 +82,7 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
                 type="file"
                 ref={ fileInputRef }
                 style={ { display : 'none' } }
-                onChange={ handleFileUpload }
+                onChange={ handleFileUpload() }
                 multiple
             />
             <input
@@ -90,7 +93,7 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
                 webkitdirectory="true"
                 directory=""
                 style={ { display : "none" } }
-                onChange={ handleFileUpload }
+                onChange={ handleFileUpload(true) }
             />
         </>
     );
