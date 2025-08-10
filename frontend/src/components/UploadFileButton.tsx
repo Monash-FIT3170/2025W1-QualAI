@@ -5,7 +5,7 @@ type UploadFileButtonProps = {
   onUploadComplete?: () => void;
 };
 
-const UploadFileButton: FC<UploadFileButtonProps> = ({ onFileSelected, onUploadComplete }) => {
+const UploadFileButton: FC<UploadFileButtonProps> = ({ onUploadComplete }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [dotCount, setDotCount] = useState(1);

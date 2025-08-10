@@ -1,13 +1,20 @@
-import React, { useState, useEffect } from 'react';  
 import { useNavigate } from 'react-router-dom';
-import { 
-  Upload, 
-  Trash,
-  Pencil } from 'lucide-react';
+import { Pencil, Trash, Upload } from 'lucide-react';
 import UploadFileButton from './UploadFileButton';
+import { useState } from "react";
 
-const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }) => {
+type SidebarProps = {
+  files: { key : string }[];
+  onFileSelect: (fileKey: string) => void;
+  onFileDelete: (fileKey: string) => void;
+  onRefreshFiles?: () => void;
+}
+
+const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : SidebarProps) => {
   const navigate = useNavigate();
+
+  const [editingFileKey, seteditingFileKey] = useState<string | null>(null);
+  const [newFileKey, setNewFileKey] = useState("");
 
   const handleDelete = async(fileKey : string) => {
     if(!window.confirm('Are you sure you want to permanently remove the file?')) return;
@@ -27,6 +34,28 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }) => 
       console.error("Delete Failed", err);
     }
   };
+
+  const handleRename = async (fileKey : string, newFileKey: string) => {
+    try {
+      const response = await fetch(`http://localhost:5001/rename/${fileKey}`, {
+        method: 'PATCH',
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          content: newFileKey
+        })
+      });
+
+      // Allows for files to be refreshed and remove deleted file from sidebar
+      if ( response.ok ) {
+        console.log(`Edited file: ${fileKey}`);
+        onRefreshFiles?.();
+      }
+    } catch(err) {
+      console.error("Edit Failed", err);
+    }
+  }
 
   return (
     <div className="w-64 bg-secondary/50 p-4 flex flex-col">
@@ -54,6 +83,16 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }) => 
             >
               {file.key}
             </div>
+            <div className = "flex items-center gap-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <Pencil
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    seteditingFileKey(file.key);
+                    setNewFileKey(file.key);
+                  }}
+                  className="size-6 p-1 rounded-md hover:bg-gray-200 cursor-pointer"
+              />
+            </div>
             <div className = "flex items-center gap-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"> 
               <Trash 
               onClick={(e) => {
@@ -77,6 +116,37 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }) => 
           </div>
         </div>
       </div>
+
+  {editingFileKey && (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+          <h2 className="text-lg font-bold mb-4">Rename File</h2>
+          <input
+              type="text"
+              value={newFileKey}
+              onChange={(e) => setNewFileKey(e.target.value)}
+              className="w-full px-3 py-2 border rounded mb-4"
+          />
+          <div className="flex justify-end gap-2">
+            <button
+                onClick={() => seteditingFileKey(null)}
+                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+                onClick={async () => {
+                  await handleRename(editingFileKey, newFileKey);
+                  seteditingFileKey(null);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Rename
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </div>
   );
 };
