@@ -1,3 +1,4 @@
+import re
 from flask import Flask,  jsonify, request
 
 from mongodb.DocumentStore import DocumentStore
@@ -47,12 +48,28 @@ class DocumentEditor:
 
         return jsonify({"message": "Document updated successfully"}), 200
 
+    def __edit_dir_request(self, dir: str, content: str) -> tuple[Any, int]:
+        docs = self.__collection.matching_documents(f"^{re.escape(dir)}/")
+        dir_start = dir.rindex("/")
+        dir_end = len(dir)
+        for doc in docs:
+            current_key = str(doc.get("key"))
+            new_key = current_key[:dir_start + 1] + content + current_key[dir_end:]
+            self.__collection.rename_document(current_key, new_key)
+            self.__vector_database.rekey_node(current_key, new_key)
+
+        return jsonify({"message": "Document/s updated successfully"}), 200
+
     def register_routes(self, app: Flask) -> None:
-        @app.route('/edit/<string:file_key>', methods=['PATCH'])
+        @app.route('/edit/<path:file_key>', methods=['PATCH'])
         def update_document(file_key):
             return DocumentEditor.__request_content(file_key, self.__update_request)
 
-        @app.route("/rename/<string:file_key>", methods=['PATCH'])
+        @app.route("/rename/<path:file_key>", methods=['PATCH'])
         def rename_document(file_key: str) -> tuple[Any, int]:
             return DocumentEditor.__request_content(file_key, self.__edit_request)
+
+        @app.route("/rename-dir/<path:dir>", methods=['PATCH'])
+        def rename_dir(dir: str) -> tuple[Any, int]:
+            return DocumentEditor.__request_content(dir, self.__edit_dir_request)
 

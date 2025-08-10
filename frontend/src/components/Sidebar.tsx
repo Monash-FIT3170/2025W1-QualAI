@@ -53,7 +53,8 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : Si
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          content: newFileKey
+          // TODO: This logic should really all be in backend.
+          content: type == "file" ? fileKey.replace(fileKey.split("/").pop() ?? "", newFileKey) : newFileKey,
         })
       });
 
@@ -104,10 +105,10 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles } : Si
   {editingFileKey && (
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-          <h2 className="text-lg font-bold mb-4">Rename File</h2>
+          <h2 className="text-lg font-bold mb-4">Rename {editingFileType}</h2>
           <input
               type="text"
-              value={newFileKey}
+              value={newFileKey.split("/").pop() || ""}
               onChange={(e) => setNewFileKey(e.target.value)}
               className="w-full px-3 py-2 border rounded mb-4"
           />
