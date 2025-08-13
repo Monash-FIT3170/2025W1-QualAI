@@ -186,3 +186,63 @@ class DeepSeekClient:
         reply = self.remove_think_blocks(full_reply)
 
         return reply
+    
+    def chat_with_model_triples(self, triples, message):
+        """
+        Sends a message to the model with additional context injected as a system message.
+
+        :param context_text: The external context (e.g., from a document).
+        :param message: The user’s question.
+        :return: The JSON response from the API.
+        """
+        data = {
+            "model": "deepseek-r1:1.5b",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You must answer questions using only the provided triples and examples"
+                        "Think step by step"
+
+                        f"Knowledge Triples from query: {triples}"
+
+                        "Rules: 1. Use ONLY the facts from the triples. 2. If the answer is not directly supported, say 'The answer is not avaliable from the provided transcripts'" 
+
+                        "Task: Now, use triples to answer the following query"
+            )
+             
+             },
+                {
+                    "role": "user",
+                    "content": message
+                }
+            ],
+            "options": {
+                "temperature": 0.2,
+                "top_p": 0.9,
+                "top_k": 50,
+                "repeat_penalty": 1.2,
+                "presence_penalty": 0.5,
+                "num_predict": 2048
+            }
+        }
+        response = requests.post(self.api_url, headers=self.headers, json=data)
+
+        # NDJSON: split by lines and parse each one
+        messages = []
+        for line in response.text.strip().splitlines():
+            try:
+                obj = json.loads(line)
+                msg = obj.get("message", {}).get("content")
+                if msg:
+                    messages.append(msg)
+            except json.JSONDecodeError as e:
+                print("Skipping malformed JSON line:", line, e)
+
+        # Join all message content
+        full_reply = "".join(messages)
+
+        # Strip internal <think>...</think> tags or anything custom
+        reply = self.remove_think_blocks(full_reply)
+
+        return reply
