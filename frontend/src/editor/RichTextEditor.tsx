@@ -4,7 +4,56 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
+import TextStyle from '@tiptap/extension-text-style';
+import { Extension } from '@tiptap/core';
 import MenuBar from './MenuBar';
+
+const FontSize = Extension.create({
+  name: 'fontSize',
+
+  addOptions() {
+    return {
+      types: ['textStyle'],
+    }
+  },
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          fontSize: {
+            default: null,
+            parseHTML: element => element.style.fontSize || null,
+            renderHTML: attributes => {
+              if (!attributes.fontSize) {
+                return {}
+              }
+              return {
+                style: `font-size: ${attributes.fontSize}`,
+              }
+            },
+          },
+        },
+      },
+    ]
+  },
+
+  addCommands() {
+    return {
+      setFontSize: (fontSize: string | null) => ({ chain }: { chain: any }) => {
+        return chain()
+          .setMark('textStyle', { fontSize })
+          .run()
+      },
+      unsetFontSize: () => ({ chain }: { chain: any }) => {
+        return chain()
+          .setMark('textStyle', { fontSize: null })
+          .run()
+      },
+    } as any
+  },
+})
 
 interface RichTextEditorProps {
   initialContent?: string;
@@ -37,6 +86,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         types: ['heading', 'paragraph'],
       }),
       Highlight,
+      TextStyle,
+      FontSize,
     ],
     content: initialContent,
     editorProps: {

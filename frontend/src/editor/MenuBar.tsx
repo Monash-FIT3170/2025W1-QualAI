@@ -1,5 +1,5 @@
 // MenuBar.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Editor } from '@tiptap/react';
 import {
   AlignCenter,
@@ -14,6 +14,9 @@ import {
   List,
   ListOrdered,
   Strikethrough,
+  ChevronDown,
+  Minus,
+  Plus
 } from 'lucide-react';
 import Toggle from './Toggle';
 
@@ -26,6 +29,37 @@ interface MenuBarProps {
 
 
 const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
+
+  const [currentFontSize, setCurrentFontSize] = useState(16);
+  const [showFontSizes, setShowFontSizes] = useState(false);
+
+  
+  const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateFontSize = () => {
+      // Try to get the current font size from the selection
+      const attributes = editor.getAttributes('textStyle');
+      if (attributes.fontSize) {
+        const numericSize = parseInt(attributes.fontSize.replace('px', ''));
+        setCurrentFontSize(numericSize);
+      } else {
+        setCurrentFontSize(16); // default size
+      }
+    };
+
+    // Update font size when selection changes
+    editor.on('selectionUpdate', updateFontSize);
+    editor.on('transaction', updateFontSize);
+
+    return () => {
+      editor.off('selectionUpdate', updateFontSize);
+      editor.off('transaction', updateFontSize);
+    };
+  }, [editor]);
+
   if (!editor) {
     return null;
   }
@@ -57,6 +91,22 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
       .catch(err => {
         console.error('Save error:', err);
       });
+  };
+
+    const setFontSize = (size: number) => {
+    (editor as any).chain().focus().setFontSize(`${size}px`).run();
+    setCurrentFontSize(size);
+    setShowFontSizes(false);
+  };
+
+  const increaseFontSize = () => {
+    const newSize = currentFontSize + 1;
+    setFontSize(newSize);
+  };
+
+  const decreaseFontSize = () => {
+    const newSize = Math.max(8, currentFontSize - 1); 
+    setFontSize(newSize);
   };
 
   const options = [
@@ -124,6 +174,50 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
 
   return (
     <div className="border rounded-md p-1 mb-1 bg-slate-50 space-x-2 z-50 flex flex-wrap">
+            {/* Font Size Controls */}
+      <div className="flex items-center space-x-1 border-r pr-2 mr-2">
+        <button
+          onClick={decreaseFontSize}
+          className="rounded-md p-1 hover:bg-gray-200"
+          title="Decrease font size"
+        >
+          <Minus className="size-4" />
+        </button>
+        
+        <div className="relative">
+          <button
+            onClick={() => setShowFontSizes(!showFontSizes)}
+            className="flex items-center space-x-1 px-2 py-1 rounded-md hover:bg-gray-200 min-w-[50px]"
+          >
+            <span className="text-sm font-medium">{currentFontSize}</span>
+            <ChevronDown className="size-3" />
+          </button>
+          
+          {showFontSizes && (
+            <div className="absolute top-full left-0 mt-1 bg-white border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+              {fontSizes.map((size) => (
+                <button
+                  key={size}
+                  onClick={() => setFontSize(size)}
+                  className={`block w-full text-left px-3 py-1 text-sm hover:bg-gray-100 ${
+                    currentFontSize === size ? 'bg-blue-50 text-blue-600' : ''
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <button
+          onClick={increaseFontSize}
+          className="rounded-md p-1 hover:bg-gray-200"
+          title="Increase font size"
+        >
+          <Plus className="size-4" />
+        </button>
+      </div>
       {options.map((option, index) => (
         <Toggle
           key={index}
