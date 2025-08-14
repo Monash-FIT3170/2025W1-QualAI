@@ -39,13 +39,12 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
         if ( !files ) return;
 
         const formData = new FormData();
-
-      for ( let idx = 0; idx < files.length; idx++ ) {
-        const file = files[idx];
-        formData.append("files[]", file);
-        onFileSelected?.(file);
-      }
-
+        
+        for ( let idx = 0; idx < files.length; idx++ ) {
+            const file = files[idx];
+            formData.append("files[]", file);
+            onFileSelected?.(file);
+        }
 
         folder ? setIsFolderUploading(true) : setIsUploading(true);
 

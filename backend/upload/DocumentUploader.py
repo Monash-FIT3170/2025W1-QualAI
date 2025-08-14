@@ -41,12 +41,9 @@ class DocumentUploader:
 
     def __save_file(self, file):
         try:
-            os.makedirs('uploads', exist_ok=True)
-            # Make sure the uploads directory exists
-
             filename = file.filename
-
             filepath = os.path.join('uploads', filename)
+            os.makedirs(os.path.dirname(filepath), exist_ok=True)
             file.save(filepath)
 
             self.__process_file(filepath, filename)
