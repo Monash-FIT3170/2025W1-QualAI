@@ -196,3 +196,15 @@ class Neo4JInteractor:
         """
         with self._driver.session() as session:
             session.run("MATCH (n) DETACH DELETE n")
+            
+    def run_cypher_query(self, query: str, params: dict = None):
+        """
+        Executes a raw Cypher query against the Neo4j database.
+
+        :param query: The Cypher query string to run.
+        :param params: Optional dictionary of parameters to pass to the query.
+        :return: List of dictionaries representing each record returned.
+        """
+        with self._driver.session() as session:
+            result = session.run(query, params or {})
+            return [record.data() for record in result]
