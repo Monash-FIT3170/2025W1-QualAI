@@ -90,12 +90,12 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
             const file = items[idx].getAsFile();
             formData.append("files[]", file);
             console.log(file);
-            //onFileSelected?.(file);
         }
         const response = await fetch("http://localhost:5001/upload", {
                 method : "POST",
                 body : formData,
         });
+        if (response.ok) onRefreshFiles?.();
     };
   /** ------------------------ **/
 
