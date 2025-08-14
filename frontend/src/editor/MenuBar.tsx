@@ -6,9 +6,6 @@ import {
   AlignLeft,
   AlignRight,
   Bold,
-  Heading1,
-  Heading2,
-  Heading3,
   Highlighter,
   Italic,
   List,
@@ -110,21 +107,6 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   };
 
   const options = [
-    {
-      icon: <Heading1 className="size-4" />,
-      onClick: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-      pressed: editor.isActive('heading', { level: 1 }),
-    },
-    {
-      icon: <Heading2 className="size-4" />,
-      onClick: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-      pressed: editor.isActive('heading', { level: 2 }),
-    },
-    {
-      icon: <Heading3 className="size-4" />,
-      onClick: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
-      pressed: editor.isActive('heading', { level: 3 }),
-    },
     {
       icon: <Bold className="size-4" />,
       onClick: () => editor.chain().focus().toggleBold().run(),
