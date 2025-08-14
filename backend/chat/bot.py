@@ -42,6 +42,25 @@ class Chatbot:
             response = self.deepseek_client.chat_with_model(query)
         
         return response
+        
+    def chat_with_model_triples(self, query: str) -> str: 
+        """
+        Process a chat message return the model's reponse. 
+        Extracts triples form the query then searchs in Knowledge Graph database for context. 
+
+        :param str message: The message to send to the model. 
+        :return: The JSON response from the API 
+        """ 
+        triples = self.deepseek_client.chat_extract_triples(query)
+
+        # todo: get search results 
+        context_triples = []
+        return self.deepseek_client.chat_with_model_triples(triples, context_triples)
+
+
+        
+        
+        
 
     def register_routes(self, app: Flask) -> None:
         @app.route('/chat', methods=['POST'])
