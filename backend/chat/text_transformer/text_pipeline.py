@@ -35,7 +35,13 @@ class TextPipeline():
         
     
     def extract_triples(self, text: str):
-    # Very simple test example: split by sentences and return fake triples
+        """
+            Extracts triples from a text string.
+            Currently returns a fixed example for testing.
+
+            :param text: Input string to extract triples from
+            :return: List of subject-predicate-object tuples
+        """
         return [
             ("Alice", "loves", "programming"),
             ("Alice", "met", "Bob")

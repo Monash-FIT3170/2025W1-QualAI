@@ -27,8 +27,10 @@ class Neo4JInteractor:
     @staticmethod
     def slugify_reltype(rel_type: str) -> str:
         """
-        Converts a relationship string into Neo4j-safe relationship type.
-        Example: "is friends with" -> "IS_FRIENDS_WITH"
+            Converts a relationship string into a Neo4j-safe relationship type.
+
+            :param rel_type: Relationship string
+            :return: Uppercase, underscore-separated string
         """
         rel_type = rel_type.strip().lower()
         rel_type = re.sub(r'[^a-z0-9]+', '_', rel_type)
@@ -69,8 +71,12 @@ class Neo4JInteractor:
 
     def store_triple(self, subject: str, predicate: str, object_: str, file_id: str = None):
         """
-        Stores a single triple in Neo4j as nodes and a relationship.
-        Optional file_id metadata.
+            Stores a single triple in Neo4j as nodes and a relationship.
+
+            :param subject: Subject node
+            :param predicate: Relationship type
+            :param object_: Object node
+            :param file_id: Optional document ID for metadata
         """
         rel_type = self.slugify_reltype(predicate)
         with self._driver.session() as session:
@@ -79,7 +85,13 @@ class Neo4JInteractor:
     @staticmethod
     def _merge_triple(tx, subject, object_, rel_type, file_id):
         """
-        Internal Cypher query to merge nodes and create relationship.
+            Internal Cypher query to merge nodes and create a relationship.
+
+            :param tx: Transaction object
+            :param subject: Subject node
+            :param object_: Object node
+            :param rel_type: Relationship type
+            :param file_id: Optional document ID
         """
         query = f"""
         MERGE (s:Entity {{name: $subject}})
@@ -94,7 +106,10 @@ class Neo4JInteractor:
     
     def store_triples(self, triples: list[tuple[str, str, str]], file_id: str = None):
         """
-        Stores multiple triples in Neo4j.
+            Stores multiple triples in Neo4j.
+
+            :param triples: List of (subject, predicate, object) tuples
+            :param file_id: Optional document ID for metadata
         """
         for subj, pred, obj in triples:
             self.store_triple(subj, pred, obj, file_id)
