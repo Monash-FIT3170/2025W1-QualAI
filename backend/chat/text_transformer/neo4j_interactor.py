@@ -1,5 +1,6 @@
 from neo4j import GraphDatabase
 from torch import Tensor
+import re
 
 class Neo4JInteractor:
     """
@@ -11,7 +12,10 @@ class Neo4JInteractor:
         """
             Initialises NEO5JInteractor with driver to be used
         """
-        self._driver = GraphDatabase.driver("bolt://neo6j:7687", auth=("neo4j", "password"))
+        # self._driver = GraphDatabase.driver("bolt://neo6j:7687", auth=("neo4j", "password"))
+        # using one below for testing, top one isn't working for me - Rohan
+        self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+
         self.__create_vector_index()
     
     def close_driver(self) -> None:
@@ -20,6 +24,16 @@ class Neo4JInteractor:
         """
         self._driver.close()
 
+    @staticmethod
+    def slugify_reltype(rel_type: str) -> str:
+        """
+        Converts a relationship string into Neo4j-safe relationship type.
+        Example: "is friends with" -> "IS_FRIENDS_WITH"
+        """
+        rel_type = rel_type.strip().lower()
+        rel_type = re.sub(r'[^a-z0-9]+', '_', rel_type)
+        return rel_type.upper()
+    
     def store_multiple_vectors(self, vectors: list[tuple[str, list[Tensor]]], file_id) -> None:
         """
             Stores multiple vectors in the Neo5j database.
@@ -53,24 +67,38 @@ class Neo4JInteractor:
                 text_chunk=text_chunk, vector=vector, file_id=file_id 
             )
 
-    def store_triple(self, subject: str, predicate: str, object:str) -> None:
+    def store_triple(self, subject: str, predicate: str, object_: str, file_id: str = None):
         """
-            Stores a triple (subject, predicate, object) in the Neo4j database. 
-
-            :param str subject: subject of the tripple
-            :param str predicate: relationship of the triple
-            :param str object: object of the triple
+        Stores a single triple in Neo4j as nodes and a relationship.
+        Optional file_id metadata.
         """
-        client = self._driver
-        with client.session() as session: 
-            session.run(
-                """
-                MERGE (s:Entity {{name: $subject}})
-                MERGE (o:Entity {{name: $object}})
-                MERGE (s)-[r:{predicate}]->(o)
-                """, subject=subject, object=object
-            )
+        rel_type = self.slugify_reltype(predicate)
+        with self._driver.session() as session:
+            session.execute_write(self._merge_triple, subject, object_, rel_type, file_id)
+   
+    @staticmethod
+    def _merge_triple(tx, subject, object_, rel_type, file_id):
+        """
+        Internal Cypher query to merge nodes and create relationship.
+        """
+        query = f"""
+        MERGE (s:Entity {{name: $subject}})
+        MERGE (o:Entity {{name: $object}})
+        MERGE (s)-[r:{rel_type}]->(o)
+        """
+        # Add file_id if provided
+        if file_id:
+            query += " SET r.file_id = $file_id"
 
+        tx.run(query, subject=subject, object=object_, file_id=file_id)
+    
+    def store_triples(self, triples: list[tuple[str, str, str]], file_id: str = None):
+        """
+        Stores multiple triples in Neo4j.
+        """
+        for subj, pred, obj in triples:
+            self.store_triple(subj, pred, obj, file_id)
+            
     def __create_vector_index(self, vector_dimension: int = 385):
         """
         Creates a vector index on the 'vector' property of Embedding nodes.
