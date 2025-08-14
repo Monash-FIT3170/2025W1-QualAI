@@ -90,10 +90,7 @@ class DeepSeekClient:
 
         response = requests.post(self.api_url, headers = self.headers, json = data)
 
-        print(response)
-        pass
-        
-
+        return response
 
     def chat_with_model(self, message):
         """
