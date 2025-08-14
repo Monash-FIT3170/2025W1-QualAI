@@ -27,28 +27,39 @@ class DocumentUploader:
 
             :return: Whether was a success or if there was an error.
             """
-            uploaded_file = request.files.get('file')
-            if not uploaded_file:
+            uploaded_files = request.files.getlist("files[]")
+            if not uploaded_files:
                 return jsonify({"error": "No file uploaded"}), 400
 
-            try:
-                # Make sure the uploads directory exists
-                os.makedirs('uploads', exist_ok=True)
+            for file in uploaded_files:
+                result = self.__save_file(file)
+                if not result[0]:
+                    err = result[1]
+                    print("Error during file upload:", err)
+                    return jsonify({ "error": str(err) }), 500
+            return jsonify({"status": "ok"}), 200
 
-                filename = uploaded_file.filename
+    def __save_file(self, file):
+        try:
+            os.makedirs('uploads', exist_ok=True)
+            # Make sure the uploads directory exists
 
-                filepath = os.path.join('uploads', filename)
-                uploaded_file.save(filepath)
+            filename = file.filename
 
-                return self.__process_file(filepath, filename)
+            filepath = os.path.join('uploads', filename)
+            file.save(filepath)
 
-                # TODO: delete the file after
+            self.__process_file(filepath, filename)
 
-            except Exception as e:
-                print("Error during file upload:", e)
-                return jsonify({"error": str(e)}), 500
+            # TODO: delete the file after
+            return True, None
 
-    def __process_file(self, path: str, name: str) -> tuple[Any, int]:
+        except Exception as e:
+            # print("Error during file upload:", e)
+            # return jsonify({"error": str(e)}), 500
+            return False, e
+
+    def __process_file(self, path: str, name: str) -> None:
         """
         Accepts a file path as an input to be sent to the transcriber.
 
@@ -58,4 +69,3 @@ class DocumentUploader:
         transcribed_text = audio_transcriber.transcribe(path)
         self.__collection.add_document(name, transcribed_text)
         self.__vector_database.store_multiple_vectors(self.__vectoriser.chunk_and_embed_text(transcribed_text), name)
-        return jsonify({"status": "ok"}), 200
