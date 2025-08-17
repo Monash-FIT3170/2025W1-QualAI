@@ -17,7 +17,7 @@ import {
   Paintbrush,      // For text color picker
   MessageSquarePlus // For comments
 } from 'lucide-react';
-import Toggle from './Toggle'; // Assuming Toggle is your existing component for buttons
+import Toggle from './Toggle'; // Assuming Toggle is existing component for buttons
 
 interface MenuBarProps {
   editor: Editor | null;

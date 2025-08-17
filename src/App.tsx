@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
 import ProjectPage from "./components/ProjectPage";
 import NotFound from "./pages/NotFound";
+import TestPage from "./TestPage"; // <-- Import your TestPage
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ const App = () => (
           <Route path="/" element={<LandingPage />} />
           <Route path="/project" element={<ProjectPage />} />
           <Route path="/project/new" element={<ProjectPage />} />
+          <Route path="/test" element={<TestPage />} />      {/* <-- Add this route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
