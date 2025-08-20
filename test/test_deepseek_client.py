@@ -24,6 +24,7 @@ class TestDeepSeekClient(unittest.TestCase):
         """
         text = "Alice loves Bob. Bob hates Charlie."
         triples = self.deepseek_client.chat_extract_triples(text)
+        print(triples)
         self.assertGreater(len(triples), 0, "There should be at least one triple extracted.")
 
 

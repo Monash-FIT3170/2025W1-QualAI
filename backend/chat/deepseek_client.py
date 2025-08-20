@@ -80,13 +80,15 @@ class DeepSeekClient:
                 {
                     "role" : "user",
                     "content" : f"{text}"
-                }
-            ]
+                },
+            ],
+            "stream" : False,
         }
 
         response = requests.post(self.api_url, headers = self.headers, json = data)
 
         print(response)
+        return response.text
         pass
         
 
