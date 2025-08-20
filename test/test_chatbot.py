@@ -1,6 +1,6 @@
 import unittest
 
-from backend.chat.text_transformer import TextPipeline
+from backend.chat.text_transformer.text_pipeline import TextPipeline
 from backend.chat.text_transformer.text_vectoriser import TextVectoriser
 from chatbot import Chatbot
 from backend.mongodb.DocumentStore import DocumentStore

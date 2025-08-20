@@ -3,12 +3,8 @@ import re
 
 import requests
 
-from config.config import JWS_KEY, API_URL
-from mongodb.DocumentStore import DocumentStore
-from .text_transformer.neo4j_interactor import Neo4JInteractor
-# main testing imports
-from .text_transformer.text_pipeline import TextPipeline
-from .text_transformer.text_vectoriser import TextVectoriser
+from ..config.config import JWS_KEY, API_URL
+
 
 
 class DeepSeekClient: 
@@ -23,7 +19,7 @@ class DeepSeekClient:
         """
         Initializes the Chatbot class with API URL and JWS key
         """
-        self.api_url = "http://ollama:11434/api/chat"
+        self.api_url = "http://localhost:11434/api/chat"
         self.jws_key = JWS_KEY
         self.headers = {
             'Authorization': f'Bearer {JWS_KEY}',
