@@ -48,6 +48,8 @@ class DeepSeekClient:
         """
 
         # TODO: modify data with options to fine-tune
+
+
         data = {
             "model" : "deepseek-r1:1.5b",
             "messages" : [
@@ -86,10 +88,39 @@ class DeepSeekClient:
         }
 
         response = requests.post(self.api_url, headers = self.headers, json = data)
+        return response.json()["message"]["content"]
+    
+    def text_to_triples(self, text: str) -> list[tuple[str, str, str]]:
+        """
+        Uses the LLM to extract triples from a message in the output format:
 
-        print(response)
-        return response.text
-        pass
+        (Subject, Predicate, Object)
+
+        :param text: The response from the LLM to extract triples from
+        :return: A list of triples 
+        """
+        triples = self.chat_extract_triples(text)
+        if triples == "NONE":
+            return []
+        cleaned_text = self.remove_think_blocks(triples)
+        cleaned_text = self.string_to_triples(cleaned_text)
+        return cleaned_text
+    
+    def string_to_triples(self, text: str) -> list[tuple[str, str, str]]:
+        """
+        Converts a string of triples into a list of tuples
+
+        :param text: The string of triples to convert
+        :return: A list of tuples representing the triples
+        """
+        triples = []
+        matches = re.findall(r'\((.*?)\)', text, flags=re.DOTALL)
+        
+        for match in matches:
+            parts = match.split(',', 2)  
+            if len(parts) == 3:
+                triples.append(tuple(part.strip() for part in parts))
+        return triples
         
 
 

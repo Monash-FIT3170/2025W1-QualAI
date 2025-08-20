@@ -22,9 +22,17 @@ class TestDeepSeekClient(unittest.TestCase):
         """
         Test that triples are extracted correctly from the text.
         """
-        text = "Alice loves Bob. Bob hates Charlie."
+        text = "Alice adopted a golden retriever named Max from the local animal shelter. " \
+        "She takes him for a walk every morning in Central Park. " \
+        "Max loves to play fetch with Alice, and he is very friendly with other dogs in the park. " \
+
         triples = self.deepseek_client.chat_extract_triples(text)
         print(triples)
+        triples = self.deepseek_client.remove_think_blocks(triples)
+        triples = self.deepseek_client.string_to_triples(triples)
+        print()
+        print(triples)
+        print()
         self.assertGreater(len(triples), 0, "There should be at least one triple extracted.")
 
 
