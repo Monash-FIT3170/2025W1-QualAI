@@ -3,14 +3,6 @@ import re
 
 import requests
 
-from config.config import JWS_KEY, API_URL
-from mongodb.DocumentStore import DocumentStore
-from .text_transformer.neo4j_interactor import Neo4JInteractor
-# main testing imports
-from .text_transformer.text_pipeline import TextPipeline
-from .text_transformer.text_vectoriser import TextVectoriser
-
-
 class DeepSeekClient: 
     """
     A class for interacting with the deepseek-r1 model via API
@@ -23,10 +15,8 @@ class DeepSeekClient:
         """
         Initializes the Chatbot class with API URL and JWS key
         """
-        self.api_url = "http://ollama:11434/api/chat"
-        self.jws_key = JWS_KEY
+        self.api_url = "http://localhost:11434/api/chat"
         self.headers = {
-            'Authorization': f'Bearer {JWS_KEY}',
             'Content-Type': 'application/json'
         }
 
@@ -89,8 +79,25 @@ class DeepSeekClient:
         }
 
         response = requests.post(self.api_url, headers = self.headers, json = data)
+        
+        # NDJSON: split by lines and parse each one
+        messages = []
+        for line in response.text.strip().splitlines():
+            try:
+                obj = json.loads(line)
+                msg = obj.get("message", {}).get("content")
+                if msg:
+                    messages.append(msg)
+            except json.JSONDecodeError as e:
+                print("Skipping malformed JSON line:", line, e)
 
-        return response
+        # Join all message content
+        full_reply = "".join(messages)
+
+        # Strip internal <think>...</think> tags or anything custom
+        reply = self.remove_think_blocks(full_reply)
+
+        return reply
 
     def chat_with_model(self, message):
         """
