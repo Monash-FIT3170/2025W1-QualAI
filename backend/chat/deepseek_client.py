@@ -97,7 +97,10 @@ class DeepSeekClient:
         # Strip internal <think>...</think> tags or anything custom
         reply = self.remove_think_blocks(full_reply)
 
-        return reply
+        matches = re.findall(r"\(([^)]*)\)", reply)
+        tuples = [tuple(part.strip() for part in m.split(',', 2)) for m in matches]
+
+        return tuples
 
     def chat_with_model(self, message):
         """
