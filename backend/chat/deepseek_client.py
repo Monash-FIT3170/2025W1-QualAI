@@ -194,6 +194,61 @@ class DeepSeekClient:
 
         return reply
     
+    def text_to_triples(self, text: str) -> list[tuple[str, str, str]]:
+        """
+        Uses the LLM to extract triples from a message in the output format:
+
+        (Subject, Predicate, Object)
+
+        :param text: The response from the LLM to extract triples from
+        :return: A list of triples 
+        """
+        triples = self.chat_extract_triples(text)
+        if triples == "NONE":
+            return []
+        print(f"Extracted triples: {triples}")
+        if type(triples) is not list:
+            cleaned_text = self.remove_think_blocks(triples)
+            cleaned_text = self.string_to_triples(cleaned_text)
+        else:
+            return triples
+        return cleaned_text
+    
+    def string_to_triples(self, text: str) -> list[tuple[str, str, str]]:
+        """
+        Converts a string of triples into a list of tuples
+
+        :param text: The string of triples to convert
+        :return: A list of tuples representing the triples
+        """
+        triples = []
+        matches = re.findall(r'\((.*?)\)', text, flags=re.DOTALL)
+        
+        for match in matches:
+            parts = match.split(',', 2)  
+            if len(parts) == 3:
+                triples.append(tuple(part.strip() for part in parts))
+        return triples
+        
+
+
+    def chat_with_model(self, message):
+        """
+        Sends a basic message to the model and returns the response.
+
+        :param message: The message to send to the model.
+        :return: The JSON response from the API.
+        """
+        data = {
+            "model": "deepseek-r1:1.5b",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": ""
+                }
+            ]
+        }
+    
     def chat_with_model_triples(self, triples, message):
         """
         Sends a message to the model with additional context injected as a system message.
