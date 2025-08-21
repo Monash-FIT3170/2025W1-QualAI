@@ -196,6 +196,17 @@ class Neo4JInteractor:
         """
         with self._driver.session() as session:
             session.run("MATCH (n) DETACH DELETE n")
+
+    def search_by_entity(self, entity): 
+        subject_query = """
+        MATCH (s:Entity)-[r]->(o:Entity)
+        WHERE s.name = $subject
+        RETURN s.name AS subject, type(r) AS predicate, o.name AS object
+        """
+        subject_params = {"subject": entity}
+
+        subject_results = self.run_cypher_query(subject_query, subject_params)
+        return subject_results
             
     def run_cypher_query(self, query: str, params: dict = None):
         """

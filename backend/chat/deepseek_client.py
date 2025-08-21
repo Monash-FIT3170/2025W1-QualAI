@@ -96,6 +96,8 @@ class DeepSeekClient:
         # Strip internal <think>...</think> tags or anything custom
         reply = self.remove_think_blocks(full_reply)
 
+        print(f"raw triple extraction: {full_reply}")
+
         if reply == "NONE":
             return []
 
@@ -271,6 +273,8 @@ class DeepSeekClient:
                         f"Knowledge Triples from query: {triples}"
 
                         "Rules: 1. Use ONLY the facts from the triples. 2. If the answer is not directly supported, say 'The answer is not avaliable from the provided transcripts'" 
+
+                        "Return a short and factual answer, sticking to the question's scope. Get straight to the facts, concisely" 
 
                         "Task: Now, use triples to answer the following query"
             )
