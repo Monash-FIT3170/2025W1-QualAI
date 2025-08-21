@@ -31,7 +31,7 @@ class KnowledgeGraphPipeline:
         """
         Processes the text to extract triples and stores them in the Neo4j database.
         """
-        chunks = self.text_vectoriser.chunk_text(text, self.chunk_length, self.overlap)
+        chunks = self.text_vectoriser.chunk_by_sentence(text, 4, 1)
         all_triples = []
         print("Chunking")
 
