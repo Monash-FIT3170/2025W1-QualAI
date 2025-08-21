@@ -29,7 +29,7 @@ class DeepSeekClient:
 
         :return: the cleaned text with think block removed
         """
-        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
     
     def chat_extract_triples(self, text: str) -> list[tuple[str, str, str]]:
         """
@@ -40,62 +40,64 @@ class DeepSeekClient:
         :param text: The text we are to extract triple from 
         :return: A list of triples 
         """
-
+        generate_api_url = "http://localhost:11434/api/generate"
         # TODO: modify data with options to fine-tune
         data = {
-            "model" : "deepseek-r1:1.5b",
-            "messages" : [
-                {
-                    "role" : "system",
-                    "content" : (
-                        "You are an AI helping humans extract knowledge triples about all relevant people, things, concepts, etc."
-                        " Extract all of the knowledge triples from the text provided to you by the user below. DO NOT DO ANYTHING BUT EXTRACT THESE TRIPLES."
-                        " A knowledge triple is a clause that contains a subject, a predicate, and an object. "
-                        " The subject is the entity being described, the predicate is the property of the subject that is being described, and the object is the value of the property."
-                        " These triples are to be outputted in the format '(SUBJECT, PREDICATE, OBJECT)', using the '|' character in between triples.\n\n"
-                        
-                        "EXAMPLE\n"
-                        "Barack Obama was born in Honolulu, a city of the US.\n\n"
-                        "Output: (Barack Obama, was born in, Honolulu)|(Honolulu, is in, US)|(Honolulu, is a, city)\n"
-                        "END OF EXAMPLE\n\n"
+            "model": "deepseek-r1:1.5b",
+            "prompt": (
+                "You are an AI helping humans extract knowledge triples about all relevant people, things, concepts, etc. "
+                "Extract ALL of the knowledge triples from the text provided to you. "
+                "Ensure that you consider the context of the ENTIRE statement. "
+                "DO NOT output explanations, reasoning, or anything else. "
+                "Your output MUST ONLY be:\n"
+                "- One or more triples in the format (SUBJECT, PREDICATE, OBJECT), separated by '|'\n"
+                "- Or exactly 'NONE'\n\n"
 
-                        "EXAMPLE\n"
-                        "I'm going to the store.\n\n"
-                        "Output: NONE\n"
-                        "END OF EXAMPLE\n\n"
+                "EXAMPLE\n"
+                "Barack Obama was born in Honolulu, a city of the US.\n"
+                "Output: (Barack Obama, was born in, Honolulu)|(Honolulu, is in, US)|(Honolulu, is a, city)\n"
+                "END OF EXAMPLE\n\n"
 
-                        "EXAMPLE\n"
-                        "Hi Jae! Did you know that Jae likes to cook steak whilst listening to music. Also, he recently got a new job which his teacher Rio, introduced him to.\n"
-                        "Output: (Jae, like to cook, steak)|(Jae, listens to, music)|(Jae, has a, job)|(Jae, is taught by, Rio)|(Rio, has a student called, Jae)\n"
-                        "END OF EXAMPLE\n\n"
-                        "EXAMPLE\n"
-                    )
-                }, 
-                {
-                    "role" : "user",
-                    "content" : f"{text}"
-                }
-            ]
+                "EXAMPLE\n"
+                "I'm going to the store.\n"
+                "Output: NONE\n"
+                "END OF EXAMPLE\n\n"
+
+                "EXAMPLE\n"
+                "Hi Jae! Did you know that Jae likes to cook steak whilst listening to music. "
+                "Also, he recently got a new job which his teacher Rio, introduced him to.\n"
+                "Output: (Jae, likes to cook, steak)|(Jae, listens to, music)|(Jae, has a, job)|"
+                "(Jae, is taught by, Rio)|(Rio, has a student called, Jae)\n"
+                "END OF EXAMPLE\n\n"
+
+                "YOUR TURN\n"
+                f"{text}\n"
+                "Output:"
+            )
         }
 
-        response = requests.post(self.api_url, headers = self.headers, json = data)
-        
+        response = requests.post(generate_api_url, headers = self.headers, json = data)
+
         # NDJSON: split by lines and parse each one
         messages = []
         for line in response.text.strip().splitlines():
             try:
                 obj = json.loads(line)
-                msg = obj.get("message", {}).get("content")
-                if msg:
-                    messages.append(msg)
+                if "response" in obj:
+                    messages.append(obj["response"])
             except json.JSONDecodeError as e:
                 print("Skipping malformed JSON line:", line, e)
 
         # Join all message content
         full_reply = "".join(messages)
 
+        print(full_reply)
+
         # Strip internal <think>...</think> tags or anything custom
         reply = self.remove_think_blocks(full_reply)
+
+        if reply == "NONE":
+            return []
 
         matches = re.findall(r"\(([^)]*)\)", reply)
         tuples = [tuple(part.strip() for part in m.split(',', 2)) for m in matches]

@@ -14,7 +14,7 @@ class Neo4JInteractor:
         """
         # self._driver = GraphDatabase.driver("bolt://neo6j:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
-        self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+        self._driver = GraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
 
         self.__create_vector_index()
     

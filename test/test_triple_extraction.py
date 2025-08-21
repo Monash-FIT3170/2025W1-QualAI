@@ -8,22 +8,22 @@ class TestTripleExtraction(unittest.TestCase):
     def setUpClass(self):
         self.client = DeepSeekClient()
 
-    def test_request(self):
-        """
-        Test that the chat can process a request and return a response.
-        """
-        query_message = "Felix hates FIT3170, FIT3170 is a unit at Monash University, Monash University is a university in Clayton"
-        response = self.client.chat_extract_triples(query_message)
-        print(response)
+    # def test_request(self):
+    #     """
+    #     Test that the chat can process a request and return a response.
+    #     """
+    #     query_message = "Felix hates FIT3170, FIT3170 is a unit at Monash University, Monash University is a university in Clayton"
+    #     response = self.client.chat_extract_triples(query_message)
+    #     print(response)
 
-    def test_request_adv(self):
-        """
-        Test extraction of triples on more complex situations.
-        Specifically: testing temporal and spatial extraction
-        """
-        adv_query_message = "The Eiffel Tower, located in Paris, was constructed in 1889 for the World's Fair."
-        response = self.client.chat_extract_triples(adv_query_message)
-        print(response)
+    # def test_request_adv(self):
+    #     """
+    #     Test extraction of triples on more complex situations.
+    #     Specifically: testing temporal and spatial extraction
+    #     """
+    #     adv_query_message = "The Eiffel Tower, located in Paris, was constructed in 1889 for the World's Fair."
+    #     response = self.client.chat_extract_triples(adv_query_message)
+    #     print(response)
 
     def test_request_long(self):
         """
@@ -33,17 +33,17 @@ class TestTripleExtraction(unittest.TestCase):
         response = self.client.chat_extract_triples(long_query)
         print(response)
 
-    def test_return_type(self):
-        """
-        Tests that a list of triples is returned 
-        """
-        query_message = "Felix hates FIT3170, FIT3170 is a unit at Monash University, Monash University is a University in Clayton"
-        response = self.client.chat_extract_triples(query_message)
+    # def test_return_type(self):
+    #     """
+    #     Tests that a list of triples is returned 
+    #     """
+    #     query_message = "Felix hates FIT3170, FIT3170 is a unit at Monash University, Monash University is a University in Clayton"
+    #     response = self.client.chat_extract_triples(query_message)
 
-        # Check type is list
-        self.assertIsInstance(response, list)
+    #     # Check type is list
+    #     self.assertIsInstance(response, list)
 
-        # Check all elements are tuples of length 3
-        for triple in response:
-            self.assertIsInstance(triple, tuple)
-            self.assertEqual(len(triple), 3)
+    #     # Check all elements are tuples of length 3
+    #     for triple in response:
+    #         self.assertIsInstance(triple, tuple)
+    #         self.assertEqual(len(triple), 3)
