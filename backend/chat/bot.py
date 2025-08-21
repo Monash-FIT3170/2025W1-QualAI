@@ -52,15 +52,23 @@ class Chatbot:
         :return: The JSON response from the API 
         """ 
         triples = self.deepseek_client.chat_extract_triples(query)
-
-        # todo: get search results 
-        context_triples = []
-        return self.deepseek_client.chat_with_model_triples(triples, context_triples)
-
-
         
-        
-        
+        context_triples = ""
+
+        for triple in triples: 
+            subject = triple[0]
+            object = triple[1]
+            result = self.neo4j_interactor.search_by_entity(subject)
+
+            for row in result:
+                context_triples += f"{row['subject']} {row['predicate']} {row['object']}, "
+            
+            result = self.neo4j_interactor.search_by_entity(object)
+
+            for row in result:
+                context_triples += f"{row['subject']} {row['predicate']} {row['object']}, "
+
+        return self.deepseek_client.chat_with_model_triples(context_triples, query)
 
     def register_routes(self, app: Flask) -> None:
         @app.route('/chat', methods=['POST'])
