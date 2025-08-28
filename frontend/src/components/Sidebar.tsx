@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Upload } from 'lucide-react';
 import UploadFileButton from './UploadFileButton';
-import { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import FileTree, { buildTree, NodeType } from "@/components/FileTree.tsx";
 
 type SidebarProps = {
@@ -80,6 +80,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
     if (e.currentTarget.contains(e.relatedTarget as Node)) return;
     setIsDraggingOver(false);
   };
+
   const handleFileUpload = () => async (event : React.ChangeEvent<HTMLInputElement>) => {    
     
     const items = event.dataTransfer.items;
@@ -150,7 +151,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
           onDragOver={handleDragOver}
           onDragEnter={handleDragOver}
           onDragLeave={handleDragLeave}
-          onDrop={handleFileUpload()}
+          onDrop={handleFileUpload}
         >
           <Upload className="mx-auto mb-2" />
           <p>Drop files or folders here</p>
