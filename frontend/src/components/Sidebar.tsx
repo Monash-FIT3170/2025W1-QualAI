@@ -80,23 +80,36 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
     if (e.currentTarget.contains(e.relatedTarget as Node)) return;
     setIsDraggingOver(false);
   };
-  const handleFileUpload = (folder : boolean = false) => async (event : React.ChangeEvent<HTMLInputElement>) => {
-        const items = event.dataTransfer.items;
+  const handleFileUpload = () => async (event : React.ChangeEvent<HTMLInputElement>) => {    
+    
+    const items = event.dataTransfer.items;
         if ( !items ) return;
 
         const formData = new FormData();
 
-        for ( let idx = 0; idx < items.length; idx++ ) {
-            const file = items[idx].getAsFile();
-            formData.append("files[]", file);
-            console.log(file);
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.kind === "file") {
+            const entry = (item as any).webkitGetAsEntry?.();
+            if (entry?.isDirectory) {
+              console.log("📁 Folder:", entry.name);
+              // You would need to recursively read contents with entry.createReader()
+              // since FormData can't hold folders directly
+            } else {
+              const file = item.getAsFile();
+              if (file) {
+                console.log("📄 File:", file.name);
+                formData.append("files[]", file);
+              }
+            }
+          }
         }
-        const response = await fetch("http://localhost:5001/upload", {
-                method : "POST",
-                body : formData,
-        });
-        if (response.ok) onRefreshFiles?.();
-    };
+    const response = await fetch("http://localhost:5001/upload", {
+            method : "POST",
+            body : formData,
+    });
+    if (response.ok) onRefreshFiles?.();
+};
   /** ------------------------ **/
 
   return (
