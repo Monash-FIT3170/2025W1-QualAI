@@ -12,9 +12,9 @@ class Neo4JInteractor:
         """
             Initialises NEO5JInteractor with driver to be used
         """
-        self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+        # self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
-        # self._driver = GraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
+        self._driver = GraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
 
         self.__create_vector_index()
     

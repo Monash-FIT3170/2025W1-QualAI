@@ -91,8 +91,6 @@ class DeepSeekClient:
         # Join all message content
         full_reply = "".join(messages)
 
-        print(full_reply)
-
         # Strip internal <think>...</think> tags or anything custom
         reply = self.remove_think_blocks(full_reply)
 
