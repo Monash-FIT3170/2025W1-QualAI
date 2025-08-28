@@ -11,6 +11,13 @@ type SidebarProps = {
   onRefreshFiles?: () => void;
 };
 
+type UploadItem = {
+  kind: "file";
+  file: File;
+  entry?: FileSystemEntry;
+};
+
+
 const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: SidebarProps) => {
   const navigate = useNavigate();
 
@@ -80,37 +87,112 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
     if (e.currentTarget.contains(e.relatedTarget as Node)) return;
     setIsDraggingOver(false);
   };
+// Extract files (and folders) from either input change or drag event
+const extractFilesAndDirs = (
+  event: React.ChangeEvent<HTMLInputElement> | React.DragEvent
+): UploadItem[] => {
+  const items: UploadItem[] = [];
 
-  const handleFileUpload = () => async (event : React.ChangeEvent<HTMLInputElement>) => {    
-    
-    const items = event.dataTransfer.items;
-        if ( !items ) return;
-
-        const formData = new FormData();
-
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
-          if (item.kind === "file") {
-            const entry = (item as any).webkitGetAsEntry?.();
-            if (entry?.isDirectory) {
-              console.log("📁 Folder:", entry.name);
-              // You would need to recursively read contents with entry.createReader()
-              // since FormData can't hold folders directly
-            } else {
-              const file = item.getAsFile();
-              if (file) {
-                console.log("📄 File:", file.name);
-                formData.append("files[]", file);
-              }
-            }
+  if ("dataTransfer" in event) {
+    // Drag & drop
+    const dtItems = event.dataTransfer?.items;
+    if (dtItems) {
+      for (let i = 0; i < dtItems.length; i++) {
+        const item = dtItems[i];
+        if (item.kind === "file") {
+          const file = item.getAsFile();
+          if (file) {
+            const entry = (item as any).webkitGetAsEntry?.(); // Safari/Chrome only
+            items.push({ kind: "file", file, entry });
           }
         }
-    const response = await fetch("http://localhost:5001/upload", {
-            method : "POST",
-            body : formData,
-    });
-    if (response.ok) onRefreshFiles?.();
+      }
+    }
+  } else if (event.target.files) {
+    // <input type="file">
+    for (const file of Array.from(event.target.files)) {
+      items.push({ kind: "file", file });
+    }
+  }
+
+  return items;
 };
+
+async function readAllFilesFromEntry(
+  entry: FileSystemEntry,
+  path: string = ""
+): Promise<{ file: File; path: string }[]> {
+  return new Promise((resolve, reject) => {
+    if (entry.isFile) {
+      const fileEntry = entry as FileSystemFileEntry;
+      fileEntry.file((file) => resolve([{ file, path: path + file.name }]), reject);
+    } else if (entry.isDirectory) {
+      const dirReader = (entry as FileSystemDirectoryEntry).createReader();
+      const entries: Promise<{ file: File; path: string }[]>[] = [];
+
+      const readEntries = () => {
+        dirReader.readEntries(async (results) => {
+          if (!results.length) {
+            // directory fully read
+            Promise.all(entries).then((all) => resolve(all.flat()));
+            return;
+          }
+
+          for (const ent of results) {
+            entries.push(readAllFilesFromEntry(ent, path + entry.name + "/"));
+          }
+
+          readEntries(); // keep reading until empty
+        }, reject);
+      };
+
+      readEntries();
+    } else {
+      resolve([]); // neither file nor dir
+    }
+  });
+}
+
+
+  const handleFileUpload =
+  () => async (event: React.ChangeEvent<HTMLInputElement> | React.DragEvent<HTMLDivElement>) => {
+    const items = extractFilesAndDirs(event);
+    if (!items.length) return;
+
+    const formData = new FormData();
+
+    for (const item of items) {
+      if (item.entry?.isDirectory) {
+        for (const item of items) {
+  if (item.entry?.isDirectory) {
+    console.log("📁 Folder:", item.entry.name);
+
+    const files = await readAllFilesFromEntry(item.entry);
+    for (const { file, path } of files) {
+      console.log("  ↳", path);
+      formData.append("files[]", file, path); 
+      // 👆 3rd param keeps folder structure on server if supported
+    }
+  } else {
+    console.log("📄 File:", item.file.name);
+    formData.append("files[]", item.file);
+  }
+}
+
+      } else {
+        console.log("📄 File:", item.file.name);
+        formData.append("files[]", item.file);
+      }
+    }
+
+    const response = await fetch("http://localhost:5001/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.ok) onRefreshFiles?.();
+  };
+
   /** ------------------------ **/
 
   return (
@@ -151,7 +233,8 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
           onDragOver={handleDragOver}
           onDragEnter={handleDragOver}
           onDragLeave={handleDragLeave}
-          onDrop={handleFileUpload}
+          onDrop={(e) => handleFileUpload()(e)}
+
         >
           <Upload className="mx-auto mb-2" />
           <p>Drop files or folders here</p>
