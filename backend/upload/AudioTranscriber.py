@@ -37,11 +37,11 @@ class AudioTranscriber:
             ['/opt/venv/bin/python', 
              self.diarize_path, 
              '-a', audio_filepath,
-             "--batch-size", '1']) # Reduces load on docker to avoid crashing 
+             "--batch-size", '2']) # Reduces load on docker to avoid crashing 
         
         # Retrieve text file transcription
         filepath_txt = filepath_mp3.with_suffix(".txt")
-        filepath_srt = filepath_mp3.with_suffic(".srt")
+        filepath_srt = filepath_mp3.with_suffix(".srt")
         transcript = open(filepath_txt)
 
         # TODO: Delete created transcripts (.txt and .srt file)
