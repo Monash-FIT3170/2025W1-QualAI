@@ -15,7 +15,7 @@ class DeepSeekClient:
         """
         Initializes the Chatbot class with API URL and JWS key
         """
-        self.api_url = "http://localhost:11434/api/chat"
+        self.api_url = "http://ollama:11434/api/chat"
         self.headers = {
             'Content-Type': 'application/json'
         }
