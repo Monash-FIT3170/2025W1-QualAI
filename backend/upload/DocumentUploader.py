@@ -8,6 +8,8 @@ from chat.text_transformer.neo4j_interactor import Neo4JInteractor
 from chat.text_transformer.text_vectoriser import TextVectoriser
 from mongodb.DocumentStore import DocumentStore
 
+from chat.database_client.vector_database import VectorDatabase
+
 
 class DocumentUploader:
   
@@ -15,8 +17,7 @@ class DocumentUploader:
         self, collection: DocumentStore.Collection, vector_database: Neo4JInteractor, vectoriser: TextVectoriser
     ) -> None:
         self.__collection = collection
-        self.__vector_database = vector_database
-        self.__vectoriser = vectoriser
+        self.__database = VectorDatabase()
 
     def register_routes(self, app: Flask) -> None:
         @app.route('/upload', methods=['POST'])
@@ -57,5 +58,5 @@ class DocumentUploader:
         audio_transcriber = AudioTranscriber()
         transcribed_text = audio_transcriber.transcribe(path)
         self.__collection.add_document(name, transcribed_text)
-        self.__vector_database.store_multiple_vectors(self.__vectoriser.chunk_and_embed_text(transcribed_text), name)
+        self.__database.store_entries(transcribed_text, name)
         return jsonify({"status": "ok"}), 200
