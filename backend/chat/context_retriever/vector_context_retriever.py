@@ -1,6 +1,6 @@
-from backend.chat.context_retriever.context_retriever import ContextRetriever
-from backend.chat.text_transformer.neo4j_interactor import Neo4JInteractor
-from backend.chat.text_transformer.text_vectoriser import TextVectoriser
+from chat.context_retriever.context_retriever import ContextRetriever
+from chat.text_transformer.neo4j_interactor import Neo4JInteractor
+from chat.text_transformer.text_vectoriser import TextVectoriser
 
 
 class VectorContextRetriever(ContextRetriever):

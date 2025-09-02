@@ -1,6 +1,6 @@
-from backend.chat.context_retriever.context_retriever import ContextRetriever
-from backend.chat.deepseek_client import DeepSeekClient
-from backend.chat.text_transformer.neo4j_interactor import Neo4JInteractor
+from chat.context_retriever.context_retriever import ContextRetriever
+from chat.deepseek_client import DeepSeekClient
+from chat.text_transformer.neo4j_interactor import Neo4JInteractor
 
 class TripleContextRetriever(ContextRetriever):
     def __init__(self):

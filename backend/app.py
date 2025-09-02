@@ -4,7 +4,7 @@ from flask_cors import CORS
 from chat.bot import Chatbot
 from chat.text_transformer.neo4j_interactor import Neo4JInteractor
 from chat.text_transformer.text_vectoriser import TextVectoriser
-from chat.context_retriever import vector_context_retriever
+from chat.context_retriever.vector_context_retriever import VectorContextRetriever
 
 from mongodb.DocumentStore import DocumentStore
 from upload.DocumentUploader import DocumentUploader
@@ -29,7 +29,7 @@ def register_upload_routes(app: Flask) -> None:
     collection = initialise_collection()
     vector_db, vectoriser = initialise_vector_database()
     document_uploader = DocumentUploader(collection, vector_db, vectoriser)
-    context_retriever = vector_context_retriever()
+    context_retriever = VectorContextRetriever()
     
     chat_bot = Chatbot(context_retriever)
     document_retriever = DocumentRetriever(collection)

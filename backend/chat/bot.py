@@ -4,8 +4,8 @@ from flask import Flask
 
 from flask import request, jsonify
 
-from backend.chat.deepseek_client import DeepSeekClient
-from backend.chat.context_retriever.context_retriever import ContextRetriever
+from chat.deepseek_client import DeepSeekClient
+from chat.context_retriever.context_retriever import ContextRetriever
 
 
 class Chatbot:
