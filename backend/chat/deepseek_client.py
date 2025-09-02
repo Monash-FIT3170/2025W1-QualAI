@@ -40,7 +40,7 @@ class DeepSeekClient:
         :param text: The text we are to extract triple from 
         :return: A list of triples 
         """
-        generate_api_url = "http://localhost:11434/api/generate"
+        generate_api_url = "http://ollama:11434/api/generate"
         # TODO: modify data with options to fine-tune
         data = {
             "model": "deepseek-r1:1.5b",
