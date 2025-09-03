@@ -9,6 +9,7 @@ class TestQuestionAnswerTriples(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.database = GraphDatabase()
+        self.database.clear_database()
         self.triple_extractor = BasicTripleExtractor()
         self.deepseek = DeepSeekClient()
 
@@ -48,8 +49,8 @@ class TestQuestionAnswerTriples(unittest.TestCase):
         " How do you feel about relying on AI tools for assignments? Honestly, I see it as a calculator." \
         " It’s fine to use, but I don’t want to depend on it so much that I can’t think critically on my own."
 
-        interviewee_name = "John"
-        interviewer_name = "Alex"
+        interviewee_name = "Alex"
+        interviewer_name = "Josh"
 
         triples = self.triple_extractor.get_triples(interview_text, interviewer_name, interviewee_name)
         for (subject, predicate, object) in triples:
@@ -68,8 +69,8 @@ class TestQuestionAnswerTriples(unittest.TestCase):
         " How do you feel about relying on AI tools for assignments? I like using it as a helper, but I wouldn’t trust it fully." \
         " I’d rather combine AI input with my own research and what my professors teach."
 
-        interviewee_name = "John"
-        interviewer_name = "Sam"
+        interviewee_name = "Sam"
+        interviewer_name = "Josh"
 
         triples = self.triple_extractor.get_triples(interview_text, interviewer_name, interviewee_name)
         for (subject, predicate, object) in triples:
