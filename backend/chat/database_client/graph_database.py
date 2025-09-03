@@ -1,5 +1,5 @@
-from chat.database_client.database_client import DatabaseClient
-from chat.deepseek_client import DeepSeekClient
+from ...chat.database_client.database_client import DatabaseClient
+from ...chat.deepseek_client import DeepSeekClient
 
 from neo4j import GraphDatabase as Neo4jGraphDatabase
 from torch import Tensor
@@ -15,9 +15,9 @@ class GraphDatabase(DatabaseClient):
         """
             Initialises NEO4JInteractor with driver to be used
         """
-        # self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+        self._driver = Neo4jGraphDatabase.driver("neo4j://localhost:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
-        self._driver = Neo4jGraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
+        # self._driver = Neo4jGraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
 
         self.__create_vector_index()
         self.__deepseek_client = DeepSeekClient()
