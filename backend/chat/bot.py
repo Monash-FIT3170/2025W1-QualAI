@@ -23,7 +23,6 @@ class Chatbot:
         """
         self.deepseek_client = DeepSeekClient()
         self.db = db
-        self.text_converter = TextVectoriser()
 
     def chat_with_model(self, query: str) -> str:
         """
