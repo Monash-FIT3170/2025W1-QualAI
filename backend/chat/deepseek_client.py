@@ -2,6 +2,8 @@ import json
 import re
 
 import requests
+from chat.basic_triple_extractor import BasicTripleExtractor
+import random
 
 class DeepSeekClient: 
     """
