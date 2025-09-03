@@ -49,14 +49,18 @@ class DocumentEditor:
         return jsonify({"message": "Document updated successfully"}), 200
 
     def __edit_dir_request(self, dir: str, content: str) -> tuple[Any, int]:
-        docs = self.__collection.matching_documents(f"^{re.escape(dir)}/")
-        dir_start = dir.rindex("/")
-        dir_end = len(dir)
+        if not dir.endswith("/"):
+            dir = dir + "/"
+
+        docs = self.__collection.matching_documents(f"^{re.escape(dir)}")
+
         for doc in docs:
             current_key = str(doc.get("key"))
-            new_key = current_key[:dir_start + 1] + content + current_key[dir_end:]
-            self.__collection.rename_document(current_key, new_key)
-            self.__vector_database.rekey_node(current_key, new_key)
+            # Replace the matching directory prefix with the new content
+            if current_key.startswith(dir):
+                new_key = content + "/" + current_key[len(dir):]
+                self.__collection.rename_document(current_key, new_key)
+                self.__vector_database.rekey_node(current_key, new_key)
 
         return jsonify({"message": "Document/s updated successfully"}), 200
 
