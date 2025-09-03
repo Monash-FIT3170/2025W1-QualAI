@@ -1,6 +1,6 @@
 import traceback
 
-from chat.text_transformer.neo4j_interactor import Neo4JInteractor
+from chat.database_client.database_client import DatabaseClient
 from chat.text_transformer.text_vectoriser import TextVectoriser
 
 from flask import Flask
@@ -17,13 +17,12 @@ class Chatbot:
     :author: Felix Chung
     """
 
-    def __init__(self, vector_db: Neo4JInteractor, text_converter: TextVectoriser):
+    def __init__(self, db: DatabaseClient):
         """
         Initializes the Chatbot class by with instances of the DeepSeekClient, TextVectoriser, and Neo4JInteractor classes.
         """
         self.deepseek_client = DeepSeekClient()
-        self.neoInteractor = vector_db
-        self.text_converter = text_converter
+        self.db = db
 
     def chat_with_model(self, query: str) -> str:
         """
@@ -34,8 +33,7 @@ class Chatbot:
         :return: The JSON response from the API.
         """
 
-        search_vector = self.text_converter.chunk_and_embed_text(query)[0][1]
-        context = self.neoInteractor.search_text_chunk(search_vector, limit=3)
+        context = self.db.search(query)
         if len(context) > 0:
             response = self.deepseek_client.chat_with_model_context_injection(context, query)
         else:
@@ -58,12 +56,12 @@ class Chatbot:
         for triple in triples: 
             subject = triple[0]
             object = triple[1]
-            result = self.neo4j_interactor.search_by_entity(subject)
+            result = self.db.search(subject)
 
             for row in result:
                 context_triples += f"{row['subject']} {row['predicate']} {row['object']}, "
             
-            result = self.neo4j_interactor.search_by_entity(object)
+            result = self.db.search(object)
 
             for row in result:
                 context_triples += f"{row['subject']} {row['predicate']} {row['object']}, "
@@ -97,4 +95,4 @@ class Chatbot:
         """
         Closes the connections to the Neo4j database.
         """
-        self.neoInteractor.close_driver()
+        self.db.close_driver()

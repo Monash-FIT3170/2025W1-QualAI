@@ -1,20 +1,16 @@
 from flask import Flask,  jsonify, request
 
 from mongodb.DocumentStore import DocumentStore
-from chat.text_transformer.neo4j_interactor import Neo4JInteractor
-from chat.text_transformer.text_vectoriser import TextVectoriser
-
+from chat.database_client.database_client import DatabaseClient
 
 class DocumentEditor:
   
     def __init__(
         self, collection: DocumentStore.Collection,
-        vector_database: Neo4JInteractor,
-        vectoriser: TextVectoriser
+        database: DatabaseClient,
     ) -> None:
         self.__collection = collection
-        self.__vector_database = vector_database
-        self.__vectoriser = vectoriser
+        self.__database = database
 
     def register_routes(self, app: Flask) -> None:
         @app.route('/edit/<string:file_key>', methods=['PATCH'])
@@ -29,11 +25,9 @@ class DocumentEditor:
                     return jsonify({"error": "Document not found"}), 404
                 self.__collection.update_document(file_key, new_content)
 
-                self.__vector_database.remove_node_by_file_id(file_key)
+                self.__database.remove_node_by_file_id(file_key)
 
-                self.__vector_database.store_multiple_vectors(
-                    self.__vectoriser.chunk_and_embed_text(new_content), file_key
-                )
+                self.__database.store_entries(new_content, file_key)
 
                 return jsonify({"message": "Document updated successfully"}), 200
             except Exception as e:
