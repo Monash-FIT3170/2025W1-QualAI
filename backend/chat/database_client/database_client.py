@@ -18,12 +18,21 @@ class DatabaseClient(ABC):
         pass
     
     @abstractmethod
-    def search(self, parameter) -> list:
+    def search(self, query) -> list:
         """
         Searches database per search parameter
         
-        :param parameter: the search query parameter
+        :param query: the search query parameter
         
         :return list: a list of relevant database entries
         """ 
         pass 
+    
+    @abstractmethod
+    def remove_node_by_file_id(self, file_id):
+        """
+            Searches the NEO4J database for any nodes matching the provided file_id, and removes them.
+
+                :param str file_id: the file_id to be matched and removed
+        """
+        pass

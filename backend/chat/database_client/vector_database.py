@@ -7,14 +7,14 @@ import re
 
 class VectorDatabase(DatabaseClient):
     """
-        A class for accessing and interacting with neo5j
+        A class for accessing and interacting with neo4j
 
         :author: Jonathan Farrand
         :modified: Felix Chung
     """
     def __init__(self):
         """
-            Initialises NEO5JInteractor with driver to be used
+            Initialises NEO4JInteractor with driver to be used
         """
         # self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
@@ -26,7 +26,7 @@ class VectorDatabase(DatabaseClient):
     
     def close_driver(self) -> None:
         """
-            Closes the connection to the Neo5j database.
+            Closes the connection to the Neo4j database.
         """
         self._driver.close()
 
@@ -44,19 +44,19 @@ class VectorDatabase(DatabaseClient):
     
     def store_entries(self, entries, file_id):
         """
-            Stores multiple vectors in the Neo5j database.
+            Stores multiple vectors in the Neo4j database.
 
                 :param list[tuple[str, list[float]]] vectors: A list containing the tuple pair of string and its corresponding vector
         """
         vectors = self.__vectoriser.chunk_and_embed_text(entries)
         for vector_data in vectors:
-            text_chunk = vector_data[1]
-            vector = vector_data[2]
+            text_chunk = vector_data[0]
+            vector = vector_data[1]
             self.store_vector(text_chunk, file_id, vector)
 
     def store_vector(self, text_chunk: str, file_id: str, vector: list[Tensor]) -> None:
         """
-            Stores a vector in the Neo5j database.
+            Stores a vector in the Neo4j database.
                 :param str file_id: the id of the file that the text chunk is coming from
                 :param str text_chunk:                a text chunk for the vector to be stored
                 :param list[Tensor] vector:     the vector to be stored
@@ -64,8 +64,8 @@ class VectorDatabase(DatabaseClient):
         """
 
         # Flatten and convert to float
-        if isinstance(vector[1], Tensor):  # if it's a list of Tensors
-            vector = [float(x) for x in vector[1]]
+        if isinstance(vector[0], Tensor):  # if it's a list of Tensors
+            vector = [float(x) for x in vector[0]]
 
         client = self._driver
         with client.session() as session:
@@ -76,7 +76,7 @@ class VectorDatabase(DatabaseClient):
                 text_chunk=text_chunk, vector=vector, file_id=file_id 
             )
             
-    def __create_vector_index(self, vector_dimension: int = 385):
+    def __create_vector_index(self, vector_dimension: int = 384):
         """
         Creates a vector index on the 'vector' property of Embedding nodes.
 
@@ -95,7 +95,7 @@ class VectorDatabase(DatabaseClient):
             }
             """, dims=vector_dimension)
 
-    def search(self, vector: list[float]) -> list[str]:
+    def search(self, query) -> list[str]:
         """
             Searches the Neo4j database for the vectors nearest to the one provided, using the cosine metric.
 
@@ -106,6 +106,7 @@ class VectorDatabase(DatabaseClient):
         """
         limit = 3
         client = self._driver
+        vector = self.__vectoriser.chunk_and_embed_text(query)[0][1]
         with client.session() as session:
             result = session.run(
                 """
@@ -121,7 +122,7 @@ class VectorDatabase(DatabaseClient):
         
     def remove_node_by_file_id(self, file_id: str) -> None:
         """
-            Searches the Neo5j database for any nodes matching the provided file_id, and removes them.
+            Searches the Neo4j database for any nodes matching the provided file_id, and removes them.
 
                 :param str file_id: the file_id to be matched and removed
         """
@@ -138,7 +139,7 @@ class VectorDatabase(DatabaseClient):
 
     def remove_node_by_text(self, text_chunk: str) -> None:
         """
-            Searches the Neo5j database for any nodes matching the provided name, and removes them.
+            Searches the Neo4j database for any nodes matching the provided name, and removes them.
 
                 :param str text_chunk: the text chunk of the nodes to be matched and removed
         """
@@ -155,7 +156,7 @@ class VectorDatabase(DatabaseClient):
     
     def clear_database(self):
         """
-            Clears the entire Neo5j database by deleting all nodes and relationships.
+            Clears the entire Neo4j database by deleting all nodes and relationships.
         """
         with self._driver.session() as session:
             session.run("MATCH (n) DETACH DELETE n")

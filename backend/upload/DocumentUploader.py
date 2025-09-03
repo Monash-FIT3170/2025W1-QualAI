@@ -4,20 +4,17 @@ from typing import Any
 from flask import Flask, request, jsonify
 
 from upload.AudioTranscriber import AudioTranscriber
-from chat.text_transformer.neo4j_interactor import Neo4JInteractor
-from chat.text_transformer.text_vectoriser import TextVectoriser
+from chat.database_client.database_client import DatabaseClient
 from mongodb.DocumentStore import DocumentStore
-
-from chat.database_client.vector_database import VectorDatabase
 
 
 class DocumentUploader:
   
     def __init__(
-        self, collection: DocumentStore.Collection, vector_database: Neo4JInteractor, vectoriser: TextVectoriser
+        self, collection: DocumentStore.Collection, database: DatabaseClient
     ) -> None:
         self.__collection = collection
-        self.__database = VectorDatabase()
+        self.__database = database
 
     def register_routes(self, app: Flask) -> None:
         @app.route('/upload', methods=['POST'])
@@ -59,4 +56,4 @@ class DocumentUploader:
         transcribed_text = audio_transcriber.transcribe(path)
         self.__collection.add_document(name, transcribed_text)
         self.__database.store_entries(transcribed_text, name)
-        return jsonify({"status": "ok"}), 200
+        return jsonify({"status": "ok"}), 

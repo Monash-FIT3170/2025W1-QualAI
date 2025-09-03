@@ -7,13 +7,13 @@ import re
 
 class GraphDatabase(DatabaseClient):
     """
-        A class for accessing and interacting with neo5j
+        A class for accessing and interacting with neo4j
 
         :author: Jonathan Farrand
     """
     def __init__(self):
         """
-            Initialises NEO5JInteractor with driver to be used
+            Initialises NEO4JInteractor with driver to be used
         """
         # self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
@@ -24,7 +24,7 @@ class GraphDatabase(DatabaseClient):
     
     def close_driver(self) -> None:
         """
-            Closes the connection to the Neo5j database.
+            Closes the connection to the Neo4j database.
         """
         self._driver.close()
         
@@ -87,7 +87,7 @@ class GraphDatabase(DatabaseClient):
 
         tx.run(query, subject=subject, object=object_, file_id=file_id)
             
-    def __create_vector_index(self, vector_dimension: int = 385):
+    def __create_vector_index(self, vector_dimension: int = 384):
         """
         Creates a vector index on the 'vector' property of Embedding nodes.
 
@@ -108,7 +108,7 @@ class GraphDatabase(DatabaseClient):
         
     def remove_node_by_file_id(self, file_id: str) -> None:
         """
-            Searches the Neo5j database for any nodes matching the provided file_id, and removes them.
+            Searches the Neo4j database for any nodes matching the provided file_id, and removes them.
 
                 :param str file_id: the file_id to be matched and removed
         """
@@ -125,7 +125,7 @@ class GraphDatabase(DatabaseClient):
 
     def remove_node_by_text(self, text_chunk: str) -> None:
         """
-            Searches the Neo5j database for any nodes matching the provided name, and removes them.
+            Searches the Neo4j database for any nodes matching the provided name, and removes them.
 
                 :param str text_chunk: the text chunk of the nodes to be matched and removed
         """
@@ -142,12 +142,13 @@ class GraphDatabase(DatabaseClient):
     
     def clear_database(self):
         """
-            Clears the entire Neo5j database by deleting all nodes and relationships.
+            Clears the entire Neo4j database by deleting all nodes and relationships.
         """
         with self._driver.session() as session:
             session.run("MATCH (n) DETACH DELETE n")
 
     def search(self, entity): 
+        # todo : find entity to search
         subject_query = """
         MATCH (s:Entity)-[r]->(o:Entity)
         WHERE s.name = $subject
