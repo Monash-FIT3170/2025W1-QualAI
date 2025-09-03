@@ -4,6 +4,8 @@ from flask_cors import CORS
 from chat.bot import Chatbot
 from chat.database_client.database_client import DatabaseClient
 from chat.database_client.vector_database import VectorDatabase
+from chat.database_client.graph_database import GraphDatabase
+
 from mongodb.DocumentStore import DocumentStore
 from upload.DocumentUploader import DocumentUploader
 from editor.DocumentRetriever import DocumentRetriever
@@ -19,7 +21,7 @@ def initialise_collection() -> DocumentStore.Collection:
 
 
 def initialise_database() -> DatabaseClient:
-    return VectorDatabase()
+    return GraphDatabase()
 
 
 def register_upload_routes(app: Flask) -> None:
