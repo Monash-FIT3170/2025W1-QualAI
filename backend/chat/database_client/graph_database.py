@@ -88,7 +88,11 @@ class GraphDatabase(DatabaseClient):
         """
         # Add file_id if provided
         if file_id:
-            query += " SET r.file_id = $file_id"
+            query += """
+            SET r.file_id = $file_id
+            SET s.file_id = $file_id
+            SET o.file_id = $file_id
+            """
 
         tx.run(query, subject=subject, object=object_, file_id=file_id)
             
