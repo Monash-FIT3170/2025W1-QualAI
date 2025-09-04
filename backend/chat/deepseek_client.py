@@ -179,34 +179,51 @@ class DeepSeekClient:
     
     def chat_extract_triples_with_highlight(self, text: str) -> list[dict]:
         """
-        Extract triples and mark 'highlighted' = True if the subject/object text has ** around it.
-        
+        Extract triples and mark 'highlighted' = True if any part of the subject/object
+        appears within a **highlighted** section in the original transcript.
+
         Returns a list of dicts:
         [
             {"subject": "Alice", "predicate": "LOVES", "object": "Bob", "highlighted": True/False}
         ]
         """
-        triples = self.chat_extract_triples(text)  # Use existing extraction
+        #Identify highlighted spans
+        highlight_spans = []
+        for match in re.finditer(r"\*\*(.*?)\*\*", text, flags=re.DOTALL):
+            start, end = match.span(1)  # only the inner text
+            highlight_spans.append((start, end))
+
+        # Remove the ** markers for LLM input
+        clean_text = re.sub(r"\*\*(.*?)\*\*", r"\1", text, flags=re.DOTALL)
+
+        #Extract triples from clean text 
+        triples = self.chat_extract_triples(clean_text)
         highlighted_triples = []
 
         for s, p, o in triples:
-            # Check for '**' and remove them
-            s_high = bool(re.search(r"\*\*(.*?)\*\*", s))
-            o_high = bool(re.search(r"\*\*(.*?)\*\*", o))
-            
-            # Remove ** from text
-            s_clean = re.sub(r"\*\*(.*?)\*\*", r"\1", s)
-            o_clean = re.sub(r"\*\*(.*?)\*\*", r"\1", o)
+            # Find positions of subject/object in the clean_text
+            s_positions = [m.span() for m in re.finditer(re.escape(s), clean_text)]
+            o_positions = [m.span() for m in re.finditer(re.escape(o), clean_text)]
+
+            # Check if any of these positions overlap with a highlighted span
+            def overlaps(positions, spans):
+                for start, end in positions:
+                    for h_start, h_end in spans:
+                        if start < h_end and end > h_start:
+                            return True
+                return False
+
+            is_highlighted = overlaps(s_positions, highlight_spans) or overlaps(o_positions, highlight_spans)
 
             highlighted_triples.append({
-                "subject": s_clean,
+                "subject": s,
                 "predicate": p,
-                "object": o_clean,
-                "highlighted": s_high or o_high
+                "object": o,
+                "highlighted": is_highlighted
             })
 
         return highlighted_triples
-    
+
     def chat_with_model(self, message):
         """
         Sends a basic message to the model and returns the response.
