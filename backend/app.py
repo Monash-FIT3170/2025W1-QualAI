@@ -21,7 +21,7 @@ def initialise_collection() -> DocumentStore.Collection:
 
 
 def initialise_database() -> DatabaseClient:
-    return GraphDatabase()
+    return VectorDatabase()
 
 
 def register_upload_routes(app: Flask) -> None:
