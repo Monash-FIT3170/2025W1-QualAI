@@ -109,13 +109,38 @@ class DocumentStore:
             """
             return self.__collection.find_one({"key": document_key})
         
-        def update_document(self, document_key: str, new_content: str) -> None:
+        def update_document(self, document_key: str, new_content: str) -> bool:
             """
             Updates the content of the document with the provided key within the collection.
+
             :param document_key: a unique identifier associated with the document
             :param new_content: the new content to be set for the document
             """
-            self.__collection.update_one({"key": document_key}, {"$set": {"content": new_content}})
+            result = self.__collection.update_one({"key": document_key}, {"$set": {"content": new_content}})
+            return result.modified_count > 0
+
+        def rename_document(self, document_key: str, new_name: str) -> bool:
+            """
+            Renames the document, by updating its key in the database.
+
+            :param document_key: a unique identifier associated with the document
+            :param new_name: the name to be used as the new key for the document
+
+            :returns: whether the document was successfully renamed
+            """
+            if self.find_document(new_name) is not None:
+                raise KeyError(
+                    f"The provided document key, {new_name}, must be unique between all documents within the "
+                    f"collection."
+                )
+            result = self.__collection.update_one({ "key": document_key }, { "$set": { "key" : new_name } })
+            return result.modified_count > 0
+
+        def matching_documents(self, regex: str) -> Cursor[Mapping[str, Any]]:
+            """
+            :return: the set of documents with key matching the provided regex expression
+            """
+            return self.__collection.find({ "key" : { "$regex": regex }})
         
         def remove_document(self, document_key: str) -> None:
             """
