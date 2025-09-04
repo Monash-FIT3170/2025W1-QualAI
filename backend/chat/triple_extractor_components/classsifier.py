@@ -54,9 +54,9 @@ class Classifier:
         for word, tag in self.tagged_words:
             word_type = self._classify_word(word, tag, sentence_start)
             if word_type is None:
-                nltk.help.upenn_tagset(tag)
-                
-                raise ValueError(f"Unrecognized POS tag: {tag} | word: {word}")
+                word_type = WordType.IGNORE
+                #nltk.help.upenn_tagset(tag)
+                #raise ValueError(f"Unrecognized POS tag: {tag} | word: {word}")
               
             self.classified_sentence.append((word, tag, word_type))
             if tag == ".":
