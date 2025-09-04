@@ -23,6 +23,7 @@ class TestTripleExtraction(unittest.TestCase):
         """
         adv_query_message = "The Eiffel Tower, located in Paris, was constructed in 1889 for the World's Fair."
         response = self.client.chat_extract_triples(adv_query_message)
+
         print(response)
 
     def test_request_long(self):

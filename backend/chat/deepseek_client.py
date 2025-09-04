@@ -2,7 +2,7 @@ import json
 import re
 
 import requests
-from chat.basic_triple_extractor import BasicTripleExtractor
+from ..chat.basic_triple_extractor import BasicTripleExtractor
 import random
 
 class DeepSeekClient: 
@@ -17,8 +17,8 @@ class DeepSeekClient:
         """
         Initializes the Chatbot class with API URL and JWS key
         """
-        self.api_url = "http://ollama:11434/api/chat"
-        # self.api_url = "http://localhost:11434/api/generate"
+        self.api_url = "http://ollama:11434/api/chat"      
+        self.api_url = "http://localhost:11434/api/generate"
         
         self.headers = {
             'Content-Type': 'application/json'
@@ -366,6 +366,7 @@ class DeepSeekClient:
             }
         }
         response = requests.post(self.api_url, headers=self.headers, json=data)
+        print(response.text)
 
         # NDJSON: split by lines and parse each one
         messages = []
