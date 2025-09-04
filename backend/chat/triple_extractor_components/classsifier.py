@@ -403,11 +403,9 @@ class Classifier:
         return self.grouped_sentence
 
     def get_subjects(self, sentence = None):
-        if sentence:
+        if sentence is not None:
             self.reset_sentence(sentence)
-            response = self.grouped
-        else:
-            response = self.grouped
+        response = self.get_grouped_sentence()
         
         subjects = []
         for word, word_type in response:
