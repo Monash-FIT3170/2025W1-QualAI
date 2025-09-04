@@ -3,6 +3,7 @@ from chat.deepseek_client import DeepSeekClient
 
 from neo4j import GraphDatabase as Neo4jGraphDatabase
 from chat.basic_triple_extractor import BasicTripleExtractor
+from chat.text_transformer.text_vectoriser import TextVectoriser
 import random
 from torch import Tensor
 import re
@@ -24,6 +25,7 @@ class GraphDatabase(DatabaseClient):
         self.__create_vector_index()
         self.__deepseek_client = DeepSeekClient()
         self.__triple_extractor = BasicTripleExtractor()
+        self.__vectoriser = TextVectoriser()
     
     def close_driver(self) -> None:
         """
@@ -94,7 +96,24 @@ class GraphDatabase(DatabaseClient):
             SET o.file_id = $file_id
             """
 
-        tx.run(query, subject=subject, object=object_, file_id=file_id)
+        vectoriser = TextVectoriser()
+        subject_vector = vectoriser.chunk_and_embed_text(subject)[0][1]
+        object_vector = vectoriser.chunk_and_embed_text(object_)[0][1]
+
+        if subject_vector is not None:
+            query += """
+            MERGE (sv:Embedding {file_id: $file_id, text_chunk: $subject})
+            SET sv.vector = $subject_vector
+            MERGE (s)-[:HAS_EMBEDDING]->(sv)
+            """
+        if object_vector is not None:
+            query += """
+            MERGE (ov:Embedding {file_id: $file_id, text_chunk: $object})
+            SET ov.vector = $object_vector
+            MERGE (o)-[:HAS_EMBEDDING]->(ov)
+            """
+
+        tx.run(query, subject=subject, object=object_, file_id=file_id, subject_vector=subject_vector, object_vector=object_vector)
             
     def __create_vector_index(self, vector_dimension: int = 384):
         """
@@ -159,23 +178,68 @@ class GraphDatabase(DatabaseClient):
         with self._driver.session() as session:
             session.run("MATCH (n) DETACH DELETE n")
 
-    def search(self, entity): 
+    def search(self, entity, top_k: int = 3, hops: int = 1): 
         # todo : find entity to search
         results = self.__triple_extractor.get_subjects(entity)
-        subject_query = """
-        MATCH (s:Entity)-[r]->(o:Entity)
-        WHERE s.name = $subject
-        RETURN s.name AS subject, type(r) AS predicate, o.name AS object
+        vector = self.__vectoriser.chunk_and_embed_text(results[0])
+    
+        if not vector:
+            return []
+
+        query_vector = vector[0][1]  # first subject for testing
+
+        
+        vector_search_query = """
+        MATCH (e:Embedding)
+        RETURN e.text_chunk AS chunk, e.file_id AS file_id, vector.similarity.cosine(e.vector, $vector) AS score
+        ORDER BY score DESC
+        LIMIT $limit
         """
 
-        final_results = []
-        for result in results:
-            subject_params = {"subject": result}
-            final_results.append(self.run_cypher_query(subject_query, subject_params))
-            
+        with self._driver.session() as session:
+            top_chunks = session.run(vector_search_query, vector=query_vector, limit=top_k)
+            results = []
 
-        # subject_results = self.run_cypher_query(subject_query, subject_params)
-        return final_results
+            for record in top_chunks:
+                chunk_text = record["chunk"]
+                file_id = record["file_id"]
+
+                
+                traverse_query = f"""
+                MATCH (e:Embedding {{text_chunk: $chunk}})
+                OPTIONAL MATCH (e)<-[:HAS_EMBEDDING]-(n1:Entity)-[r1*1..{hops}]-(m1:Entity)
+                OPTIONAL MATCH (e)<-[:MENTIONS]-(n2:Entity)-[r2*1..{hops}]-(m2:Entity)
+                OPTIONAL MATCH (e)<-[:HASRESPONSE]-(n3:Entity)-[r3*1..{hops}]-(m3:Entity)
+                RETURN DISTINCT 
+                    n1.name AS subject1, [rel IN r1 | type(rel)] AS relations1, m1.name AS object1,
+                    n2.name AS subject2, [rel IN r2 | type(rel)] AS relations2, m2.name AS object2,
+                    n3.name AS subject3, [rel IN r3 | type(rel)] AS relations3, m3.name AS object3
+                """
+                neighbors = session.run(traverse_query, chunk=chunk_text)
+
+                neighbor_list = [dict(neighbor) for neighbor in neighbors if neighbor is not None]
+
+                results.append({
+                    "text_chunk": chunk_text,
+                    "file_id": file_id,
+                    "neighbors": neighbor_list
+                })
+        
+        # todo fix filter method so it works better
+        text_chunks = []
+        responses = []
+
+        for res in results:
+            text_chunks.append(res["text_chunk"])
+            for neighbor in res["neighbors"]:
+                # Flatten all non-None values from subject/relations/object
+                for key, value in neighbor.items():
+                    if value is not None:
+                        responses.append(value)
+
+        print("Text chunks:", text_chunks)
+        print("Responses:", responses)
+        return text_chunks
             
     def run_cypher_query(self, query: str, params: dict = None):
         """

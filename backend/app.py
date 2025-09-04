@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
+import nltk
 
 from chat.bot import Chatbot
 from chat.database_client.database_client import DatabaseClient
@@ -21,6 +22,11 @@ def initialise_collection() -> DocumentStore.Collection:
 
 
 def initialise_database() -> DatabaseClient:
+    nltk.download('punkt')
+    nltk.download('punkt_tab')
+    nltk.download('averaged_perceptron_tagger')
+    nltk.download('averaged_perceptron_tagger_eng')
+    nltk.download('tagsets_json')
     return GraphDatabase()
 
 

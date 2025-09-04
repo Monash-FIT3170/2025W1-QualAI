@@ -17,11 +17,7 @@ class Classifier:
         """
         Initializes the Classifier with a sentence.
         """
-        nltk.download('punkt')
-        nltk.download('punkt_tab')
-        nltk.download('averaged_perceptron_tagger')
-        nltk.download('averaged_perceptron_tagger_eng')
-        nltk.download('tagsets_json')
+        
 
         if tagged:
             self.tagged_words = sentence

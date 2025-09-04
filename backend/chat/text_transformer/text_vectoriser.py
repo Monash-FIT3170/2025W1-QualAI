@@ -30,10 +30,14 @@ class TextVectoriser:
             
             :return list[str]: a list containing the chunks processed from the text
         """
+        if not text.strip():
+            return [""]
         chunker = self._chunker
         doc = chunker(text)
 
         tokens = [token.text_with_ws for token in doc]
+        if not tokens:
+            return [text]
         chunks = []
         start = 0
 
@@ -97,4 +101,7 @@ class TextVectoriser:
         """
             Chunks text and generates a vector embedding for each chunk. See #chunk_text and #embed_chunks.
         """
-        return self.embed_text(self.chunk_text(text))
+        chunks = self.chunk_text(text)
+        if not chunks:
+            chunks = [text]
+        return self.embed_text(chunks)
