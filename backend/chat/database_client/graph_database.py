@@ -122,15 +122,18 @@ class GraphDatabase(DatabaseClient):
                 :param str file_id: the file_id to be matched and removed
         """
         client = self._driver
+        
         with client.session() as session:
             session.run(
                 """
                 MATCH (n)
                 WHERE n.file_id = $file_id
-                DELETE n
+                DETACH DELETE n
                 """,
                 file_id=file_id
             )
+
+        
 
     def remove_node_by_text(self, text_chunk: str) -> None:
         """
@@ -172,7 +175,6 @@ class GraphDatabase(DatabaseClient):
             
 
         # subject_results = self.run_cypher_query(subject_query, subject_params)
-        raise ValueError(final_results , results)
         return final_results
             
     def run_cypher_query(self, query: str, params: dict = None):
