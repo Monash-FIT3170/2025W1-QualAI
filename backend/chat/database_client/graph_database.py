@@ -154,7 +154,7 @@ class GraphDatabase(DatabaseClient):
 
     def search(self, entity): 
         # todo : find entity to search
-        results = self.__deepseek_client.chat_extract_triples_entities(entity)
+        results = self.__triple_extractor._get_subjects(entity)
         subject_query = """
         MATCH (s:Entity)-[r]->(o:Entity)
         WHERE s.name = $subject

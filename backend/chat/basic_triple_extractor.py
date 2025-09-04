@@ -11,7 +11,7 @@ class BasicTripleExtractor:
         """
         Nothing needed at the moment
         """
-        self.__classifier = cl
+        self.__classifier = Classifier("")
         pass
 
     def get_triples(self, text, interviewer_id, interviewee_id):
@@ -29,17 +29,17 @@ class BasicTripleExtractor:
             triples_list.append((question, "hasResponse", response))
             triples_list.append((response, "answeredBy", interviewee_id))
 
-            for subject in self._get_subjects(response):
+            for subject in self.get_subjects(response):
                 triples_list.append((response, "mentions", subject))
         
         return triples_list
     
-    def _get_subjects(self, response):
+    def get_subjects(self, response):
         """
         Yet to be implemented, will be used to draw themes and subjects from responses.
         """
+        return self.__classifier.get_subjects(response)
 
-        return []
         pass
             
 

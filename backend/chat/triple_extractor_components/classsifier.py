@@ -18,7 +18,9 @@ class Classifier:
         Initializes the Classifier with a sentence.
         """
         nltk.download('punkt')
+        nltk.download('punkt_tab')
         nltk.download('averaged_perceptron_tagger')
+        nltk.download('averaged_perceptron_tagger_eng')
         nltk.download('tagsets_json')
 
         if tagged:
@@ -95,6 +97,11 @@ class Classifier:
         """
         return self.classified_sentence
     
+    def change_interviewer(self, new_name):
+        self.interviewer = new_name
+
+    def change_interviewee(self, new_name):
+        self.interviewee = new_name
 
     def group_sentence(self):
         """
@@ -404,3 +411,4 @@ class Classifier:
         return subjects
 
         
+
