@@ -2,7 +2,7 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 
-from backend.chat.triple_extractor_components.constants import WORD_TYPES, WordType, SUBJECT_BAD_APPLES
+from chat.triple_extractor_components.constants import WORD_TYPES, WordType, SUBJECT_BAD_APPLES
 
 
 

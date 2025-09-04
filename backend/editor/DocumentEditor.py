@@ -38,6 +38,7 @@ class DocumentEditor:
         return jsonify({"message": "Document updated successfully"}), 200
 
     def __edit_request(self, key: str, content: str) -> tuple[Any, int]:
+        content = self.__collection.update_document_name(content)
         if not self.__collection.rename_document(key, content):
             return jsonify({"error": "Document not found"}), 404
 
@@ -46,6 +47,7 @@ class DocumentEditor:
         return jsonify({"message": "Document updated successfully"}), 200
 
     def __edit_dir_request(self, dir: str, content: str) -> tuple[Any, int]:
+        content = self.__collection.update_dir_name(content)
         if not dir.endswith("/"):
             dir = dir + "/"
 

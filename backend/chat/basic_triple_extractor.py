@@ -1,5 +1,6 @@
 from chat.triple_extractor_components.classsifier import Classifier
 
+
 class BasicTripleExtractor:
     """
     Class to extract basic triples from interview data,
@@ -11,7 +12,7 @@ class BasicTripleExtractor:
         """
         Nothing needed at the moment
         """
-        self.__classifier = cl
+        # self.__classifier = cl
         pass
 
     def get_triples(self, text, interviewer_id, interviewee_id):
@@ -21,7 +22,6 @@ class BasicTripleExtractor:
 
         get_information = self._get_question_response_pair(text)
         triples_list = []
-
 
         for question in get_information.keys():
             response = get_information.get(question)
@@ -33,15 +33,12 @@ class BasicTripleExtractor:
                 triples_list.append((response, "mentions", subject))
         
         return triples_list
-    
+
     def _get_subjects(self, response):
         """
         Yet to be implemented, will be used to draw themes and subjects from responses.
         """
-
         return []
-        pass
-            
 
     def _get_question_response_pair(self, text):
         """
@@ -72,4 +69,3 @@ class BasicTripleExtractor:
             pairs[prev_question] = cur_response
         
         return pairs
-

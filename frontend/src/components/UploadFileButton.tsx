@@ -1,12 +1,14 @@
-import { FC, useEffect, useRef, useState } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 
 type UploadFileButtonProps = {
     onFileSelected? : (file : File) => void;
     onUploadComplete? : () => void;
     onRefresh? : () => void;
+    externalUploading?: boolean;
+    externalFolderUploading?: boolean;
 };
 
-const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUploadComplete, onRefresh }) => {
+const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUploadComplete, onRefresh, externalUploading, externalFolderUploading }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const folderInputRef = useRef<HTMLInputElement>(null);
 
@@ -17,7 +19,7 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
     useEffect(() => {
         let interval : NodeJS.Timeout;
 
-        if ( isUploading || isFolderUploading ) {
+        if ( isUploading || isFolderUploading || externalFolderUploading || externalUploading ) {
             interval = setInterval(() => {
                 setDotCount((prev) => (prev % 3) + 1);
             }, 500);
@@ -26,7 +28,7 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
         }
 
         return () => clearInterval(interval)
-    }, [ isUploading ]);
+    }, [ isUploading, isFolderUploading, externalUploading, externalFolderUploading ]);
 
     const handleButtonClick = (folder : boolean = false) => () => {
         if ( !isUploading && !isFolderUploading ) {
@@ -66,14 +68,37 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
 
     };
 
+    const effectiveUploading = isUploading || externalUploading;
+    const effectiveFolderUploading = isFolderUploading || externalFolderUploading;
+
+    const fileButtonDisabled = effectiveUploading || effectiveFolderUploading;
+    const folderButtonDisabled = effectiveUploading || effectiveFolderUploading;
+
+    const fileButtonInactive = isFolderUploading || externalFolderUploading;
+    const folderButtonInactive = isUploading || externalUploading;
+
     return (
         <>
-            <button onClick={ handleButtonClick() } style={ { backgroundColor: "blue", width: "100%", color : 'white', padding: "5px 0px", borderRadius: "4px" } } disabled={ isUploading || isFolderUploading }>
-              { isUploading ? `Uploading${ '.'.repeat(dotCount) }` : 'Select File' }
+            <button
+                onClick={ handleButtonClick() }  disabled={fileButtonDisabled}
+                style={ {
+                    backgroundColor: "blue", width: "100%", color : 'white', padding: "5px 0px", borderRadius: "4px",
+                    cursor: fileButtonInactive ? "not-allowed" : "pointer",
+                    opacity: fileButtonInactive ? 0.6 : 1
+                } }
+            >
+              { effectiveUploading ? `Uploading${ '.'.repeat(dotCount) }` : 'Select File' }
             </button>
 
-            <button onClick={ handleButtonClick(true) } style={ { backgroundColor: "blue", width: "100%", color : 'white', padding: "5px 0px", borderRadius: "4px" } } disabled={ isUploading || isFolderUploading }>
-              { isFolderUploading ? `Uploading${ '.'.repeat(dotCount) }` : 'Select Folder' }
+            <button
+                onClick={ handleButtonClick(true) } disabled={folderButtonDisabled}
+                style={ {
+                    backgroundColor: "blue", width: "100%", color : 'white', padding: "5px 0px", borderRadius: "4px",
+                    cursor: folderButtonInactive ? "not-allowed" : "pointer",
+                    opacity: folderButtonInactive ? 0.6 : 1
+                } }
+            >
+              { effectiveFolderUploading ? `Uploading${ '.'.repeat(dotCount) }` : 'Select Folder' }
             </button>
 
 
