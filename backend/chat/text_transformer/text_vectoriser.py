@@ -47,6 +47,38 @@ class TextVectoriser:
             start = end - overlap if end - overlap > start else end 
 
         return chunks
+    
+    def chunk_by_sentence(self, text:str, max_sentences: int=4, overlap: int = 2) -> list[str]:
+        """
+        Method to chunk the text based on sentences.
+
+        """
+
+        chunks = text.split('.')
+
+        combined = []
+        start = 0
+        end = 0
+        while start < len(chunks):
+            combined_string = ""
+            for i in range(0, max_sentences + 1):
+                if (i + start) == len(chunks):
+                    start = len(chunks)
+                    break
+                else:
+                    combined_string += chunks[start+i] + "."
+            if (start + max_sentences) < len(chunks):
+                start += max_sentences - overlap
+
+            if combined_string != "":
+                combined.append(combined_string)
+        
+        print(combined)
+        return combined
+            
+
+
+
 
     def embed_text(self, chunks: list[str]) -> list[tuple[str, list[Tensor]]]:
         """

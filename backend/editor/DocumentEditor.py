@@ -2,8 +2,7 @@ import re
 from flask import Flask,  jsonify, request
 
 from mongodb.DocumentStore import DocumentStore
-from chat.text_transformer.neo4j_interactor import Neo4JInteractor
-from chat.text_transformer.text_vectoriser import TextVectoriser
+from chat.database_client.database_client import DatabaseClient
 from typing import Any, Callable
 
 
@@ -11,12 +10,10 @@ class DocumentEditor:
   
     def __init__(
         self, collection: DocumentStore.Collection,
-        vector_database: Neo4JInteractor,
-        vectoriser: TextVectoriser
+        database: DatabaseClient,
     ) -> None:
         self.__collection = collection
-        self.__vector_database = vector_database
-        self.__vectoriser = vectoriser
+        self.__database = database
 
     @staticmethod
     def __request_content(key: str, do_request: Callable[[str, str], tuple[Any, int]]):
@@ -32,10 +29,10 @@ class DocumentEditor:
         if not self.__collection.update_document(key, content):
             return jsonify({"error": "Document not found"}), 404
 
-        self.__vector_database.remove_node_by_file_id(key)
+        self.__database.remove_node_by_file_id(key)
 
-        self.__vector_database.store_multiple_vectors(
-            self.__vectoriser.chunk_and_embed_text(content), key
+        self.__database.store_entries(
+            content, key
         )
 
         return jsonify({"message": "Document updated successfully"}), 200
@@ -44,7 +41,7 @@ class DocumentEditor:
         if not self.__collection.rename_document(key, content):
             return jsonify({"error": "Document not found"}), 404
 
-        self.__vector_database.rekey_node(key, content)
+        self.__database.rekey_node(key, content)
 
         return jsonify({"message": "Document updated successfully"}), 200
 
@@ -60,7 +57,7 @@ class DocumentEditor:
             if current_key.startswith(dir):
                 new_key = content + "/" + current_key[len(dir):]
                 self.__collection.rename_document(current_key, new_key)
-                self.__vector_database.rekey_node(current_key, new_key)
+                self.__database.rekey_node(current_key, new_key)
 
         return jsonify({"message": "Document/s updated successfully"}), 200
 

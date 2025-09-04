@@ -1,10 +1,15 @@
-from neo4j import GraphDatabase
+from chat.database_client.database_client import DatabaseClient
+from chat.deepseek_client import DeepSeekClient
+
+from neo4j import GraphDatabase as Neo4jGraphDatabase
+from chat.basic_triple_extractor import BasicTripleExtractor
+import random
 from torch import Tensor
 import re
 
-class Neo4JInteractor:
+class GraphDatabase(DatabaseClient):
     """
-        A class for accessing and interacting with NEO4J
+        A class for accessing and interacting with neo4j
 
         :author: Jonathan Farrand
     """
@@ -12,17 +17,33 @@ class Neo4JInteractor:
         """
             Initialises NEO4JInteractor with driver to be used
         """
-        # self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+        #self._driver = Neo4jGraphDatabase.driver("neo4j://localhost:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
-        self._driver = GraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
+        self._driver = Neo4jGraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
 
         self.__create_vector_index()
+        self.__deepseek_client = DeepSeekClient()
+        self.__triple_extractor = BasicTripleExtractor()
     
     def close_driver(self) -> None:
         """
-            Closes the connection to the NEO4J database.
+            Closes the connection to the Neo4j database.
         """
         self._driver.close()
+        
+    def store_entries(self, text, file_id: str = None):
+        """
+            Stores multiple triples in Neo4j.
+
+            :param triples: List of (subject, predicate, object) tuples
+            :param file_id: Optional document ID for metadata
+        """
+        interviewee_id = "id" + str(random.randrange(0,1000))
+        triples = self.__triple_extractor.get_triples(text, "John Smith", interviewee_id)
+        #triples = self.__deepseek_client.chat_extract_triples(text)
+        
+        for subj, pred, obj in triples:
+            self.store_triple(subj, pred, obj, file_id)
 
     @staticmethod
     def slugify_reltype(rel_type: str) -> str:
@@ -36,39 +57,6 @@ class Neo4JInteractor:
         rel_type = re.sub(r'[^a-z0-9]+', '_', rel_type)
         return rel_type.upper()
     
-    def store_multiple_vectors(self, vectors: list[tuple[str, list[Tensor]]], file_id) -> None:
-        """
-            Stores multiple vectors in the NEO4J database.
-
-                :param list[tuple[str, list[float]]] vectors: A list containing the tuple pair of string and its corresponding vector
-        """
-        for vector_data in vectors:
-            text_chunk = vector_data[0]
-            vector = vector_data[1]
-            self.store_vector(text_chunk, file_id, vector)
-
-    def store_vector(self, text_chunk: str, file_id: str, vector: list[Tensor]) -> None:
-        """
-            Stores a vector in the NEO4J database.
-                :param str file_id: the id of the file that the text chunk is coming from
-                :param str text_chunk:                a text chunk for the vector to be stored
-                :param list[Tensor] vector:     the vector to be stored
-                
-        """
-
-        # Flatten and convert to float
-        if isinstance(vector[0], Tensor):  # if it's a list of Tensors
-            vector = [float(x) for x in vector[0]]
-
-        client = self._driver
-        with client.session() as session:
-            session.run(
-                """
-                CREATE (e:Embedding {text_chunk: $text_chunk, file_id: $file_id, vector: $vector})
-                """,
-                text_chunk=text_chunk, vector=vector, file_id=file_id 
-            )
-
     def store_triple(self, subject: str, predicate: str, object_: str, file_id: str = None):
         """
             Stores a single triple in Neo4j as nodes and a relationship.
@@ -103,18 +91,8 @@ class Neo4JInteractor:
             query += " SET r.file_id = $file_id"
 
         tx.run(query, subject=subject, object=object_, file_id=file_id)
-    
-    def store_triples(self, triples: list[tuple[str, str, str]], file_id: str = None):
-        """
-            Stores multiple triples in Neo4j.
-
-            :param triples: List of (subject, predicate, object) tuples
-            :param file_id: Optional document ID for metadata
-        """
-        for subj, pred, obj in triples:
-            self.store_triple(subj, pred, obj, file_id)
             
-    def __create_vector_index(self, vector_dimension: int = 385):
+    def __create_vector_index(self, vector_dimension: int = 384):
         """
         Creates a vector index on the 'vector' property of Embedding nodes.
 
@@ -132,33 +110,10 @@ class Neo4JInteractor:
                 }
             }
             """, dims=vector_dimension)
-
-    def search_text_chunk(self, vector: list[float], limit: int = 3) -> list[str]:
-        """
-            Searches the NEO4J database for the vectors nearest to the one provided, using the cosine metric.
-
-                :param list[Tensor] vector: the search query vector
-                :param int limit:           the maximum number of results to return
-
-                :return list[str]: the text chunks of the nearest vectors to the one provided
-        """
-        client = self._driver
-        with client.session() as session:
-            result = session.run(
-                """
-                MATCH (e:Embedding)
-                RETURN e.text_chunk
-                ORDER BY vector.similarity.cosine(e.vector, $vector) DESC
-                LIMIT $limit
-                """,
-                vector=vector, limit=limit
-            )
-
-            return [datum['e.text_chunk'] for datum in result.data()]
         
     def remove_node_by_file_id(self, file_id: str) -> None:
         """
-            Searches the NEO4J database for any nodes matching the provided file_id, and removes them.
+            Searches the Neo4j database for any nodes matching the provided file_id, and removes them.
 
                 :param str file_id: the file_id to be matched and removed
         """
@@ -173,28 +128,9 @@ class Neo4JInteractor:
                 file_id=file_id
             )
 
-    def rekey_node(self, file_id: str, new_id: str) -> None:
-        """
-        Searches the database for any nodes matching the provided file id, and rekeys with the provided id.
-
-        :param file_id: the id of the file to be rekeyed
-        :param new_id: the new id of the file
-        """
-        client = self._driver
-        with client.session() as session:
-            session.run(
-                """
-                MATCH (n)
-                WHERE n.file_id = $file_id
-                SET n.file_id = $new_id
-                """,
-                file_id=file_id,
-                new_id=new_id
-            )
-
     def remove_node_by_text(self, text_chunk: str) -> None:
         """
-            Searches the NEO4J database for any nodes matching the provided name, and removes them.
+            Searches the Neo4j database for any nodes matching the provided name, and removes them.
 
                 :param str text_chunk: the text chunk of the nodes to be matched and removed
         """
@@ -211,12 +147,14 @@ class Neo4JInteractor:
     
     def clear_database(self):
         """
-            Clears the entire NEO4J database by deleting all nodes and relationships.
+            Clears the entire Neo4j database by deleting all nodes and relationships.
         """
         with self._driver.session() as session:
             session.run("MATCH (n) DETACH DELETE n")
 
-    def search_by_entity(self, entity): 
+    def search(self, entity): 
+        # todo : find entity to search
+        results = self.__deepseek_client.chat_extract_triples_entities(entity)
         subject_query = """
         MATCH (s:Entity)-[r]->(o:Entity)
         WHERE s.name = $subject
@@ -238,3 +176,22 @@ class Neo4JInteractor:
         with self._driver.session() as session:
             result = session.run(query, params or {})
             return [record.data() for record in result]
+        
+    def rekey_node(self, file_id: str, new_id: str) -> None:
+        """
+        Searches the database for any nodes matching the provided file id, and rekeys with the provided id.
+
+        :param file_id: the id of the file to be rekeyed
+        :param new_id: the new id of the file
+        """
+        client = self._driver
+        with client.session() as session:
+            session.run(
+                """
+                MATCH (n)
+                WHERE n.file_id = $file_id
+                SET n.file_id = $new_id
+                """,
+                file_id=file_id,
+                new_id=new_id
+            )

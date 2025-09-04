@@ -2,8 +2,10 @@ from flask import Flask
 from flask_cors import CORS
 
 from chat.bot import Chatbot
-from chat.text_transformer.neo4j_interactor import Neo4JInteractor
-from chat.text_transformer.text_vectoriser import TextVectoriser
+from chat.database_client.database_client import DatabaseClient
+from chat.database_client.vector_database import VectorDatabase
+from chat.database_client.graph_database import GraphDatabase
+
 from mongodb.DocumentStore import DocumentStore
 from upload.DocumentUploader import DocumentUploader
 from editor.DocumentRetriever import DocumentRetriever
@@ -18,18 +20,18 @@ def initialise_collection() -> DocumentStore.Collection:
     return collection
 
 
-def initialise_vector_database() -> tuple[Neo4JInteractor, TextVectoriser]:
-    return Neo4JInteractor(), TextVectoriser()
+def initialise_database() -> DatabaseClient:
+    return GraphDatabase()
 
 
 def register_upload_routes(app: Flask) -> None:
     collection = initialise_collection()
-    vector_db, vectoriser = initialise_vector_database()
-    document_uploader = DocumentUploader(collection, vector_db, vectoriser)
-    chat_bot = Chatbot(vector_db, vectoriser)
+    db = initialise_database()
+    document_uploader = DocumentUploader(collection, db)
+    chat_bot = Chatbot(db)
     document_retriever = DocumentRetriever(collection)
-    document_editor = DocumentEditor(collection, vector_db, vectoriser)
-    document_remover = DocumentRemover(collection, vector_db)
+    document_editor = DocumentEditor(collection, db)
+    document_remover = DocumentRemover(collection, db)
 
     document_uploader.register_routes(app)
     chat_bot.register_routes(app)

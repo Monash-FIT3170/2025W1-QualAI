@@ -1,7 +1,7 @@
+from chat.database_client.database_client import DatabaseClient
 import re
 from flask import Flask, jsonify
 
-from chat.text_transformer.neo4j_interactor import Neo4JInteractor
 from mongodb.DocumentStore import DocumentStore
 
 
@@ -17,7 +17,7 @@ class DocumentRemover:
     """
   
     def __init__(
-        self, collection: DocumentStore.Collection, vector_database: Neo4JInteractor
+        self, collection: DocumentStore.Collection, database: DatabaseClient
     ) -> None:
         """
         Is defined using the two used database types for the system
@@ -26,7 +26,7 @@ class DocumentRemover:
         :param vector_database: Neo4J vector database
         """
         self.__collection = collection
-        self.__vector_database = vector_database
+        self.__database = database
 
     def register_routes(self, app: Flask) -> None:
         """
@@ -45,7 +45,7 @@ class DocumentRemover:
             """
             try:
                 self.__collection.remove_document(file_key)
-                self.__vector_database.remove_node_by_file_id(file_key)
+                self.__database.remove_node_by_file_id(file_key)
             
                 return jsonify({"message": f"{file_key} successfully removed"}), 200
             except Exception as e:
@@ -64,7 +64,7 @@ class DocumentRemover:
                 for doc in docs:
                     key = doc.get("key")
                     self.__collection.remove_document(key)
-                    self.__vector_database.remove_node_by_file_id(key)
+                    self.__database.remove_node_by_file_id(key)
 
                 return jsonify({"message": f"{dir} successfully removed"}), 200
             except Exception as e:

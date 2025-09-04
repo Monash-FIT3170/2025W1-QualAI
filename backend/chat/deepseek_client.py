@@ -2,14 +2,8 @@ import json
 import re
 
 import requests
-
-from config.config import JWS_KEY, API_URL
-from mongodb.DocumentStore import DocumentStore
-from .text_transformer.neo4j_interactor import Neo4JInteractor
-# main testing imports
-from .text_transformer.text_pipeline import TextPipeline
-from .text_transformer.text_vectoriser import TextVectoriser
-
+from chat.basic_triple_extractor import BasicTripleExtractor
+import random
 
 class DeepSeekClient: 
     """
@@ -23,10 +17,10 @@ class DeepSeekClient:
         """
         Initializes the Chatbot class with API URL and JWS key
         """
-        self.api_url = "http://ollama:11434/api/chat"
-        self.jws_key = JWS_KEY
+        self.api_url = "http://ollama:11434/api/chat"      
+        #self.api_url = "http://localhost:11434/api/generate"
+        
         self.headers = {
-            'Authorization': f'Bearer {JWS_KEY}',
             'Content-Type': 'application/json'
         }
 
@@ -39,7 +33,149 @@ class DeepSeekClient:
 
         :return: the cleaned text with think block removed
         """
-        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+    
+    def chat_extract_triples(self, text: str) -> list[tuple[str, str, str]]:
+        """
+        Uses the LLM to extract triples from a message in the output format:
+
+        (Subject, Predicate, Object)
+
+        :param text: The text we are to extract triple from 
+        :return: A list of triples 
+        """
+        # TODO: modify data with options to fine-tune
+        data = {
+            "model": "deepseek-r1:1.5b",
+            "prompt": (
+                "You are an AI helping humans extract knowledge triples about all relevant people, things, concepts, etc. "
+                "Extract ALL of the knowledge triples from the text provided to you. "
+                "Ensure that you consider the context of the ENTIRE statement. "
+                "DO NOT output explanations, reasoning, or anything else. "
+                "Your output MUST ONLY be:\n"
+                "- One or more triples in the format (SUBJECT, PREDICATE, OBJECT), separated by '|'\n"
+                "- Or exactly 'NONE'\n\n"
+
+                "EXAMPLE\n"
+                "Barack Obama was born in Honolulu, a city of the US.\n"
+                "Output: (Barack Obama, was born in, Honolulu)|(Honolulu, is in, US)|(Honolulu, is a, city)\n"
+                "END OF EXAMPLE\n\n"
+
+                "EXAMPLE\n"
+                "I'm going to the store.\n"
+                "Output: NONE\n"
+                "END OF EXAMPLE\n\n"
+
+                "EXAMPLE\n"
+                "Hi Jae! Did you know that Jae likes to cook steak whilst listening to music. "
+                "Also, he recently got a new job which his teacher Rio, introduced him to.\n"
+                "Output: (Jae, likes to cook, steak)|(Jae, listens to, music)|(Jae, has a, job)|"
+                "(Jae, is taught by, Rio)|(Rio, has a student called, Jae)\n"
+                "END OF EXAMPLE\n\n"
+
+                "YOUR TURN\n"
+                f"{text}\n"
+                "Output:"
+            )
+        }
+
+        response = requests.post(self.api_url, headers = self.headers, json = data)
+
+        # NDJSON: split by lines and parse each one
+        messages = []
+        for line in response.text.strip().splitlines():
+            try:
+                obj = json.loads(line)
+                if "response" in obj:
+                    messages.append(obj["response"])
+            except json.JSONDecodeError as e:
+                print("Skipping malformed JSON line:", line, e)
+
+        # Join all message content
+        full_reply = "".join(messages)
+
+        # Strip internal <think>...</think> tags or anything custom
+        reply = self.remove_think_blocks(full_reply)
+
+        if reply == "NONE":
+            return []
+
+        matches = re.findall(r"\(([^)]*)\)", reply)
+        tuples = [tuple(part.strip() for part in m.split(',', 2)) for m in matches]
+
+        return tuples
+    
+    def chat_extract_triples_entities(self, text: str) -> list[tuple[str, str, str]]:
+        """
+        Uses the LLM to extract triples from a message in the output format:
+
+        (Subject, Predicate, Object)
+
+        :param text: The text we are to extract triple from 
+        :return: A list of triples 
+        """
+        # TODO: modify data with options to fine-tune
+        data = {
+            "model": "deepseek-r1:1.5b",
+            "prompt": (
+                "You are an AI helping humans extract knowledge triples about all relevant people, things, concepts, etc. "
+                "Extract ALL of the knowledge OBJECTS / SUBJECTS from the text provided to you. Ensure these are NOUNS "
+                "This is for the purpose of searching a knowledge triples"
+                "Ensure that you consider the context of the ENTIRE statement. "
+                "DO NOT output explanations, reasoning, or anything else. "
+                "Your output MUST ONLY be:\n"
+                "- One or more triples in the format SUBJECT, separated by '|'\n"
+                "- Or exactly 'NONE'\n\n"
+
+                "EXAMPLE\n"
+                "Barack Obama was born in Honolulu, a city of the US.\n"
+                "Output: Barack Obama | Honolulu | US | Honolulu | city\n"
+                "END OF EXAMPLE\n\n"
+
+                "EXAMPLE\n"
+                "I'm going to the store.\n"
+                "Output: NONE\n"
+                "END OF EXAMPLE\n\n"
+
+                "EXAMPLE\n"
+                "Hi Jae! Did you know that Jae likes to cook steak whilst listening to music. "
+                "Also, he recently got a new job which his teacher Rio, introduced him to.\n"
+                "Output: Jae | steak | music | job | Rio \n"
+                "END OF EXAMPLE\n\n"
+
+                "YOUR TURN\n"
+                f"{text}\n"
+                "Output:"
+            )
+        }
+
+        response = requests.post(self.api_url, headers = self.headers, json = data)
+
+        # NDJSON: split by lines and parse each one
+        messages = []
+        for line in response.text.strip().splitlines():
+            try:
+                obj = json.loads(line)
+                if "response" in obj:
+                    messages.append(obj["response"])
+            except json.JSONDecodeError as e:
+                print("Skipping malformed JSON line:", line, e)
+
+        # Join all message content
+        full_reply = "".join(messages)
+
+        # Strip internal <think>...</think> tags or anything custom
+        reply = self.remove_think_blocks(full_reply)
+
+        # print(f"raw triple extraction: {full_reply}")
+
+        if reply == "NONE":
+            return []
+
+        matches = reply.split("|")
+        tuples = [tuple(part.strip() for part in m.split(',', 2)) for m in matches]
+
+        return tuples
 
     def chat_with_model(self, message):
         """
@@ -52,8 +188,8 @@ class DeepSeekClient:
             "model": "deepseek-r1:1.5b",
             "messages": [
                 {
-                    "role": "user",
-                    "content": message
+                    "role": "system",
+                    "content": ""
                 }
             ]
         }
@@ -113,6 +249,124 @@ class DeepSeekClient:
             }
         }
         response = requests.post(self.api_url, headers=self.headers, json=data)
+
+        # NDJSON: split by lines and parse each one
+        messages = []
+        for line in response.text.strip().splitlines():
+            try:
+                obj = json.loads(line)
+                msg = obj.get("message", {}).get("content")
+                if msg:
+                    messages.append(msg)
+            except json.JSONDecodeError as e:
+                print("Skipping malformed JSON line:", line, e)
+
+        # Join all message content
+        full_reply = "".join(messages)
+
+        # Strip internal <think>...</think> tags or anything custom
+        reply = self.remove_think_blocks(full_reply)
+
+        return reply
+    
+    def text_to_triples(self, text: str) -> list[tuple[str, str, str]]:
+        """
+        Uses the LLM to extract triples from a message in the output format:
+
+        (Subject, Predicate, Object)
+
+        :param text: The response from the LLM to extract triples from
+        :return: A list of triples 
+        """
+        triples = self.chat_extract_triples(text)
+        if triples == "NONE":
+            return []
+        print(f"Extracted triples: {triples}")
+        if type(triples) is not list:
+            cleaned_text = self.remove_think_blocks(triples)
+            cleaned_text = self.string_to_triples(cleaned_text)
+        else:
+            return triples
+        return cleaned_text
+    
+    def string_to_triples(self, text: str) -> list[tuple[str, str, str]]:
+        """
+        Converts a string of triples into a list of tuples
+
+        :param text: The string of triples to convert
+        :return: A list of tuples representing the triples
+        """
+        triples = []
+        matches = re.findall(r'\((.*?)\)', text, flags=re.DOTALL)
+        
+        for match in matches:
+            parts = match.split(',', 2)  
+            if len(parts) == 3:
+                triples.append(tuple(part.strip() for part in parts))
+        return triples
+        
+
+
+    def chat_with_model(self, message):
+        """
+        Sends a basic message to the model and returns the response.
+
+        :param message: The message to send to the model.
+        :return: The JSON response from the API.
+        """
+        data = {
+            "model": "deepseek-r1:1.5b",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": ""
+                }
+            ]
+        }
+    
+    def chat_with_model_triples(self, triples, message):
+        """
+        Sends a message to the model with additional context injected as a system message.
+
+        :param context_text: The external context (e.g., from a document).
+        :param message: The user’s question.
+        :return: The JSON response from the API.
+        """
+        data = {
+            "model": "deepseek-r1:1.5b",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": (
+                        "You must answer questions using only the provided triples and examples"
+                        "Think step by step"
+
+                        f"Knowledge Triples from query: {triples}"
+
+                        "Rules: 1. Use ONLY the facts from the triples. 2. If the answer is not directly supported, say 'The answer is not avaliable from the provided transcripts'" 
+
+                        "Return a short and factual answer, sticking to the question's scope. Get straight to the facts, concisely" 
+
+                        "Task: Now, use triples to answer the following query"
+            )
+             
+             },
+                {
+                    "role": "user",
+                    "content": message
+                }
+            ],
+            "options": {
+                "temperature": 0.2,
+                "top_p": 0.9,
+                "top_k": 50,
+                "repeat_penalty": 1.2,
+                "presence_penalty": 0.5,
+                "num_predict": 2048
+            }
+        }
+        response = requests.post(self.api_url, headers=self.headers, json=data)
+        print(response.text)
 
         # NDJSON: split by lines and parse each one
         messages = []

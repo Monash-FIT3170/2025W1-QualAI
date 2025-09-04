@@ -1,6 +1,6 @@
 import traceback
 
-from chat.text_transformer.neo4j_interactor import Neo4JInteractor
+from chat.database_client.database_client import DatabaseClient
 from chat.text_transformer.text_vectoriser import TextVectoriser
 
 from flask import Flask
@@ -17,13 +17,12 @@ class Chatbot:
     :author: Felix Chung
     """
 
-    def __init__(self, vector_db: Neo4JInteractor, text_converter: TextVectoriser):
+    def __init__(self, db: DatabaseClient):
         """
         Initializes the Chatbot class by with instances of the DeepSeekClient, TextVectoriser, and Neo4JInteractor classes.
         """
         self.deepseek_client = DeepSeekClient()
-        self.neoInteractor = vector_db
-        self.text_converter = text_converter
+        self.db = db
 
     def chat_with_model(self, query: str) -> str:
         """
@@ -34,14 +33,40 @@ class Chatbot:
         :return: The JSON response from the API.
         """
 
-        search_vector = self.text_converter.chunk_and_embed_text(query)[0][1]
-        context = self.neoInteractor.search_text_chunk(search_vector, limit=3)
+        context = self.db.search(query)
         if len(context) > 0:
             response = self.deepseek_client.chat_with_model_context_injection(context, query)
         else:
             response = self.deepseek_client.chat_with_model(query)
         
         return response
+        
+    def chat_with_model_triples(self, query: str) -> str: 
+        """
+        Process a chat message return the model's reponse. 
+        Extracts triples form the query then searchs in Knowledge Graph database for context. 
+
+        :param str message: The message to send to the model. 
+        :return: The JSON response from the API 
+        """ 
+        triples = self.deepseek_client.chat_extract_triples(query)
+        
+        context_triples = ""
+
+        for triple in triples: 
+            subject = triple[0]
+            object = triple[1]
+            result = self.db.search(subject)
+
+            for row in result:
+                context_triples += f"{row['subject']} {row['predicate']} {row['object']}, "
+            
+            result = self.db.search(object)
+
+            for row in result:
+                context_triples += f"{row['subject']} {row['predicate']} {row['object']}, "
+
+        return self.deepseek_client.chat_with_model_triples(context_triples, query)
 
     def register_routes(self, app: Flask) -> None:
         @app.route('/chat', methods=['POST'])
@@ -70,4 +95,4 @@ class Chatbot:
         """
         Closes the connections to the Neo4j database.
         """
-        self.neoInteractor.close_driver()
+        self.db.close_driver()

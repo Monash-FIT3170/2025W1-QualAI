@@ -2,13 +2,14 @@ from mongodb.DocumentStore import DocumentStore
 from chat.text_transformer.neo4j_interactor import Neo4JInteractor
 from chat.text_transformer.text_vectoriser import TextVectoriser
 
-
 class TextPipeline():
     """`
     A class for transforming text data from mongodb to neo4j
 
     :author: Jonathan Farrand
     """
+
+
     def __init__(self, mongodb: DocumentStore = None, neo4jdb: Neo4JInteractor = None, vectoriser: TextVectoriser = None):
         """
             Initializes the TextPipeline class with the relevant classes
@@ -31,8 +32,21 @@ class TextPipeline():
             self._vectoriser = vectoriser
         else:
             self._vectoriser = TextVectoriser()
+        
     
+    def extract_triples(self, text: str):
+        """
+            Extracts triples from a text string.
+            Currently returns a fixed example for testing.
 
+            :param text: Input string to extract triples from
+            :return: List of subject-predicate-object tuples
+        """
+        return [
+            ("Alice", "loves", "programming"),
+            ("Alice", "met", "Bob")
+        ]
+    
     def process_and_store_single_file(self, database_name: str, collection_name: str, file_id: str, data_key: str = "content") -> None:
         """
             Accesses data from mongodb, converts it to vector data and then saves it in neo4j
@@ -65,7 +79,14 @@ class TextPipeline():
             :param file_id: The id of the file that the text is linked to.
             :param text: The text to be chunked and embedd into neo4j
         """
-
-        vector_data = self._vectoriser.chunk_and_embed_text(text)
-        self._neo4jdb.store_multiple_vectors(vector_data, file_id)
-
+        # error with storing vector data here so it's commented out rn
+        #chunks = self._vectoriser.chunk_text(text)
+        #vector_data = self._vectoriser.embed_text(chunks, title=file_id)
+        #self._neo4jdb.store_multiple_vectors(vector_data, file_id)
+        
+        # --- extract triples ---
+        # triples = self._deepseek.chat_extract_triples(text)
+        # test
+        triples = self.extract_triples(text)
+        if triples:
+            self._neo4jdb.store_triples(triples, file_id)
