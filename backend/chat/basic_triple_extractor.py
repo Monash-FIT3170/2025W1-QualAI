@@ -71,7 +71,3 @@ class BasicTripleExtractor:
         
         return pairs
 
-
-
-
-
