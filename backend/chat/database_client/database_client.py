@@ -36,3 +36,13 @@ class DatabaseClient(ABC):
                 :param str file_id: the file_id to be matched and removed
         """
         pass
+    
+    @abstractmethod 
+    def rekey_node(self, file_id: str, new_id: str) -> None:
+        """
+        Searches the database for any nodes matching the provided file id, and rekeys with the provided id.
+
+        :param file_id: the id of the file to be rekeyed
+        :param new_id: the new id of the file
+        """
+        pass

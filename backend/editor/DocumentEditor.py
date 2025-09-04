@@ -31,7 +31,7 @@ class DocumentEditor:
 
         self.__database.remove_node_by_file_id(key)
 
-        self.__vector_database.store_entries(
+        self.__database.store_entries(
             content, key
         )
 

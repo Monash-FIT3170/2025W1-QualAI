@@ -170,3 +170,22 @@ class GraphDatabase(DatabaseClient):
         with self._driver.session() as session:
             result = session.run(query, params or {})
             return [record.data() for record in result]
+        
+    def rekey_node(self, file_id: str, new_id: str) -> None:
+        """
+        Searches the database for any nodes matching the provided file id, and rekeys with the provided id.
+
+        :param file_id: the id of the file to be rekeyed
+        :param new_id: the new id of the file
+        """
+        client = self._driver
+        with client.session() as session:
+            session.run(
+                """
+                MATCH (n)
+                WHERE n.file_id = $file_id
+                SET n.file_id = $new_id
+                """,
+                file_id=file_id,
+                new_id=new_id
+            )
