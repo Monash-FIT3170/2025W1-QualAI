@@ -135,6 +135,12 @@ class DocumentStore:
                 )
             result = self.__collection.update_one({ "key": document_key }, { "$set": { "key" : new_name } })
             return result.modified_count > 0
+
+        def matching_documents(self, regex: str) -> Cursor[Mapping[str, Any]]:
+            """
+            :return: the set of documents with key matching the provided regex expression
+            """
+            return self.__collection.find({ "key" : { "$regex": regex }})
         
         def remove_document(self, document_key: str) -> None:
             """

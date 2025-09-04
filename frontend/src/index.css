@@ -132,5 +132,54 @@
   
   .editor-content {
     @apply p-4 min-h-[200px] outline-none;
+    /* Ensure editor content has a background, especially if parent is transparent */
+    /* You might want to theme this for light/dark mode if not handled by Tailwind's dark: prefix */
+    @apply bg-white dark:bg-gray-800; 
+  }
+
+  /* --- NEW CSS RULES FOR EDITOR FEATURES --- */
+
+  /* Styles for commented text */
+  .commented-text {
+    background-color: rgba(255, 255, 0, 0.3); /* Light yellow, semi-transparent */
+    border-bottom: 2px dotted orange;
+    cursor: help; /* Indicate it's interactive */
+    /* Add transition for smoother hover effects if you plan them */
+  }
+
+  /* Optional: Style for when a comment is active or hovered,
+    you'd need JavaScript to add/remove an 'active-comment' class for this. */
+  .commented-text.active-comment,
+  .commented-text:hover {
+    background-color: rgba(255, 255, 0, 0.5);
+  }
+
+  /* Basic styling for the color input to make it less obtrusive */
+  /* For Webkit browsers (Chrome, Safari, new Edge) */
+  input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+  input[type="color"]::-webkit-color-swatch {
+    border: none; /* Remove default border */
+    border-radius: 4px; /* Optional: makes it look a bit nicer */
+  }
+
+  /* For Firefox - it's a bit trickier to style extensively */
+  input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 4px;
+  }
+  
+  /* General styling for the color input itself */
+  input[type="color"] {
+    width: 20px; /* Adjust size as needed */
+    height: 20px;
+    border: 1px solid var(--border); /* Use theme border color */
+    border-radius: 4px; /* Consistent rounding */
+    padding: 0; /* Remove default padding */
+    background: none; /* Remove default background if any */
+    cursor: pointer;
+    /* Vertical alignment fix if needed within flex containers */
+    vertical-align: middle; 
   }
 }

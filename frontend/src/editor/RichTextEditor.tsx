@@ -3,57 +3,12 @@ import React, { useEffect } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
+import TextStyle from '@tiptap/extension-text-style'; // Verify package installation
+import Color from '@tiptap/extension-color';      // Verify package installation
 import Highlight from '@tiptap/extension-highlight';
-import TextStyle from '@tiptap/extension-text-style';
-import { Extension } from '@tiptap/core';
+import CommentMark from '../tiptap-extensions/CommentMark';
+import FontSize from './FontSize';
 import MenuBar from './MenuBar';
-
-const FontSize = Extension.create({
-  name: 'fontSize',
-
-  addOptions() {
-    return {
-      types: ['textStyle'],
-    }
-  },
-
-  addGlobalAttributes() {
-    return [
-      {
-        types: this.options.types,
-        attributes: {
-          fontSize: {
-            default: null,
-            parseHTML: element => element.style.fontSize || null,
-            renderHTML: attributes => {
-              if (!attributes.fontSize) {
-                return {}
-              }
-              return {
-                style: `font-size: ${attributes.fontSize}`,
-              }
-            },
-          },
-        },
-      },
-    ]
-  },
-
-  addCommands() {
-    return {
-      setFontSize: (fontSize: string | null) => ({ chain }: { chain: any }) => {
-        return chain()
-          .setMark('textStyle', { fontSize })
-          .run()
-      },
-      unsetFontSize: () => ({ chain }: { chain: any }) => {
-        return chain()
-          .setMark('textStyle', { fontSize: null })
-          .run()
-      },
-    } as any
-  },
-})
 
 interface RichTextEditorProps {
   initialContent?: string;
@@ -83,11 +38,18 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         },
       }),
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
+        types: ['paragraph'],
       }),
-      Highlight,
       TextStyle,
-      FontSize,
+      Color,
+      Highlight.configure({
+        multicolor: true,
+      }),
+      FontSize.configure({
+        types: ['textStyle'],
+        defaultSize: '16px',
+      }),
+      CommentMark,
     ],
     content: initialContent,
     editorProps: {
@@ -95,7 +57,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         class: 'min-h-[156px] border rounded-md bg-slate-50 py-2 px-3 focus:outline-none',
       },
     },
-    onUpdate: ({ editor }) => {
+    onUpdate: ({editor}) => {
       if (onChange) {
         onChange({
           html: editor.getHTML(),
@@ -113,14 +75,34 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [initialContent, editor]);
 
   return (
-    <div className={`flex flex-col h-full ${className}`}>
-      <MenuBar editor={editor} fileKey={fileKey ?? ""}/>
-      <div className="flex-grow">
-        <EditorContent editor={editor} />
-      </div>
-      
-    </div>
-  );
-};
+      <div className={`flex flex-col h-full ${className}`}>
+        <MenuBar editor={editor} fileKey={fileKey ?? ""}/>
+        <div className="flex-grow">
+          <EditorContent editor={editor}/>
+          {/*<div className="border-t border-gray-700 p-2 flex justify-between mt-1">*/}
+          {/*  <button*/}
+          {/*      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"*/}
+          {/*      onClick={() => {*/}
+          {/*        const htmlContent = editor.getHTML();*/}
+          {/*        console.log("Editor HTML content:", htmlContent);*/}
+          {/*        // Add actual save logic here*/}
+          {/*      }}*/}
+          {/*  >*/}
+          {/*    Save Changes*/}
+          {/*  </button>*/}
+          {/*  <button*/}
+          {/*      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"*/}
+          {/*      onClick={() => {*/}
+          {/*        editor.commands.setContent("<p>Content discarded.</p>");*/}
+          {/*        // Add actual discard logic here*/}
+          {/*      }}*/}
+          {/*  >*/}
+          {/*    Discard*/}
+          {/*  </button>*/}
+          {/*</div>*/}
 
-export default RichTextEditor;
+        </div>
+      </div>
+  );
+}
+  export default RichTextEditor;
