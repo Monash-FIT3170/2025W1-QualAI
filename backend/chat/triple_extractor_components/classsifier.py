@@ -2,7 +2,7 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.tag import pos_tag
 
-from backend.chat.triple_extractor_components.constants import WORD_TYPES, WordType, SUBJECT_BAD_APPLES
+from chat.triple_extractor_components.constants import WORD_TYPES, WordType, SUBJECT_BAD_APPLES
 
 
 
@@ -397,12 +397,17 @@ class Classifier:
             sentence += f"{group} ({word_type}) "
         print(sentence)    
 
+    def get_grouped_sentence(self):
+        if not self.grouped:
+            self.group_sentence()
+        return self.grouped_sentence
+
     def get_subjects(self, sentence = None):
         if sentence:
             self.reset_sentence(sentence)
-            response = self.get_grouped_2_sentence()
+            response = self.grouped
         else:
-            response = self.get_grouped_2_sentence()
+            response = self.grouped
         
         subjects = []
         for word, word_type in response:

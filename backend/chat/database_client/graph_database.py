@@ -154,16 +154,22 @@ class GraphDatabase(DatabaseClient):
 
     def search(self, entity): 
         # todo : find entity to search
-        results = self.__triple_extractor._get_subjects(entity)
+        results = self.__triple_extractor.get_subjects(entity)
         subject_query = """
         MATCH (s:Entity)-[r]->(o:Entity)
         WHERE s.name = $subject
         RETURN s.name AS subject, type(r) AS predicate, o.name AS object
         """
-        subject_params = {"subject": entity}
 
-        subject_results = self.run_cypher_query(subject_query, subject_params)
-        return subject_results
+        final_results = []
+        for result in results:
+            subject_params = {"subject": result}
+            final_results.append(self.run_cypher_query(subject_query, subject_params))
+            
+
+        # subject_results = self.run_cypher_query(subject_query, subject_params)
+        raise ValueError(final_results , results)
+        return final_results
             
     def run_cypher_query(self, query: str, params: dict = None):
         """
