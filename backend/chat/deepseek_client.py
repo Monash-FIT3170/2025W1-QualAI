@@ -176,7 +176,37 @@ class DeepSeekClient:
         tuples = [tuple(part.strip() for part in m.split(',', 2)) for m in matches]
 
         return tuples
+    
+    def chat_extract_triples_with_highlight(self, text: str) -> list[dict]:
+        """
+        Extract triples and mark 'highlighted' = True if the subject/object text has ** around it.
+        
+        Returns a list of dicts:
+        [
+            {"subject": "Alice", "predicate": "LOVES", "object": "Bob", "highlighted": True/False}
+        ]
+        """
+        triples = self.chat_extract_triples(text)  # Use existing extraction
+        highlighted_triples = []
 
+        for s, p, o in triples:
+            # Check for '**' and remove them
+            s_high = bool(re.search(r"\*\*(.*?)\*\*", s))
+            o_high = bool(re.search(r"\*\*(.*?)\*\*", o))
+            
+            # Remove ** from text
+            s_clean = re.sub(r"\*\*(.*?)\*\*", r"\1", s)
+            o_clean = re.sub(r"\*\*(.*?)\*\*", r"\1", o)
+
+            highlighted_triples.append({
+                "subject": s_clean,
+                "predicate": p,
+                "object": o_clean,
+                "highlighted": s_high or o_high
+            })
+
+        return highlighted_triples
+    
     def chat_with_model(self, message):
         """
         Sends a basic message to the model and returns the response.
