@@ -56,4 +56,4 @@ class DocumentUploader:
         transcribed_text = audio_transcriber.transcribe(path)
         self.__collection.add_document(name, transcribed_text)
         self.__database.store_entries(transcribed_text, name)
-        return jsonify({"status": "ok"}), 
+        return jsonify({"status": "ok"}), 200
