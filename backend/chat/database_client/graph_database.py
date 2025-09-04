@@ -2,6 +2,8 @@ from chat.database_client.database_client import DatabaseClient
 from chat.deepseek_client import DeepSeekClient
 
 from neo4j import GraphDatabase as Neo4jGraphDatabase
+from chat.basic_triple_extractor import BasicTripleExtractor
+import random
 from torch import Tensor
 import re
 
@@ -21,6 +23,7 @@ class GraphDatabase(DatabaseClient):
 
         self.__create_vector_index()
         self.__deepseek_client = DeepSeekClient()
+        self.__triple_extractor = BasicTripleExtractor()
     
     def close_driver(self) -> None:
         """
@@ -35,7 +38,9 @@ class GraphDatabase(DatabaseClient):
             :param triples: List of (subject, predicate, object) tuples
             :param file_id: Optional document ID for metadata
         """
-        triples = self.__deepseek_client.chat_extract_triples(text)
+        interviewee_id = "id" + str(random.randrange(0,1000))
+        triples = self.__triple_extractor.get_triples(text, "John Smith", interviewee_id)
+        #triples = self.__deepseek_client.chat_extract_triples(text)
         
         for subj, pred, obj in triples:
             self.store_triple(subj, pred, obj, file_id)
