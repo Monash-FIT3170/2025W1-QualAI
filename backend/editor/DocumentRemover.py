@@ -1,6 +1,9 @@
 from chat.database_client.database_client import DatabaseClient
-from mongodb.DocumentStore import DocumentStore
+import re
 from flask import Flask, jsonify
+
+from mongodb.DocumentStore import DocumentStore
+
 
 class DocumentRemover:
     """
@@ -32,7 +35,7 @@ class DocumentRemover:
 
         :params app: Flask application running the system
         """
-        @app.route('/delete/<string:file_key>', methods=['DELETE'])
+        @app.route('/delete/<path:file_key>', methods=['DELETE'])
         def delete_file(file_key: str):
             """
             Attempts to remove the file with associated file_key 
@@ -45,6 +48,25 @@ class DocumentRemover:
                 self.__database.remove_node_by_file_id(file_key)
             
                 return jsonify({"message": f"{file_key} successfully removed"}), 200
+            except Exception as e:
+                return jsonify({"error": str(e)}), 500
+
+        @app.route('/delete-dir/<path:dir>', methods=['DELETE'])
+        def delete_dir(dir: str):
+            """
+            Attempts to remove the file with associated file_key
+            in both the collection and vector database
+
+            :param file_key: file_key associated with a document in each database
+            """
+            try:
+                docs = self.__collection.matching_documents(f"^{re.escape(dir)}/")
+                for doc in docs:
+                    key = doc.get("key")
+                    self.__collection.remove_document(key)
+                    self.__database.remove_node_by_file_id(key)
+
+                return jsonify({"message": f"{dir} successfully removed"}), 200
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
             

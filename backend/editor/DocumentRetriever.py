@@ -1,4 +1,4 @@
-from flask import Flask,  jsonify
+from flask import Flask, jsonify
 
 from mongodb.DocumentStore import DocumentStore
 
@@ -17,12 +17,12 @@ class DocumentRetriever:
                 documents_cursor = self.__collection.get_all_documents()
                 documents = list(documents_cursor)
                 # Extract key for each document
-                result = [{"key": doc.get("key")} for doc in documents]
+                result = [{"key": doc.get("key"), "content": doc.get("content")} for doc in documents]
                 return jsonify(result), 200
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
             
-        @app.route('/documents/<string:file_key>', methods=['GET'])
+        @app.route('/documents/<path:file_key>', methods=['GET'])
         def get_document(file_key):
             try:
                 doc = self.__collection.find_document(file_key)  

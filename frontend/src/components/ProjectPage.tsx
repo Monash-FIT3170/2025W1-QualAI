@@ -42,12 +42,13 @@ const ProjectPage = () => {
   return (
     <div className="min-h-screen flex">
       <Sidebar 
-      files={files}
-      onFileSelect={handleFileSelect}
-      onFileDelete={handleFileDelete}
-      onRefreshFiles={fetchFiles}/>
+        files={files}
+        onFileSelect={handleFileSelect}
+        onFileDelete={handleFileDelete}
+        onRefreshFiles={fetchFiles}
+      />
       <main className="flex-1 p-6">
-        <RichTextEditor initialContent={selectedFileContent} fileKey={selectedFileKey} />
+        <RichTextEditor initialContent={selectedFileContent} fileKey={selectedFileKey ?? undefined} />
       </main>
       <Chatbot />
     </div>
