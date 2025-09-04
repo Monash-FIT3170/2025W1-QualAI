@@ -3,11 +3,13 @@ import React, { useEffect } from 'react';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
-import TextStyle from '@tiptap/extension-text-style'; // Verify package installation
-import Color from '@tiptap/extension-color';      // Verify package installation
+import {TextStyle} from '@tiptap/extension-text-style'; // Verify package installation
+// import Color from '@tiptap/extension-color';      // Verify package installation
 import Highlight from '@tiptap/extension-highlight';
 import CommentMark from '../tiptap-extensions/CommentMark';
 import MenuBar from './MenuBar';
+
+
 
 interface RichTextEditorProps {
   initialContent?: string;
@@ -40,7 +42,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         types: ['heading', 'paragraph'],
       }),
       TextStyle,
-      Color,
+//      Color,
       Highlight.configure({
         multicolor: true,
       }),
