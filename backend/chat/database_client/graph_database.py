@@ -17,7 +17,7 @@ class GraphDatabase(DatabaseClient):
         """
         self._driver = Neo4jGraphDatabase.driver("neo4j://localhost:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
-        # self._driver = Neo4jGraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
+        self._driver = Neo4jGraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
 
         self.__create_vector_index()
         self.__deepseek_client = DeepSeekClient()
