@@ -7,6 +7,7 @@ import {TextStyle} from '@tiptap/extension-text-style'; // Verify package instal
 // import Color from '@tiptap/extension-color';      // Verify package installation
 import Highlight from '@tiptap/extension-highlight';
 import CommentMark from '../tiptap-extensions/CommentMark';
+import FontSize from './FontSize';
 import MenuBar from './MenuBar';
 
 
@@ -39,12 +40,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         },
       }),
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
+        types: ['paragraph'],
       }),
       TextStyle,
 //      Color,
       Highlight.configure({
         multicolor: true,
+      }),
+      FontSize.configure({
+        types: ['textStyle'],
+        defaultSize: '16px',
       }),
       CommentMark,
     ],

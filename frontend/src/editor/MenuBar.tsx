@@ -1,14 +1,11 @@
 // MenuBar.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Editor } from '@tiptap/react';
 import {
   AlignCenter,
   AlignLeft,
   AlignRight,
   Bold,
-  Heading1,
-  Heading2,
-  Heading3,
   Highlighter,
   Italic,
   List,
@@ -16,7 +13,10 @@ import {
   Strikethrough,
   Palette,         // For multi-color highlight picker
   Paintbrush,      // For text color picker
-  MessageSquarePlus // For comments
+  MessageSquarePlus, // For comments
+  ChevronDown,
+  Minus,
+  Plus
 } from 'lucide-react';
 import Toggle from './Toggle';
 
@@ -29,6 +29,35 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   if (!editor) {
     return null;
   }
+
+  const [currentFontSize, setCurrentFontSize] = useState(16);
+  const [showFontSizes, setShowFontSizes] = useState(false);
+  
+  const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateFontSize = () => {
+      // Try to get the current font size from the selection
+      const attributes = editor.getAttributes('textStyle');
+      if (attributes.fontSize) {
+        const numericSize = parseInt(attributes.fontSize.replace('px', ''));
+        setCurrentFontSize(numericSize);
+      } else {
+        setCurrentFontSize(16); // default size
+      }
+    };
+
+    // Update font size when selection changes
+    editor.on('selectionUpdate', updateFontSize);
+    editor.on('transaction', updateFontSize);
+
+    return () => {
+      editor.off('selectionUpdate', updateFontSize);
+      editor.off('transaction', updateFontSize);
+    };
+  }, [editor]);
 
   const handleFileUpdate = () => {
     if (!editor || !fileKey) {
@@ -78,27 +107,25 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     // If commentText is null (user cancelled), do nothing or handle as needed.
   };
 
+  // Font size controls
+  const setFontSize = (size: number) => {
+    (editor as any).chain().focus().setFontSize(`${size}px`).run();
+    setCurrentFontSize(size);
+    setShowFontSizes(false);
+  };
+
+  const increaseFontSize = () => {
+    const newSize = currentFontSize + 1;
+    setFontSize(newSize);
+  };
+
+  const decreaseFontSize = () => {
+    const newSize = Math.max(8, currentFontSize - 1); 
+    setFontSize(newSize);
+  };
 
   // Original options array - we'll remove the generic highlight toggle later
   const existingOptions = [
-    {
-      icon: <Heading1 className="size-4" />,
-      onClick: () => editor.chain().focus().toggleHeading({ level: 1 }).run(),
-      pressed: editor.isActive('heading', { level: 1 }),
-      title: "Heading 1",
-    },
-    {
-      icon: <Heading2 className="size-4" />,
-      onClick: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
-      pressed: editor.isActive('heading', { level: 2 }),
-      title: "Heading 2",
-    },
-    {
-      icon: <Heading3 className="size-4" />,
-      onClick: () => editor.chain().focus().toggleHeading({ level: 3 }).run(),
-      pressed: editor.isActive('heading', { level: 3 }),
-      title: "Heading 3",
-    },
     {
       icon: <Bold className="size-4" />,
       onClick: () => editor.chain().focus().toggleBold().run(),
@@ -155,6 +182,52 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   return (
       <div
           className="border rounded-md p-1 mb-1 bg-slate-50 dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center">
+          
+          {/* Font Size Controls */}
+          <div className="flex items-center space-x-1 border-r pr-2 mr-2">
+            <button
+              onClick={decreaseFontSize}
+              className="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-slate-700"
+              title="Decrease font size"
+            >
+              <Minus className="size-4" />
+            </button>
+            
+            <div className="relative">
+              <button
+                onClick={() => setShowFontSizes(!showFontSizes)}
+                className="flex items-center space-x-1 px-2 py-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 min-w-[50px]"
+              >
+                <span className="text-sm font-medium">{currentFontSize}</span>
+                <ChevronDown className="size-3" />
+              </button>
+              
+              {showFontSizes && (
+                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+                  {fontSizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setFontSize(size)}
+                      className={`block w-full text-left px-3 py-1 text-sm hover:bg-gray-100 dark:hover:bg-slate-700 ${
+                        currentFontSize === size ? 'bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-300' : ''
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <button
+              onClick={increaseFontSize}
+              className="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-slate-700"
+              title="Increase font size"
+            >
+              <Plus className="size-4" />
+            </button>
+          </div>
+          
           {existingOptions.map((option, index) => (
               <Toggle
                   key={index}
