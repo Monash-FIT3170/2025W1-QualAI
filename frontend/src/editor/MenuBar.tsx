@@ -25,6 +25,15 @@ interface MenuBarProps {
   fileKey: string;
 }
 
+const fontFamilies = [
+  { name: 'Default', value: '' },
+  { name: 'Arial', value: 'Arial, sans-serif' },
+  { name: 'Courier New', value: '"Courier New", Courier, monospace' },
+  { name: 'Georgia', value: 'Georgia, serif' },
+  { name: 'Times New Roman', value: '"Times New Roman", Times, serif' },
+  { name: 'Verdana', value: 'Verdana, Geneva, sans-serif' },
+];
+
 const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   if (!editor) {
     return null;
@@ -179,6 +188,9 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     },
   ];
 
+  // Current font family of selection (empty string if none)
+  const currentFontFamily = editor.getAttributes('textStyle').fontFamily || '';
+
   return (
       <div
           className="border rounded-md p-1 mb-1 bg-slate-50 dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center">
@@ -243,6 +255,28 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
 
           {/* Separator */}
           <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2"/>
+
+          {/* Font Family Selector */}
+          <select
+            value={currentFontFamily}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value) {
+                editor.chain().focus().setMark('textStyle', { fontFamily: value }).run();
+              } else {
+                editor.chain().focus().unsetMark('textStyle').run();
+              }
+            }}
+            className="rounded p-1 bg-white dark:bg-slate-700 text-sm text-gray-900 dark:text-slate-100 border border-gray-300 dark:border-slate-600"
+            title="Select Font Family"
+          >
+            {fontFamilies.map(({ name, value }) => (
+              <option key={value} value={value}>
+                {name}
+              </option>
+            ))}
+          </select>
+
 
           {/* Highlight Color Section */}
           <div className="flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"

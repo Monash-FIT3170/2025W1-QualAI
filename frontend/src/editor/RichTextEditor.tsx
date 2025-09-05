@@ -4,7 +4,7 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import TextAlign from '@tiptap/extension-text-align';
 import {TextStyle} from '@tiptap/extension-text-style'; // Verify package installation
-// import Color from '@tiptap/extension-color';      // Verify package installation
+import Color from '@tiptap/extension-color';      // Verify package installation
 import Highlight from '@tiptap/extension-highlight';
 import CommentMark from '../tiptap-extensions/CommentMark';
 import FontSize from './FontSize';
@@ -43,7 +43,26 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         types: ['paragraph'],
       }),
       TextStyle,
-//      Color,
+      // Extend TextStyle to support fontFamily attribute
+      TextStyle.extend({
+        addAttributes() {
+          return {
+            ...this.parent?.(),
+            fontFamily: {
+              default: null,
+              parseHTML: element => element.style.fontFamily?.replace(/['"]/g, '') || null,
+              renderHTML: attributes => {
+                if (!attributes.fontFamily) {
+                  return {};
+                }
+                return {
+                  style: `font-family: ${attributes.fontFamily}`,
+                };
+              },
+            },
+          };
+        },
+      }),
       Highlight.configure({
         multicolor: true,
       }),
