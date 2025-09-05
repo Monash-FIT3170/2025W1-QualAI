@@ -36,8 +36,10 @@ docker-compose up
 * Once started, the application should be available on
 http://localhost:5173
 
-## Common Issues
+## Common Issues & Troubleshooting 
 * Slow first build: First build may take upwards of 30 minutes due to large image dependencies 
+* Local dependency issues: Dependencies can be hard to manage due to the large number within the project. Utilising Docker can reduce these issues.
+
 
 ## Additional Notes for Developers
 ### Project Structure:
