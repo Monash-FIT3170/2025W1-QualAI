@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Mapping, Any
 
 from pymongo import MongoClient
@@ -34,6 +35,15 @@ class DocumentStore:
             :param database_name: the name of the database
             """
             self.__database = document_store.client()[database_name]
+
+        def get_collection_names(self) -> list[str]:
+            return self.__database.list_collection_names()
+
+        def get_collections(self) -> list[DocumentStore.Collection]:
+            collections = []
+            for collection_name in self.__database.list_collection_names():
+                collections.append(self.create_collection(collection_name))
+            return collections
 
         def get_collection(self, collection_name: str) -> DocumentStore.Collection | None:
             """
@@ -72,7 +82,12 @@ class DocumentStore:
         :author: Kays Beslen
         """
         def __init__(self, database: DocumentStore.Database, collection_name: str) -> None:
-            self.__collection = database.client().get_collection(collection_name)
+            db = database.client()
+
+            if collection_name not in db.list_collection_names():
+                db.create_collection(collection_name)
+
+            self.__collection = db.get_collection(collection_name)
 
         def get_all_documents(self) -> Cursor[Mapping[str, Any]]:
             """
@@ -82,12 +97,14 @@ class DocumentStore:
             """
             return self.__collection.find()
 
-        def add_document(self, document_name: str, content: str) -> None:
+        def add_document(self, document_name: str, content: str) -> str:
             """
             Inserts the provided document into the collection.
 
             :param document_name: the name associated with the provided document
             :param content: the document content to be added to the collection
+
+            :return: the updated document_name
 
             :raises KeyError: if the provided document key is not unique amongst all documents in this collection
             """
@@ -96,8 +113,43 @@ class DocumentStore:
                     f"The provided document key, {document_name}, must be unique between all documents within the "
                     f"collection."
                 )
+
             document: dict[str, str] = {"key": document_name, "content": content}
             self.__collection.insert_one(document)
+            return document_name
+
+        def update_document_name(self, document_name: str) -> str:
+            base_name = document_name
+
+            prefix_regex = f"^{re.escape(base_name)}"
+            existing_count = self.__collection.count_documents({"key": {"$regex": prefix_regex}})
+
+            if existing_count > 0:
+                count = existing_count
+                document_name = f"{base_name}_{count}"
+
+                while self.find_document(document_name) is not None:
+                    count += 1
+                    document_name = f"{base_name}_{count}"
+
+            return document_name
+
+        def update_dir_name(self, dir_name: str) -> str:
+            prefix_regex = f"^{re.escape(dir_name)}(_\\d+)?/"
+            existing_keys = list(self.__collection.find({"key": {"$regex": prefix_regex}}))
+
+            if not existing_keys or len(existing_keys) == 0:
+                return dir_name
+
+            max_suffix = 0
+            for doc in existing_keys:
+                key = doc["key"]
+                m = re.match(f"{re.escape(dir_name)}_(\\d+)/", key)
+                if m:
+                    suffix = int(m.group(1))
+                    max_suffix = suffix if suffix > max_suffix else max_suffix
+
+            return f"{dir_name}_{max_suffix + 1}"
 
         def find_document(self, document_key: str) -> Mapping[str, Any] | None:
             """
@@ -149,7 +201,6 @@ class DocumentStore:
             :param document_key: a unique identifier associated with the document
             """
             self.__collection.delete_one({"key": document_key})
-        
 
     # Global variable for connecting to the MongoDB client.
     URI = config.MONGO_URI
