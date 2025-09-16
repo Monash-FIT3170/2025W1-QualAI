@@ -1,6 +1,8 @@
 import subprocess
 import os
+import whisper
 from upload.video_to_audio import convert_media
+from moviepy import AudioFileClip
 
 # whisper-diarization
 class AudioTranscriber:
@@ -19,6 +21,7 @@ class AudioTranscriber:
         """
         # Path to whisper-diarization model
         self.diarize_path = "./upload/whisper-diarization/diarize.py"
+        self.model = whisper.load_model("base")
 
     def transcribe(self, audio_filepath: str):
         """
@@ -32,6 +35,13 @@ class AudioTranscriber:
         # Ensure file is converted to mp3
         filepath_mp3 = convert_media(audio_filepath)
 
+        # Use default whisper for short clips (Less than 10 seconds)
+        if (AudioFileClip(filepath_mp3).duration < 10):
+            audio = whisper.load_audio(filepath_mp3)
+            result = whisper.transcribe(model = self.model, audio = audio)
+
+            return result["text"]
+        
         # Run diarize process as subprocess
         subprocess.run(
             ['/opt/venv/bin/python', 
