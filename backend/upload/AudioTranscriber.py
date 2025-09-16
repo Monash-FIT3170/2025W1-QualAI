@@ -32,7 +32,12 @@ class AudioTranscriber:
             :return str: the transcribed text
         """
 
-        # Ensure file is converted to mp3
+        # Validate file types (.txt or audio/video formats only)
+        if audio_filepath.endswith(".txt"):
+            # Return contents of text file
+            transcript = open(audio_filepath)
+            return transcript.read()
+        # Convert audio file to mp3
         filepath_mp3 = convert_media(audio_filepath)
 
         # Use default whisper for short clips (Less than 10 seconds)
@@ -55,7 +60,7 @@ class AudioTranscriber:
         filepath_srt = filepath_mp3.with_suffix(".srt")
         transcript = open(filepath_txt)
 
-        # TODO: Delete created transcripts (.txt and .srt file)
+        # Delete created transcripts (.txt and .srt file)
         if os.path.exists(filepath_txt):
             try:
                 os.remove(filepath_txt)
