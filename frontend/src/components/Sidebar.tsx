@@ -209,12 +209,11 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
             {/* Header */}
             <div className="flex items-center gap-2 mb-8 cursor-pointer" onClick={() => navigate('/')}>
                 <div className="w-8 h-8">
-                    <svg viewBox="0 0 100 100" className="w-full h-full text-gray-400">
-                        <circle cx="50" cy="50" r="45" fill="currentColor" />
-                        <circle cx="35" cy="40" r="8" fill="black" />
-                        <circle cx="65" cy="40" r="8" fill="black" />
-                        <circle cx="50" cy="60" r="10" fill="black" />
-                    </svg>
+                    <img
+                        src="/Logo.png"
+                        alt="QualAI Logo"
+                        className="w-full h-full object-cover"
+                    />
                 </div>
                 <span className="text-xl font-bold">QualAI</span>
             </div>
