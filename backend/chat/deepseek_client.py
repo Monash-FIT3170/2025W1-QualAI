@@ -2,8 +2,14 @@ import json
 import re
 
 import requests
-from chat.basic_triple_extractor import BasicTripleExtractor
+# from chat.basic_triple_extractor import BasicTripleExtractor
 import random
+
+# USED FOR GOOGLE GEMINI API
+from dotenv import load_dotenv
+
+import requests
+import os
 
 class DeepSeekClient: 
     """
@@ -12,6 +18,7 @@ class DeepSeekClient:
 
     :author: Felix Chung
     """
+    
 
     def __init__(self):
         """
@@ -20,6 +27,9 @@ class DeepSeekClient:
         self.api_url = "http://ollama:11434/api/chat"      
         #self.api_url = "http://localhost:11434/api/generate"
         
+        load_dotenv()
+        self.gemini_api_key = os.getenv("GEMINI_API_KEY")
+
         self.headers = {
             'Content-Type': 'application/json'
         }
@@ -35,6 +45,87 @@ class DeepSeekClient:
         """
         return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
     
+    def chat_extract_triples_gemini(self, text: str) -> list[tuple[str, str, str]]:
+        """
+        Uses the Gemini API to extract knowledge triples from the input text in the format:
+        (Subject, Predicate, Object)
+
+        :param text: The input text
+        :return: A list of extracted triples
+        """
+
+        prompt = (
+            "You are an AI helping humans extract knowledge triples about all relevant people, things, concepts, etc. "
+            "Extract ALL of the knowledge triples from the text provided to you. "
+            "Ensure that you consider the context of the ENTIRE statement. "
+            "DO NOT output explanations, reasoning, or anything else. "
+            "Your output MUST ONLY be:\n"
+            "- One or more triples in the format (SUBJECT, PREDICATE, OBJECT), separated by '|'\n"
+            "- Or exactly 'NONE'\n\n"
+
+            "EXAMPLE\n"
+            "Barack Obama was born in Honolulu, a city of the US.\n"
+            "Output: (Barack Obama, was born in, Honolulu)|(Honolulu, is in, US)|(Honolulu, is a, city)\n"
+            "END OF EXAMPLE\n\n"
+
+            "EXAMPLE\n"
+            "I'm going to the store.\n"
+            "Output: NONE\n"
+            "END OF EXAMPLE\n\n"
+
+            "EXAMPLE\n"
+            "Hi Jae! Did you know that Jae likes to cook steak whilst listening to music. "
+            "Also, he recently got a new job which his teacher Rio, introduced him to.\n"
+            "Output: (Jae, likes to cook, steak)|(Jae, listens to, music)|(Jae, has a, job)|"
+            "(Jae, is taught by, Rio)|(Rio, has a student called, Jae)\n"
+            "END OF EXAMPLE\n\n"
+
+            "YOUR TURN\n"
+            f"{text}\n"
+            "Output:"
+        )
+
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={self.gemini_api_key}"
+
+        headers = {
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt}
+                    ]
+                }
+            ]
+        }
+
+        response = requests.post(url, headers=headers, json=payload)
+
+        if not response.ok:
+            print("Gemini API Error:", response.text)
+            return []
+
+        data = response.json()
+
+        try:
+            reply = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        except (KeyError, IndexError) as e:
+            print("Unexpected Gemini API response format:", e)
+            return []
+
+        if hasattr(self, "remove_think_blocks"):
+            reply = self.remove_think_blocks(reply)
+
+        if reply == "NONE":
+            return []
+
+        matches = re.findall(r"\(([^)]*)\)", reply)
+        tuples = [tuple(part.strip() for part in m.split(',', 2)) for m in matches if ',' in m]
+
+        return tuples
+
     def chat_extract_triples(self, text: str) -> list[tuple[str, str, str]]:
         """
         Uses the LLM to extract triples from a message in the output format:
@@ -44,7 +135,6 @@ class DeepSeekClient:
         :param text: The text we are to extract triple from 
         :return: A list of triples 
         """
-        # TODO: modify data with options to fine-tune
         data = {
             "model": "deepseek-r1:1.5b",
             "prompt": (
@@ -304,8 +394,6 @@ class DeepSeekClient:
             if len(parts) == 3:
                 triples.append(tuple(part.strip() for part in parts))
         return triples
-        
-
 
     def chat_with_model(self, message):
         """
