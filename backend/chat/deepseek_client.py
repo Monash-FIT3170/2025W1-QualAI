@@ -27,8 +27,11 @@ class DeepSeekClient:
         self.api_url = "http://ollama:11434/api/chat"      
         #self.api_url = "http://localhost:11434/api/generate"
         
-        load_dotenv()
-        self.gemini_api_key = os.getenv("GEMINI_API_KEY")
+        try:
+            load_dotenv()
+            self.gemini_api_key = os.getenv("GEMINI_API_KEY")
+        except:
+            self.gemini_api_key = None
 
         self.headers = {
             'Content-Type': 'application/json'
