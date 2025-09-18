@@ -39,9 +39,30 @@ const instance = axios.create({
           message: message,
         },
       );
+      console.log(response)
       return response.data.response;
     } catch (error: any) {
       console.error('Error getting chat response: ', error);
       throw error;
     }
   };
+
+  /**
+   * Obtains all of the users previous chat messages
+   * @async
+   * @function fetchHistory
+   * @returns 
+   * @throws {Error} When the API request fails or returns an error
+   */
+  export const fetchHistory = async (): Promise<{ content: string; isUser: boolean }[]> => {
+  try {
+    const response = await instance.get('/chathistory'); // use GET, history is retrieval not mutation
+    console.log(response.data.history)
+    return response.data.history;
+  } catch (error: any) {
+    console.error('Error getting chat history: ', error);
+    throw error;
+  }
+    
+
+  }

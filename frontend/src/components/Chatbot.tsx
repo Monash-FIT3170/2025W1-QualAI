@@ -1,59 +1,54 @@
-import {useState, useRef, useEffect, FC} from 'react';
-import robotIcon from './assets/robot.png'; // our robot avatar icon guy
-import { fetchChat } from './chat_client'; // function to fetch chat responses from the backend
+import { useState, useRef, useEffect, FC } from 'react';
+import robotIcon from './assets/robot.png';
+import { fetchChat, fetchHistory } from './chat_client';
 
-/**
- * @file Chatbox.tsx
- * @author Rohan Shetty
- * @description A React component for an interactive AI chatbot interface
- */
 interface Message {
-  /**
-   * The text content of the message
-   */
-  content: string; 
-  /**
-   * Flag indicating if the message is from the user (true) or the bot (false)
-   */
+  content: string;
   isUser: boolean;
 }
 
 const Chatbot: FC = () => {
-  /**
-   * Initialises the Chatbot component with default state values
-   * 
-   * @remarks
-   * Manages chat window state, message history, loading states, and UI references
-   */
-  const [isOpen, setIsOpen] = useState(true); // is chat open or not
-  const [isHoveringClosed, setIsHoveringClosed] = useState(false); // hovering over closed icon?
-  const [messages, setMessages] = useState<Message[]>([ // all our chat history
-    { content: "Hello! I'm your research assistant. How can I help you today?", isUser: false } // first bot message
+  const [isOpen, setIsOpen] = useState(true);
+  const [isHoveringClosed, setIsHoveringClosed] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    { content: "Hello! I'm your research assistant. How can I help you today?", isUser: false }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null); // ref for the input field
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  /**
+   * Loads chat history from backend when component mounts
+   */
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const history = await fetchHistory();
+        if (history && history.length > 0) {
+          setMessages(history);
+        }
+      } catch (error) {
+        console.error("Failed to load history", error);
+      }
+    };
+    loadHistory();
+  }, []);
 
   /**
    * Handles sending a message to the chatbot service
-   * 
-   * @remarks
-   * Processes user input, sends to backend API, and manages the response flow
-   * Includes error handling for API failures
    */
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading) return; // don't send empty messages or while loading
-    
-    // add our message to the chat
+    if (!inputValue.trim() || isLoading) return;
+
     const userMessage = { content: inputValue, isUser: true };
     setMessages(prev => [...prev, userMessage]);
-    setInputValue(''); // clear the input
-    setIsLoading(true); // bot is "thinking"
+    setInputValue('');
+    setIsLoading(true);
 
     try {
-      const response = await fetchChat(inputValue); // fetch response from chatbot service
-      setMessages(prev => [...prev, { content: response, isUser: false }]);       // add bot's reply
+      const response = await fetchChat(inputValue);
+      setMessages(prev => [...prev, { content: response, isUser: false }]);
     } catch (error) {
       setMessages(prev => [
         ...prev,
@@ -61,32 +56,21 @@ const Chatbot: FC = () => {
       ]);
     } finally {
       setIsLoading(false);
-      inputRef.current?.focus(); // focus the input after bot responds
+      inputRef.current?.focus();
     }
   };
 
   /**
-   * Manages auto-scrolling and input focus
-   * 
-   * @remarks
-   * Automatically scrolls to the newest message and maintains input focus
-   * Triggers on message updates and loading state changes
+   * Auto-scrolls to newest message
    */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    if (!isLoading) {
-      inputRef.current?.focus();
-    }
+    if (!isLoading) inputRef.current?.focus();
   }, [messages, isLoading]);
 
-  /**
-   * Renders the minimized chat icon when chat is closed
-   * 
-   * @returns JSX for the closed chat state
-   */
   if (!isOpen) {
     return (
-      <div 
+      <div
         className="fixed right-0 top-1/2 transform -translate-y-1/2 w-16 h-16 transition-all duration-300 hover:right-8 cursor-pointer z-50"
         onMouseEnter={() => setIsHoveringClosed(true)}
         onMouseLeave={() => setIsHoveringClosed(false)}
@@ -95,37 +79,28 @@ const Chatbot: FC = () => {
           setIsHoveringClosed(false);
         }}
       >
-        <img 
-          src={robotIcon} 
-          alt="AI Assistant" 
+        <img
+          src={robotIcon}
+          alt="AI Assistant"
           className={`w-full h-full object-contain transition-transform duration-300 ${
-            isHoveringClosed ? 'scale-110' : 'scale-100' // little zoom on hover
+            isHoveringClosed ? 'scale-110' : 'scale-100'
           }`}
         />
       </div>
     );
   }
 
-  /**
-   * Renders the full chat interface
-   * 
-   * @returns JSX for the main chat window including:
-   * - Header with title and close button
-   * - Message display area
-   * - Input field with send button
-   */
   return (
     <div className="fixed right-8 bottom-8 w-96 h-[600px] flex flex-col rounded-2xl overflow-hidden shadow-xl z-50">
-      {/* header with robot icon and centered text */}
+      {/* header */}
       <div className="bg-[#474646] text-white p-4 flex-shrink-0 relative">
         <div className="flex items-center justify-center">
           <img src={robotIcon} alt="AI Assistant" className="w-10 h-10 mr-2 absolute left-4" />
-          <h2 className="text-3xl font-semibold text-center">Chatbot</h2> {/* Changed text-x1 to text-2xl */}
+          <h2 className="text-3xl font-semibold text-center">Chatbot</h2>
         </div>
-        {/* close button (the x) - removed background/box */}
-        <button 
+        <button
           onClick={() => setIsOpen(false)}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white focus:outline-none bg-transparent border-none p-0"
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-transparent border-none p-0"
           aria-label="Close chat"
         >
           <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -133,31 +108,28 @@ const Chatbot: FC = () => {
           </svg>
         </button>
       </div>
-      
-      {/* main body where all the messages are visible */}
+
+      {/* body */}
       <div className="flex-1 bg-[#D9D9D9] overflow-y-auto p-4">
         {messages.map((msg, index) => (
           <div key={index} className={`mb-3 ${msg.isUser ? 'text-right' : 'text-left'}`}>
-            {/* show robot icon and "ai" text for bot messages */}
             {!msg.isUser && (
               <div className="flex items-center mb-1">
                 <img src={robotIcon} alt="AI" className="w-5 h-5 mr-2" />
                 <span className="text-sm text-gray-600">AI</span>
-              </div>    
+              </div>
             )}
-            {/* the actual message bubble */}
-            <div 
+            <div
               className={`inline-block px-4 py-2 max-w-[80%] shadow-md ${
-                msg.isUser 
-                  ? 'bg-white text-gray-800 rounded-2xl rounded-tr-none' // our messages
-                  : 'bg-[#CDE5FF] text-gray-800 rounded-2xl rounded-tl-none' // bot messages
+                msg.isUser
+                  ? 'bg-white text-gray-800 rounded-2xl rounded-tr-none'
+                  : 'bg-[#CDE5FF] text-gray-800 rounded-2xl rounded-tl-none'
               }`}
             >
               {msg.content}
             </div>
           </div>
         ))}
-        {/* loading animation when bot is "thinking" */}
         {isLoading && (
           <div className="text-left">
             <div className="flex items-center mb-1">
@@ -165,7 +137,6 @@ const Chatbot: FC = () => {
               <span className="text-sm text-gray-600">AI</span>
             </div>
             <div className="inline-block bg-[#CDE5FF] px-4 py-2 rounded-2xl rounded-tl-none shadow-md">
-            {/* little bouncing dots animation */}
               <div className="flex space-x-2">
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
                 <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
@@ -174,16 +145,14 @@ const Chatbot: FC = () => {
             </div>
           </div>
         )}
-        {/* invisible div for auto-scrolling */}
         <div ref={messagesEndRef} />
       </div>
-      
-      {/* input area at the bottom/footer */}
+
+      {/* footer */}
       <div className="bg-white p-4 border-t border-gray-300 flex-shrink-0">
         <div className="flex items-center">
-        {/* message input */}
           <input
-            ref={inputRef} // reference to the input element
+            ref={inputRef}
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -191,9 +160,8 @@ const Chatbot: FC = () => {
             className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none placeholder-[#737373] text-gray-800"
             placeholder="Type a message..."
             disabled={isLoading}
-            autoFocus // automatically focus when component mounts
+            autoFocus
           />
-        {/* send button */}
           <button
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading}
