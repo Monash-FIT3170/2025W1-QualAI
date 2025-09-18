@@ -26,14 +26,14 @@ def initialise_database() -> DatabaseClient:
 
 
 def register_upload_routes(app: Flask) -> None:
-    collection, mongodb = initialise_collection()
+    collection, mongo_database = initialise_collection()
     db = initialise_database()
-    document_uploader = DocumentUploader(collection, db)
+    document_uploader = DocumentUploader(mongo_database, db)
     chat_bot = Chatbot(db)
-    document_retriever = DocumentRetriever(collection)
-    document_editor = DocumentEditor(collection, db)
-    document_remover = DocumentRemover(collection, db)
-    project_manager = ProjectManager(mongodb)
+    document_retriever = DocumentRetriever(mongo_database)
+    document_editor = DocumentEditor(mongo_database, db)
+    document_remover = DocumentRemover(mongo_database, db)
+    project_manager = ProjectManager(mongo_database)
 
     document_uploader.register_routes(app)
     chat_bot.register_routes(app)

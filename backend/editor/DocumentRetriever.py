@@ -6,15 +6,16 @@ from mongodb.DocumentStore import DocumentStore
 class DocumentRetriever:
   
     def __init__(
-        self, collection: DocumentStore.Collection
+        self, database: DocumentStore.Database
     ) -> None:
-        self.__collection = collection
+        self.__database = database
 
     def register_routes(self, app: Flask) -> None:
-        @app.route('/documents', methods=['GET'])
-        def get_all_documents():
+        @app.route('/<project>/documents', methods=['GET'])
+        def get_all_documents(project):
             try:
-                documents_cursor = self.__collection.get_all_documents()
+                collection = self.__database.get_collection(project)
+                documents_cursor = collection.get_all_documents()
                 documents = list(documents_cursor)
                 # Extract key for each document
                 result = [{"key": doc.get("key"), "content": doc.get("content")} for doc in documents]
@@ -22,10 +23,11 @@ class DocumentRetriever:
             except Exception as e:
                 return jsonify({"error": str(e)}), 500
             
-        @app.route('/documents/<path:file_key>', methods=['GET'])
-        def get_document(file_key):
+        @app.route('/<project>/documents/<path:file_key>', methods=['GET'])
+        def get_document(project, file_key):
             try:
-                doc = self.__collection.find_document(file_key)  
+                collection = self.__database.get_collection(project)
+                doc = collection.find_document(file_key)
                 if not doc:
                     return jsonify({"error": "Document not found"}), 404
                 return jsonify({"content": doc.get("content", "")}), 200
