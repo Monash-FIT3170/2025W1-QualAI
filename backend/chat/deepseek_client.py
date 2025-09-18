@@ -362,6 +362,61 @@ class DeepSeekClient:
 
         return reply
     
+    def chat_with_model_context_injection_gemini(self, context_text, message):
+        """
+        Sends a message to the google gemini API with additional context injected as a system message
+
+        :param context_text: The external context (e.g., from a document).
+        :param message: The user's question.
+        :return: The JSON response from the API.
+        """
+
+        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={self.gemini_api_key}"
+
+        headers = {"Content-Type": "application/json"}
+
+        prompt = (
+            "You are a helpful, highly concise assistant. "
+            "Answer the user's question using only the provided context below. "
+            "Return a short and factual answer, sticking to the question's scope. "
+            "Use as few words as possible. Avoid explanation unless asked for more detail. "
+            "Do not speculate. If the answer is not inthe context, respond with: "
+            "'I don't have enough information to answer that. '\n\n"
+            f"Context:\n{context_text}\n\n"
+            f"User: {message}"
+        )
+
+        data = {
+            "contents": [
+                {"parts": [{"text": prompt}]}
+            ],
+            "generationConfig": {
+                "temperature": 0.2,
+                "topP": 0.9,
+                "topK": 50,
+                "maxOutputTokens": 2048
+            }
+        }
+
+        response = requests.post(url, headers=headers, json=data)
+
+        if response.status_code != 200:
+            raise Exception(f"Gemini API error {response.status_code}: {response.text}")
+
+        result = response.json()
+
+        try:
+            reply = result["candidates"][0]["content"]["parts"][0]["text"]
+        except (KeyError, IndexError):
+            raise Exception(f"Unexpected response format: {result}")
+
+        # Preserve your existing post-processing
+        reply = self.remove_think_blocks(reply)
+
+        print(reply)
+
+        return reply
+    
     def text_to_triples(self, text: str) -> list[tuple[str, str, str]]:
         """
         Uses the LLM to extract triples from a message in the output format:

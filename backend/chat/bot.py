@@ -35,7 +35,8 @@ class Chatbot:
 
         context = self.db.search(query)
         if len(context) > 0:
-            response = self.deepseek_client.chat_with_model_context_injection(context, query)
+            # response = self.deepseek_client.chat_with_model_context_injection(context, query)
+            response = self.deepseek_client.chat_with_model_context_injection_gemini(context, query)
         else:
             response = self.deepseek_client.chat_with_model(query)
         
