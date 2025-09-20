@@ -56,7 +56,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     content: initialContent,
     editorProps: {
       attributes: {
-        class: 'min-h-[156px] border rounded-md bg-slate-50 py-2 px-3 focus:outline-none',
+        class: 'min-h-[156px] border rounded-md bg-[#D9D9D9] py-2 px-3 focus:outline-none',
       },
     },
     onUpdate: ({editor}) => {

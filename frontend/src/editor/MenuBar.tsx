@@ -180,9 +180,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   ];
 
   return (
-      <div
-          className="border rounded-md p-1 mb-1 bg-slate-50 dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center">
-          
+      <div className="menubar menubar-icon border rounded-md p-1 mb-1] dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center">
           {/* Font Size Controls */}
           <div className="flex items-center space-x-1 border-r pr-2 mr-2">
             <button
@@ -228,26 +226,28 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
             </button>
           </div>
           
-          {existingOptions.map((option, index) => (
-              <Toggle
-                  key={index}
-                  pressed={option.pressed}
-                  onPressedChange={option.onClick}
-                  disabled={option.disabled}
-                  title={option.title}
-                  className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded" // Example styling
-              >
-                  {option.icon}
-              </Toggle>
-          ))}
+          <div className='menubar-icon'>
+            {existingOptions.map((option, index) => (
+                <Toggle
+                    key={index}
+                    pressed={option.pressed}
+                    onPressedChange={option.onClick}
+                    disabled={option.disabled}
+                    title={option.title}
+                    className="p-2 hover:bg-slate-700 rounded" 
+                >
+                    {option.icon}
+                </Toggle>
+            ))}
+          </div>
 
           {/* Separator */}
           <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2"/>
 
           {/* Highlight Color Section */}
-          <div className="flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
+          <div className="menbar-icon flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
                title="Highlight Color">
-              <Palette className="size-4 mr-1 text-slate-700 dark:text-slate-300"/>
+              <Palette className="size-4 mr-1 menubar-icon dark:text-slate-300"/>
               <input
                   type="color"
                   onInput={(event) => editor.chain().focus().toggleHighlight({color: (event.target as HTMLInputElement).value}).run()}
@@ -261,15 +261,15 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               pressed={false} // Not a toggle state, just an action
               disabled={!editor.isActive('highlight')}
               title="Remove Highlight"
-              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
+              className="p-2 menubar-icon rounded"
           >
               {/* Using Highlighter icon with different styling to signify "remove" */}
-              <Highlighter className="size-4 text-slate-700 dark:text-slate-300 opacity-60"/>
+              <Highlighter className="size-4 menubar-icon opacity-60"/>
           </Toggle>
 
           {/* Text Color Section */}
-          <div className="flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700" title="Text Color">
-              <Paintbrush className="size-4 mr-1 text-slate-700 dark:text-slate-300"/>
+          <div className="flex items-center p-1 rounded menubar-icon" title="Text Color">
+              <Paintbrush className="size-4 mr-1 menubar-icon"/>
               <input
                   type="color"
                   onInput={(event) => editor.chain().focus().setColor((event.target as HTMLInputElement).value).run()}
@@ -283,9 +283,9 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               pressed={false} // Not a toggle state
               disabled={!editor.getAttributes('textStyle').color}
               title="Remove Text Color"
-              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
+              className="p-2 menubar-icon dark:hover:bg-slate-700 rounded"
           >
-              <Paintbrush className="size-4 text-slate-700 dark:text-slate-300 opacity-60"/>
+              <Paintbrush className="menubar-icon size-4 0 opacity-60"/>
           </Toggle>
 
           {/* Comment Section */}
@@ -293,13 +293,12 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               pressed={editor.isActive('comment')} // This will be true if any part of selection is a comment
               onPressedChange={handleComment}
               title="Add Comment"
-              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
+              className="p-2 menubar-icon dark:hover:bg-slate-700 rounded"
           >
-              <MessageSquarePlus className="size-4 text-slate-700 dark:text-slate-300"/>
+              <MessageSquarePlus className="size-4 menubar-icon"/>
           </Toggle>
           <button onClick={handleFileUpdate} className="rounded-md px-2 hover:bg-gray-200">Save Changes</button>
-
-      </div>
+    </div>
   );
 };
 

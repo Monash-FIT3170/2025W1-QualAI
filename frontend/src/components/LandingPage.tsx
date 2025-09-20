@@ -57,7 +57,7 @@ const LandingPage = () => {
             Analyze Interviews with AI
           </h2>
 
-          <div className="w-24 h-24 mx-auto">
+          <div className="w-30 h-30 mx-auto">
             <img
                 src="/Logo.png"
                 alt="QualAI Logo"
@@ -65,7 +65,8 @@ const LandingPage = () => {
             />
           </div>
 
-          <h1 className="text-5xl font-bold mb-2">QualAI</h1>
+          <h1 className="text-5xl font-bold mb-2 text-[#D9D9D9]">QualAI</h1>
+          <br></br>
           <p className="text-gray-400 text-xl">
             Transcribe and thematically analyze qualitative interview data
           </p>

@@ -205,7 +205,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
     /** ------------------------ **/
 
     return (
-        <div className="w-64 bg-secondary/50 p-4 flex flex-col">
+        <div className="w-64 bg-[#1A1A1A] p-4 flex flex-col text-white">
             {/* Header */}
             <div className="flex items-center gap-2 mb-8 cursor-pointer" onClick={() => navigate('/')}>
                 <div className="w-8 h-8">
@@ -215,7 +215,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
                         className="w-full h-full object-cover"
                     />
                 </div>
-                <span className="text-xl font-bold">QualAI</span>
+                <span className="text-xl font-bold" >QualAI</span>
             </div>
 
             {/* File tree */}
@@ -244,8 +244,8 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
                     onDrop={(e) => handleFileUpload()(e)}
 
                 >
-                    <Upload className="mx-auto mb-2" />
-                    <p style={{ marginBottom: '5px' }}>Drop files or folders here</p>
+                    <Upload className="mx-auto mb-2" color='#4467FB' />
+                    <p style={{ marginBottom: '5px', color: '#4467FB' }}>Drop files or folders here</p>
                     <div className="flex flex-col gap-1">
                         <UploadFileButton onUploadComplete={onRefreshFiles} externalUploading={isUploadingFile} externalFolderUploading={isUploadingFolder} />
                     </div>
