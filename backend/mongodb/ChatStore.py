@@ -12,7 +12,7 @@ from config import config
 
 class ChatStore:
     """
-    This class represents a store for documents, utilising a MongoDB database.
+    This class represents a store for chats, utilising a MongoDB database.
 
     A document store consists of a set of databases, which each consists of a set of collections. Each collection
     contains a set of documents, which are constructed from dict instances.
