@@ -25,7 +25,7 @@ class ChatRetriever:
                         "isUser" : True
                     })
                     responses.append({
-                        "content" : chat["answer"],
+                        "content" : chat["response"],
                         "isUser": False
                     })
 
