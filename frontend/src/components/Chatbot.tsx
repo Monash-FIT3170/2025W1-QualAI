@@ -92,7 +92,6 @@ const Chatbot: FC = () => {
 
   return (
     <div className="fixed right-8 bottom-8 w-96 h-[600px] flex flex-col rounded-2xl overflow-hidden shadow-xl z-50">
-      {/* header */}
       <div className="bg-[#474646] text-white p-4 flex-shrink-0 relative">
         <div className="flex items-center justify-center">
           <img src={robotIcon} alt="AI Assistant" className="w-10 h-10 mr-2 absolute left-4" />
@@ -109,7 +108,6 @@ const Chatbot: FC = () => {
         </button>
       </div>
 
-      {/* body */}
       <div className="flex-1 bg-[#D9D9D9] overflow-y-auto p-4">
         {messages.map((msg, index) => (
           <div key={index} className={`mb-3 ${msg.isUser ? 'text-right' : 'text-left'}`}>
@@ -148,7 +146,6 @@ const Chatbot: FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* footer */}
       <div className="bg-white p-4 border-t border-gray-300 flex-shrink-0">
         <div className="flex items-center">
           <input

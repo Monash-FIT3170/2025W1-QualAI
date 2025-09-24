@@ -57,7 +57,6 @@ const instance = axios.create({
   export const fetchHistory = async (): Promise<{ content: string; isUser: boolean }[]> => {
   try {
     const response = await instance.get('/chathistory'); // use GET, history is retrieval not mutation
-    console.log(response.data.history)
     return response.data.history;
   } catch (error: any) {
     console.error('Error getting chat history: ', error);
