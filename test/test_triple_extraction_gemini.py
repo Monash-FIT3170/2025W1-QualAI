@@ -1,6 +1,6 @@
 import unittest
 
-from backend.chat.deepseek_client import DeepSeekClient
+from backend.chat.llm_client.deepseek_client import DeepSeekClient
 
 class TestTripleExtraction(unittest.TestCase):
     

@@ -7,7 +7,7 @@ from flask import Flask
 
 from flask import request, jsonify
 
-from chat.deepseek_client import DeepSeekClient
+from chat.llm_client.gemini_client import GeminiClient
 
 
 class Chatbot:
@@ -21,7 +21,7 @@ class Chatbot:
         """
         Initializes the Chatbot class by with instances of the DeepSeekClient, TextVectoriser, and Neo4JInteractor classes.
         """
-        self.deepseek_client = DeepSeekClient()
+        self.client = GeminiClient()
         self.db = db
 
     def chat_with_model(self, query: str) -> str:
@@ -35,13 +35,13 @@ class Chatbot:
 
         context = self.db.search(query)
         if len(context) > 0:
-            # response = self.deepseek_client.chat_with_model_context_injection(context, query)
-            response = self.deepseek_client.chat_with_model_context_injection_gemini(context, query)
+            response = self.client.chat_with_model_context_injection(context, query)
         else:
-            response = self.deepseek_client.chat_with_model(query)
+            response = self.client.chat_with_model(query)
         
         return response
         
+    '''
     def chat_with_model_triples(self, query: str) -> str: 
         """
         Process a chat message return the model's reponse. 
@@ -50,7 +50,7 @@ class Chatbot:
         :param str message: The message to send to the model. 
         :return: The JSON response from the API 
         """ 
-        triples = self.deepseek_client.chat_extract_triples(query)
+        triples = self.client.extract_triples(query)
         
         context_triples = ""
 
@@ -67,7 +67,8 @@ class Chatbot:
             for row in result:
                 context_triples += f"{row['subject']} {row['predicate']} {row['object']}, "
 
-        return self.deepseek_client.chat_with_model_triples(context_triples, query)
+        return self.client.chat_with_model_triples(context_triples, query)
+    '''
 
     def register_routes(self, app: Flask) -> None:
         @app.route('/chat', methods=['POST'])

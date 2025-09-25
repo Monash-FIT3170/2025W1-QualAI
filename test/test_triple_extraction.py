@@ -1,6 +1,6 @@
 import unittest
 
-from backend.chat.deepseek_client import DeepSeekClient
+from backend.chat.llm_client.deepseek_client import DeepSeekClient
 
 class TestTripleExtraction(unittest.TestCase):
     
@@ -31,7 +31,7 @@ class TestTripleExtraction(unittest.TestCase):
         Test extraction of triples on longer chunks of text.
         """
         long_query = "In 1969, Neil Armstrong became the first human to walk on the Moon during the Apollo 11 mission. He was joined by Buzz Aldrin, while Michael Collins piloted the command module in orbit. The mission was launched by NASA and is considered one of humanity's greatest achievements. After returning to Earth, Armstrong became a professor of aerospace engineering at the University of Cincinnati."
-        response = self.client.chat_extract_triples(long_query)
+        response = self.client.extract_triples(long_query)
         print(response)
         
     # def test_object_extraction(self):
