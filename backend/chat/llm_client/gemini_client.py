@@ -16,7 +16,8 @@ class GeminiClient(LLMClient):
         try:
             load_dotenv()
             self.gemini_api_key = os.getenv("GEMINI_API_KEY")
-        except:
+        except Exception as e:
+            print(f"API key could not be loaded: {e}")
             self.gemini_api_key = None
 
         self.url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.gemini_api_key}"
@@ -97,7 +98,7 @@ class GeminiClient(LLMClient):
 
         return tuples
 
-    def chat_with_model_context_injection(self, context_text, message):
+    def chat_with_model_context_injection(self, context_text, message: str) -> str:
         """
         Sends a message to the google gemini API with additional context injected as a system message
 
@@ -145,7 +146,7 @@ class GeminiClient(LLMClient):
 
         return reply
     
-    def chat_with_model(self, message):
+    def chat_with_model(self, message: str) -> str:
         """
         Sends a message to the google gemini API with additional context injected as a system message
 
