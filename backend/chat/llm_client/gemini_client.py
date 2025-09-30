@@ -160,7 +160,7 @@ class GeminiClient(LLMClient):
             "Answer the user's question using only the provided context below. "
             "Return a short and factual answer, sticking to the question's scope. "
             "Use as few words as possible. Avoid explanation unless asked for more detail. "
-            "Do not speculate. If the answer is not inthe context, respond with: "
+            "Do not speculate. If the answer is not in the context, respond with: "
             "'I don't have enough information to answer that. '\n\n"
             f"User: {message}"
         )
