@@ -22,7 +22,6 @@ class GeminiClient(LLMClient):
         self.url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={self.gemini_api_key}"
         self.headers = {"Content-Type": "application/json"}
 
-
     def extract_triples(self, text: str) -> list[tuple[str, str, str]]:
         """
         Uses the Gemini API to extract knowledge triples from the input text in the format:
@@ -155,10 +154,6 @@ class GeminiClient(LLMClient):
         :return: The JSON response from the API.
         """
 
-        url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={self.gemini_api_key}"
-
-        headers = {"Content-Type": "application/json"}
-
         prompt = (
             "You are a helpful, highly concise assistant. "
             "Answer the user's question using only the provided context below. "
@@ -181,7 +176,7 @@ class GeminiClient(LLMClient):
             }
         }
 
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(self.url, headers=self.headers, json=data)
 
         if response.status_code != 200:
             raise Exception(f"Gemini API error {response.status_code}: {response.text}")
