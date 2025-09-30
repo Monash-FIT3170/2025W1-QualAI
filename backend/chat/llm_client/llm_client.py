@@ -26,13 +26,24 @@ class LLMClient(ABC):
         pass 
 
     @abstractmethod
-    def chat_with_model_context_injection(self, context_text: str, message: str):
+    def chat_with_model_context_injection(self, context_text, message: str):
         """
         Sends a message to the google gemini API with additional context injected as a system message
 
         :param context_text: The external context (e.g., from a document).
         :param message: The user's question.
         :return: The JSON response from the API.
+        """
+
+    @abstractmethod
+    def chat_with_model_triples(self, triples: list[tuple[str, str, str]], message: str) -> str:
+        """
+        Chat with an LLM model with additional knowledge triples injected as context.
+
+        :param triple: A list of knowledge triples in the form (SUBJECT, OBJECT, PREDICATE)
+        :param message: The user's question
+        
+        :return: A string which is the response from the LLM to the user question
         """
 
     @abstractmethod
