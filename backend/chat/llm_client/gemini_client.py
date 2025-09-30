@@ -98,7 +98,7 @@ class GeminiClient(LLMClient):
 
         return tuples
 
-    def chat_with_model_context_injection(self, context_text, message: str) -> str:
+    def chat_with_model_context_injection(self, context_text: str, message: str) -> str:
         """
         Sends a message to the google gemini API with additional context injected as a system message
 
@@ -146,6 +146,59 @@ class GeminiClient(LLMClient):
 
         return reply
     
+    def chat_with_model_triples(self, triples: list[tuple[str, str, str]], message: str) -> str:
+        """
+        Sends a message to the google gemini API alongside additional context in the form of knowledge triples.
+
+        :param triple: A list of knowledge triples in the form (SUBJECT, OBJECT, PREDICATE).
+        :param message: The user's question.
+        
+        :return: A string which is the response from the LLM to the user question.
+        """
+
+        instruction = (
+            "Answer strictly using the provided context triples. "
+            "Be concise and factual. If the answer is not in context, say: "
+            "'I don't have enough information to answer that.'"
+        )
+
+        data = {
+            "system_instruction": {"parts": [{"text": instruction}]},
+            "contents": [
+                {
+                    "role": "user",
+                    "parts": [{"text": "Context triples:\n" + triples}]
+                },
+                {
+                    "role": "user",
+                    "parts": [{"text": message}]
+                }
+            ],
+            "generationConfig": {
+                "temperature": 0.2,
+                "topP": 0.9,
+                "topK": 50,
+                "maxOutputTokens": 512
+            }
+        }
+
+        response = requests.post(self.url, headers=self.headers, json=data)
+
+        if response.status_code != 200:
+            raise Exception(f"Gemini API error {response.status_code}: {response.text}")
+
+        result = response.json()
+
+        try:
+            reply = result["candidates"][0]["content"]["parts"][0]["text"]
+        except (KeyError, IndexError):
+            raise Exception(f"Unexpected response format: {result}")
+
+        # Preserve your existing post-processing
+        reply = self.remove_think_blocks(reply)
+
+        return reply
+
     def chat_with_model(self, message: str) -> str:
         """
         Sends a message to the google gemini API with additional context injected as a system message
