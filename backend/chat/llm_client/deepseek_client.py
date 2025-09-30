@@ -28,17 +28,6 @@ class DeepSeekClient(LLMClient):
             'Content-Type': 'application/json'
         }
 
-    @staticmethod
-    def remove_think_blocks(text: str) -> str:
-        """
-        Removes all text enclosed in deepseek-r1 model's think blocks 
-
-        :param text: the text to clean 
-
-        :return: the cleaned text with think block removed
-        """
-        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
-
     def extract_triples(self, text: str) -> list[tuple[str, str, str]]:
         """
         Uses the LLM to extract triples from a message in the output format:
@@ -107,80 +96,8 @@ class DeepSeekClient(LLMClient):
         tuples = [tuple(part.strip() for part in m.split(',', 2)) for m in matches]
 
         return tuples
-    
-    def chat_extract_triples_entities(self, text: str) -> list[tuple[str, str, str]]:
-        """
-        Uses the LLM to extract triples from a message in the output format:
 
-        (Subject, Predicate, Object)
-
-        :param text: The text we are to extract triple from 
-        :return: A list of triples 
-        """
-        # TODO: modify data with options to fine-tune
-        data = {
-            "model": "deepseek-r1:1.5b",
-            "prompt": (
-                "You are an AI helping humans extract knowledge triples about all relevant people, things, concepts, etc. "
-                "Extract ALL of the knowledge OBJECTS / SUBJECTS from the text provided to you. Ensure these are NOUNS "
-                "This is for the purpose of searching a knowledge triples"
-                "Ensure that you consider the context of the ENTIRE statement. "
-                "DO NOT output explanations, reasoning, or anything else. "
-                "Your output MUST ONLY be:\n"
-                "- One or more triples in the format SUBJECT, separated by '|'\n"
-                "- Or exactly 'NONE'\n\n"
-
-                "EXAMPLE\n"
-                "Barack Obama was born in Honolulu, a city of the US.\n"
-                "Output: Barack Obama | Honolulu | US | Honolulu | city\n"
-                "END OF EXAMPLE\n\n"
-
-                "EXAMPLE\n"
-                "I'm going to the store.\n"
-                "Output: NONE\n"
-                "END OF EXAMPLE\n\n"
-
-                "EXAMPLE\n"
-                "Hi Jae! Did you know that Jae likes to cook steak whilst listening to music. "
-                "Also, he recently got a new job which his teacher Rio, introduced him to.\n"
-                "Output: Jae | steak | music | job | Rio \n"
-                "END OF EXAMPLE\n\n"
-
-                "YOUR TURN\n"
-                f"{text}\n"
-                "Output:"
-            )
-        }
-
-        response = requests.post(self.api_url, headers = self.headers, json = data)
-
-        # NDJSON: split by lines and parse each one
-        messages = []
-        for line in response.text.strip().splitlines():
-            try:
-                obj = json.loads(line)
-                if "response" in obj:
-                    messages.append(obj["response"])
-            except json.JSONDecodeError as e:
-                print("Skipping malformed JSON line:", line, e)
-
-        # Join all message content
-        full_reply = "".join(messages)
-
-        # Strip internal <think>...</think> tags or anything custom
-        reply = self.remove_think_blocks(full_reply)
-
-        # print(f"raw triple extraction: {full_reply}")
-
-        if reply == "NONE":
-            return []
-
-        matches = reply.split("|")
-        tuples = [tuple(part.strip() for part in m.split(',', 2)) for m in matches]
-
-        return tuples
-
-    def chat_with_model(self, message):
+    def chat_with_model(self, message: str):
         """
         Sends a basic message to the model and returns the response.
 
@@ -190,10 +107,8 @@ class DeepSeekClient(LLMClient):
         data = {
             "model": "deepseek-r1:1.5b",
             "messages": [
-                {
-                    "role": "system",
-                    "content": ""
-                }
+                { "role": "system", "content": "You are a helpful, highly concise assistant. " },
+                { "role": "user", "content": f"{message}"}
             ]
         }
 
@@ -272,42 +187,6 @@ class DeepSeekClient(LLMClient):
 
         return reply
     
-    def text_to_triples(self, text: str) -> list[tuple[str, str, str]]:
-        """
-        Uses the LLM to extract triples from a message in the output format:
-
-        (Subject, Predicate, Object)
-
-        :param text: The response from the LLM to extract triples from
-        :return: A list of triples 
-        """
-        triples = self.extract_triples(text)
-        if triples == "NONE":
-            return []
-        print(f"Extracted triples: {triples}")
-        if type(triples) is not list:
-            cleaned_text = self.remove_think_blocks(triples)
-            cleaned_text = self.string_to_triples(cleaned_text)
-        else:
-            return triples
-        return cleaned_text
-    
-    def string_to_triples(self, text: str) -> list[tuple[str, str, str]]:
-        """
-        Converts a string of triples into a list of tuples
-
-        :param text: The string of triples to convert
-        :return: A list of tuples representing the triples
-        """
-        triples = []
-        matches = re.findall(r'\((.*?)\)', text, flags=re.DOTALL)
-        
-        for match in matches:
-            parts = match.split(',', 2)  
-            if len(parts) == 3:
-                triples.append(tuple(part.strip() for part in parts))
-        return triples
-    
     def chat_with_model_triples(self, triples, message):
         """
         Sends a message to the model with additional context injected as a system message.
@@ -370,3 +249,14 @@ class DeepSeekClient(LLMClient):
         reply = self.remove_think_blocks(full_reply)
 
         return reply
+    
+    @staticmethod
+    def remove_think_blocks(text: str) -> str:
+        """
+        Removes all text enclosed in deepseek-r1 model's think blocks 
+
+        :param text: the text to clean 
+
+        :return: the cleaned text with think block removed
+        """
+        return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
