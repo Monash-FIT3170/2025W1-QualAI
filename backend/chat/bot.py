@@ -8,6 +8,7 @@ from flask import Flask
 from flask import request, jsonify
 
 from chat.llm_client.gemini_client import GeminiClient
+from chat.llm_client.deepseek_client import DeepSeekClient
 
 
 class Chatbot:
@@ -21,7 +22,7 @@ class Chatbot:
         """
         Initializes the Chatbot class by with instances of the DeepSeekClient, TextVectoriser, and Neo4JInteractor classes.
         """
-        self.client = GeminiClient()
+        self.client = DeepSeekClient()
         self.db = db
 
     def chat_with_model(self, query: str) -> str:
