@@ -2,7 +2,11 @@
 
 ## 1. Project Overview
 
-QualAI is an AI-Powered Qualitative Research Assistant, augmenting human analysis by providing researchers with an offline toolkit capable of thematic analysis
+QualAI is an AI-Powered Qualitative Research Assistant, augmenting human analysis by providing researchers with an offline toolkit capable of thematic analysis.
+
+The tool streamlines the research workflow by automating transcriptions, facilitating in-depth analysis and enabling the extraction of insights from interview data. It does this using speech-to-text transcription, semantic analysis, and live text editing.
+
+This project is open-source. It was initally developeed as a part of Monash FIT3170 - "Software Engineering Practice".
 
 ## 2. Features
 
@@ -70,7 +74,7 @@ http://localhost:5173
 
 ### 5.1 Source Coded
 
-- link to repo
+Git repository found [here](https://github.com/Monash-FIT3170/2025W1-QualAI/).
 
 ### 5.2 Project Structure:
 
@@ -86,7 +90,7 @@ http://localhost:5173
 
 - where to find technical documentation
 
-### 5.4 outstanding tasks
+### 5.4 Outstanding tasks
 
 ### 5.5 Future Development Plans
 
@@ -103,9 +107,13 @@ http://localhost:5173
 
 ### 5.7 Security and Privacy Compliance
 
+A security and privacy audit has been completed for the project. This document can be found [here](https://drive.google.com/file/d/1Yc7g50En0GwmHXwVwVaX5X9ZgGpk5ELg/view?usp=sharing)
+
 ## 6. Contributors
 
 ### 6.1 Main Contact Person
+
+Any enquiries should be referred to Felix Chung at fchu0006@student.monash.edu
 
 ### 6.2 Developers
 
