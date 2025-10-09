@@ -1,3 +1,4 @@
+import whisper
 import subprocess
 import os
 import whisper
@@ -21,6 +22,7 @@ class AudioTranscriber:
         OpenAI whisper model to base configuration and
         """
         # Path to whisper-diarization model
+        self.model = whisper.load_model("base")
         self.diarize_path = "./upload/whisper-diarization/diarize.py"
         self.model = whisper.load_model("base")
 
