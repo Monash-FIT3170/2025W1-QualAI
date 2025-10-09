@@ -1,5 +1,6 @@
 import subprocess
 import os
+import sys
 from upload.video_to_audio import convert_media
 
 # whisper-diarization
@@ -34,7 +35,7 @@ class AudioTranscriber:
 
         # Run diarize process as subprocess
         subprocess.run(
-            ['/opt/venv/bin/python', 
+            [sys.executable, 
              self.diarize_path, 
              '-a', audio_filepath,
              "--batch-size", '2',

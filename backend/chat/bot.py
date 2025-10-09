@@ -1,7 +1,9 @@
 import traceback
 
 from chat.database_client.database_client import DatabaseClient
+from mongodb.ChatStore import ChatStore
 from chat.text_transformer.text_vectoriser import TextVectoriser
+import time
 
 from flask import Flask
 
@@ -18,11 +20,12 @@ class Chatbot:
     :author: Felix Chung
     """
 
-    def __init__(self, db: DatabaseClient):
+    def __init__(self, db: DatabaseClient, collection: ChatStore.Collection):
         """
         Initializes the Chatbot class by with instances of the DeepSeekClient, TextVectoriser, and Neo4JInteractor classes.
         """
-        self.client = DeepSeekClient()
+        self.deepseek_client = DeepSeekClient()
+        self.collection = collection
         self.db = db
 
     def chat_with_model(self, query: str) -> str:
@@ -88,11 +91,22 @@ class Chatbot:
 
             try:
                 response = self.chat_with_model(message)
+
+                messageTime = data.get('key')
+                content = {
+                    "question" : message,
+                    "response" : response
+                }
+
+                self.collection.add_document(messageTime, content)
                 return jsonify({'response': response}), 200
 
             except Exception as e:
                 traceback.print_exc()
                 return jsonify({'error': str(e)}), 500
+            
+            
+
     
     def close_connections(self) -> None:
         """
