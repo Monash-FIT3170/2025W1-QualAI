@@ -1,5 +1,5 @@
 from chat.database_client.database_client import DatabaseClient
-from chat.deepseek_client import DeepSeekClient
+from chat.llm_client.deepseek_client import DeepSeekClient
 
 from neo4j import GraphDatabase as Neo4jGraphDatabase
 from chat.basic_triple_extractor import BasicTripleExtractor
