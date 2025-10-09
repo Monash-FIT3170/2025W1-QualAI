@@ -2,7 +2,7 @@ import unittest
 
 from backend.chat.database_client.graph_database import GraphDatabase
 from backend.chat.basic_triple_extractor import BasicTripleExtractor
-from backend.chat.deepseek_client import DeepSeekClient
+from backend.chat.llm_client.deepseek_client import DeepSeekClient
 #
 class TestQuestionAnswerTriples(unittest.TestCase):
     
