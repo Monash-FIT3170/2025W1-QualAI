@@ -2,24 +2,28 @@ import json
 import re
 
 import requests
-from chat.basic_triple_extractor import BasicTripleExtractor
-import random
 
-class DeepSeekClient: 
+from chat.llm_client.llm_client import LLMClient
+
+import requests
+import os
+
+class DeepSeekClient(LLMClient): 
     """
     A class for interacting with the deepseek-r1 model via API
     Supports basic chat functionality and context injection
 
     :author: Felix Chung
     """
-
     def __init__(self):
         """
         Initializes the Chatbot class with API URL and JWS key
         """
+        self.init_client()
+
+    def init_client(self):
         self.api_url = "http://ollama:11434/api/chat"      
-        #self.api_url = "http://localhost:11434/api/generate"
-        
+
         self.headers = {
             'Content-Type': 'application/json'
         }
@@ -34,8 +38,8 @@ class DeepSeekClient:
         :return: the cleaned text with think block removed
         """
         return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
-    
-    def chat_extract_triples(self, text: str) -> list[tuple[str, str, str]]:
+
+    def extract_triples(self, text: str) -> list[tuple[str, str, str]]:
         """
         Uses the LLM to extract triples from a message in the output format:
 
@@ -44,7 +48,6 @@ class DeepSeekClient:
         :param text: The text we are to extract triple from 
         :return: A list of triples 
         """
-        # TODO: modify data with options to fine-tune
         data = {
             "model": "deepseek-r1:1.5b",
             "prompt": (
@@ -278,7 +281,7 @@ class DeepSeekClient:
         :param text: The response from the LLM to extract triples from
         :return: A list of triples 
         """
-        triples = self.chat_extract_triples(text)
+        triples = self.extract_triples(text)
         if triples == "NONE":
             return []
         print(f"Extracted triples: {triples}")
@@ -304,25 +307,6 @@ class DeepSeekClient:
             if len(parts) == 3:
                 triples.append(tuple(part.strip() for part in parts))
         return triples
-        
-
-
-    def chat_with_model(self, message):
-        """
-        Sends a basic message to the model and returns the response.
-
-        :param message: The message to send to the model.
-        :return: The JSON response from the API.
-        """
-        data = {
-            "model": "deepseek-r1:1.5b",
-            "messages": [
-                {
-                    "role": "system",
-                    "content": ""
-                }
-            ]
-        }
     
     def chat_with_model_triples(self, triples, message):
         """
