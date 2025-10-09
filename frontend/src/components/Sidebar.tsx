@@ -51,11 +51,10 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
         if (!window.confirm('Are you sure you want to permanently remove the file?')) return;
         onFileDelete(fileKey);
         try {
-            const data = new FormData();
-            data.append("project", projectName as string);
             const response = await fetch(`http://localhost:5001/` + (type === "file" ? "delete/" : "delete-dir/") + fileKey, {
                 method: 'DELETE',
-                body: data
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ project: projectName }),
             });
             if (response.ok) onRefreshFiles?.();
         } catch (err) {
