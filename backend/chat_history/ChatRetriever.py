@@ -21,10 +21,12 @@ class ChatRetriever:
                 responses =[]
                 for chat in chats:
                     responses.append({
+                        "key" : chat["key"],
                         "content" : chat["question"],
                         "isUser" : True
                     })
                     responses.append({
+                        "key" : chat["key"],
                         "content" : chat["response"],
                         "isUser": False
                     })

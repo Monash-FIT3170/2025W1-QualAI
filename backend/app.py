@@ -58,7 +58,7 @@ def register_upload_routes(app: Flask) -> None:
     document_remover.register_routes(app)
     project_manager.register_routes(app)
     chat_retriever.register_routes(app)
-    #chat_remover.register_routes(app)
+    chat_remover.register_routes(app)
 
 
 def start_app() -> None:

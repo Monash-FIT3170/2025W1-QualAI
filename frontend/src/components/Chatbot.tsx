@@ -5,6 +5,7 @@ import { Trash } from "lucide-react";
 
 
 interface Message {
+  key: number;
   content: string;
   isUser: boolean;
 }
@@ -13,7 +14,7 @@ const Chatbot: FC = () => {
   const [isOpen, setIsOpen] = useState(true);
   const [isHoveringClosed, setIsHoveringClosed] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
-    {content: "Hello! I'm your research assistant. How can I help you today?", isUser: false }
+    {key: Date.now(), content: "Hello! I'm your research assistant. How can I help you today?", isUser: false }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -41,20 +42,23 @@ const Chatbot: FC = () => {
    * Handles sending a message to the chatbot service
    */
   const handleSendMessage = async () => {
+    var key = Date.now()
     if (!inputValue.trim() || isLoading) return;
 
-    const userMessage = { content: inputValue, isUser: true };
+    const userMessage = {key: key, content: inputValue, isUser: true };
+    console.log(userMessage)
     setMessages(prev => [...prev, userMessage]);
     setInputValue('');
     setIsLoading(true);
 
     try {
-      const response = await fetchChat(inputValue);
-      setMessages(prev => [...prev, { content: response, isUser: false }]);
+      
+      const response = await fetchChat(inputValue, key);
+      setMessages(prev => [...prev, {key: key, content: response, isUser: false }]);
     } catch (error) {
       setMessages(prev => [
         ...prev,
-        {key: "error", content: 'Sorry, something went wrong. Please try again.', isUser: false }
+        {key: key, content: 'Sorry, something went wrong. Please try again.', isUser: false }
       ]);
     } finally {
       setIsLoading(false);
@@ -129,7 +133,8 @@ const Chatbot: FC = () => {
                 <Trash
                   className="inline-block w-4 h-4 ml-2 cursor-pointer text-gray-500 hover:text-red-600"
                   onClick={() => {
-                    ;
+                    removeChat(msg.key);
+                    setMessages(prev => prev.filter(m => m.key !== msg.key));
                   }}
                 />
               )}

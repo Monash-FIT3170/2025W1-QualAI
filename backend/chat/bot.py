@@ -89,13 +89,13 @@ class Chatbot:
             try:
                 response = self.chat_with_model(message)
 
-                curTime = time.time()
+                messageTime = data.get('key')
                 content = {
                     "question" : message,
                     "response" : response
                 }
 
-                self.collection.add_document(curTime, content)
+                self.collection.add_document(messageTime, content)
                 return jsonify({'response': response}), 200
 
             except Exception as e:

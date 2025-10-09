@@ -34,11 +34,12 @@ const instance = axios.create({
    * @throws {Error} When the API request fails or returns an error
    * 
    */
-  export const fetchChat = async (message: string): Promise<string> => {
+  export const fetchChat = async (message: string, key: number): Promise<string> => {
     try {
       const response = await instance.post('/chat',
         {
           message: message,
+          key: key
         },
       );
       console.log(response)
@@ -56,7 +57,7 @@ const instance = axios.create({
    * @returns 
    * @throws {Error} When the API request fails or returns an error
    */
-  export const fetchHistory = async (): Promise<{key: string; content: string; isUser: boolean }[]> => {
+  export const fetchHistory = async (): Promise<{key: number; content: string; isUser: boolean }[]> => {
   try {
     const response = await instance.get('/chathistory'); // use GET, history is retrieval not mutation
     return response.data.history;
@@ -69,11 +70,12 @@ const instance = axios.create({
   /** 
    * Removes chat message from history
    */
-  export const removeChat = async (key: string): Promise<string> => {
+  export const removeChat = async (key: number): Promise<string> => {
   try {
     console.log('Deleting chat message with key:', key);
     
-    const response = await instance.delete(`/delete/${encodeURIComponent(key)}`);
+    const response = await instance.delete(`/chatdelete/${encodeURIComponent(key)}`);
+
     
     return response.data.message; // your Flask returns `{"message": "..."}`
   } catch (error: any) {
