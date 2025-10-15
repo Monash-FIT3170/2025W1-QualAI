@@ -36,14 +36,14 @@ class DatabaseClient(ABC):
         pass
 
     @abstractmethod
-    def format_triples_as_context(triples: list[dict]) -> str:
+    def format_triples_as_context(self, triples: list[dict]) -> str:
         """
         TODO
         """
         pass
 
     @abstractmethod
-    def get_KG_context(query: str) -> str:
+    def get_KG_context(self, query: str) -> str:
         """
         TODO turn this function into one function that is implemented individually depending if vector or graph
         """
