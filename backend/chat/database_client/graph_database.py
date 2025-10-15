@@ -1,5 +1,9 @@
 from chat.database_client.database_client import DatabaseClient
+
+from chat.llm_client.llm_client import LLMClient
+
 from chat.llm_client.deepseek_client import DeepSeekClient
+from chat.llm_client.gemini_client import GeminiClient
 
 from neo4j import GraphDatabase as Neo4jGraphDatabase
 from chat.basic_triple_extractor import BasicTripleExtractor
@@ -13,7 +17,7 @@ class GraphDatabase(DatabaseClient):
 
         :author: Jonathan Farrand
     """
-    def __init__(self):
+    def __init__(self, llm_client: LLMClient):
         """
             Initialises NEO4JInteractor with driver to be used
         """
@@ -22,8 +26,7 @@ class GraphDatabase(DatabaseClient):
         self._driver = Neo4jGraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
 
         self.__create_vector_index()
-        self.__deepseek_client = DeepSeekClient()
-        self.__triple_extractor = BasicTripleExtractor()
+        self.__llm_client = llm_client
     
     def close_driver(self) -> None:
         """
@@ -31,17 +34,12 @@ class GraphDatabase(DatabaseClient):
         """
         self._driver.close()
         
-    def store_entries(self, text, file_id: str = None):
+    def store_triples(self, triples: list[tuple[str, str, str]], file_id: str = None):
         """
             Stores multiple triples in Neo4j.
 
             :param triples: List of (subject, predicate, object) tuples
-            :param file_id: Optional document ID for metadata
-        """
-        interviewee_id = "id" + str(random.randrange(0,1000))
-        triples = self.__triple_extractor.get_triples(text, "John Smith", interviewee_id)
-        #triples = self.__deepseek_client.chat_extract_triples(text)
-        
+        """        
         for subj, pred, obj in triples:
             self.store_triple(subj, pred, obj, file_id)
 
