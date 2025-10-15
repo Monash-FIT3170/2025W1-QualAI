@@ -108,6 +108,10 @@ class DeepSeekClient(LLMClient):
 
         return tuples
     
+    def extract_entities(self, text):
+        #TODO should be the same as the one implemented in the gemini client, except with a different request to the used llm
+        return
+    
     def chat_extract_triples_entities(self, text: str) -> list[tuple[str, str, str]]:
         """
         Uses the LLM to extract triples from a message in the output format:
