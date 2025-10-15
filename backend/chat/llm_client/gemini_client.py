@@ -97,6 +97,76 @@ class GeminiClient(LLMClient):
         tuples = [tuple(part.strip() for part in m.split(',', 2)) for m in matches if ',' in m]
 
         return tuples
+    
+    def extract_entities(self, text: str) -> list[str]:
+        """
+        Uses the Gemini API to extract key entities from the input text.
+
+        :param text: The input text
+        :return: A list of unique entities as strings.
+        """
+        prompt = (
+            "You are an AI that excels at extracting key entities from text. "
+            "Extract all of the proper nouns, people, places, organizations, and important concepts from the text provided to you. "
+            "Ensure you consider the context of the entire text. "
+            "DO NOT output explanations, reasoning, or anything else. "
+            "Your output MUST ONLY be:\n"
+            "- A comma-separated list of the entities\n"
+            "- Or the word 'NONE' if no relevant entities are found.\n\n"
+
+            "EXAMPLE\n"
+            "Text: Barack Obama was born in Honolulu, a city of the US.\n"
+            "Output: Barack Obama, Honolulu, US\n"
+            "END OF EXAMPLE\n\n"
+
+            "EXAMPLE\n"
+            "Text: Innovate Inc. announced that its lead researcher, Dr. Anya Sharma, will present findings on Project Chimera in Geneva.\n"
+            "Output: Innovate Inc., Dr. Anya Sharma, Project Chimera, Geneva\n"
+            "END OF EXAMPLE\n\n"
+            
+            "EXAMPLE\n"
+            "Text: I'm going to the store to buy some milk.\n"
+            "Output: NONE\n"
+            "END OF EXAMPLE\n\n"
+
+            "YOUR TURN\n"
+            f"Text: {text}\n"
+            "Output:"
+        )
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": prompt}
+                    ]
+                }
+            ]
+        }
+
+        try:
+            response = requests.post(self.url, headers=self.headers, json=payload)
+            response.raise_for_status()  # This will raise an exception for HTTP error codes
+        except requests.exceptions.RequestException as e:
+            print(f"API request failed: {e}")
+            return []
+
+        try:
+            data = response.json()
+            reply = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+        except (KeyError, IndexError, TypeError) as e:
+            print(f"Unexpected Gemini API response format: {e}")
+            print(f"Full response: {data}")
+            return []
+            
+        if reply.upper() == "NONE":
+            return []
+
+        # Split the comma-separated string into a list and clean up whitespace
+        entities = [entity.strip() for entity in reply.split(',') if entity.strip()]
+        
+        # Return a list of unique entities
+        return list(dict.fromkeys(entities))
 
     def chat_with_model_context_injection(self, context_text, message):
         """
