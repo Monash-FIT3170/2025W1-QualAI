@@ -42,13 +42,13 @@ class VectorDatabase(DatabaseClient):
         rel_type = re.sub(r'[^a-z0-9]+', '_', rel_type)
         return rel_type.upper()
     
-    def store_entries(self, entries, file_id):
+    def store_entries(self, entry, file_id):
         """
             Stores multiple vectors in the Neo4j database.
 
                 :param list[tuple[str, list[float]]] vectors: A list containing the tuple pair of string and its corresponding vector
         """
-        vectors = self.__vectoriser.chunk_and_embed_text(entries)
+        vectors = self.__vectoriser.chunk_and_embed_text(entry)
         for vector_data in vectors:
             text_chunk = vector_data[0]
             vector = vector_data[1]

@@ -34,12 +34,14 @@ class GraphDatabase(DatabaseClient):
         """
         self._driver.close()
         
-    def store_triples(self, triples: list[tuple[str, str, str]], file_id: str = None):
+    def store_triples(self, entry, file_id: str = None):
         """
             Stores multiple triples in Neo4j.
 
             :param triples: List of (subject, predicate, object) tuples
-        """        
+        """
+        triples = self.__llm_client.extract_triples(entry)
+
         for subj, pred, obj in triples:
             self.store_triple(subj, pred, obj, file_id)
 
