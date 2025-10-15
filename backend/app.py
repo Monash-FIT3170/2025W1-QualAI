@@ -26,7 +26,7 @@ def initialise_collection() -> tuple[DocumentStore.Collection, DocumentStore.Dat
 
 
 def initialise_database() -> DatabaseClient:
-    return VectorDatabase()
+    return GraphDatabase()
 
 def initialise_chat_history():
     ds: ChatStore = ChatStore()
