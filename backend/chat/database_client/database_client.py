@@ -41,6 +41,13 @@ class DatabaseClient(ABC):
         TODO
         """
         pass
+
+    @abstractmethod
+    def get_KG_context(query: str) -> str:
+        """
+        TODO turn this function into one function that is implemented individually depending if vector or graph
+        """
+        pass
     
     @abstractmethod
     def remove_node_by_file_id(self, file_id):

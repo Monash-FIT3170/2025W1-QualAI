@@ -165,7 +165,7 @@ class GraphDatabase(DatabaseClient):
         subject_results = self.run_cypher_query(subject_query, subject_params)
         return subject_results
     
-    def get_triple_from_entities(self, entities: list[str]) -> list[dict]:
+    def get_triples_from_entities(self, entities: list[str]) -> list[dict]:
         query = """
         UNWIND $entities AS entity_name
         MATCH (s:Entity {name: entity_name})
