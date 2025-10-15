@@ -27,6 +27,20 @@ class DatabaseClient(ABC):
         :return list: a list of relevant database entries
         """ 
         pass 
+
+    @abstractmethod
+    def get_triples_from_entities(self, entities: list[str]) -> list[dict]:
+        """
+        TODO
+        """
+        pass
+
+    @abstractmethod
+    def format_triples_as_context(triples: list[dict]) -> str:
+        """
+        TODO
+        """
+        pass
     
     @abstractmethod
     def remove_node_by_file_id(self, file_id):
