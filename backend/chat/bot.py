@@ -24,7 +24,7 @@ class Chatbot:
         """
         Initializes the Chatbot class by with instances of the DeepSeekClient, TextVectoriser, and Neo4JInteractor classes.
         """
-        self.client = DeepSeekClient()
+        self.client = GeminiClient()
         self.collection = collection
         self.db = db
 
@@ -45,7 +45,6 @@ class Chatbot:
         
         return response
         
-    '''
     def chat_with_model_triples(self, query: str) -> str: 
         """
         Process a chat message return the model's reponse. 
@@ -53,26 +52,12 @@ class Chatbot:
 
         :param str message: The message to send to the model. 
         :return: The JSON response from the API 
-        """ 
-        triples = self.client.extract_triples(query)
-        
-        context_triples = ""
+        """
+        context = self.db.get_KG_context(query)
 
-        for triple in triples: 
-            subject = triple[0]
-            object = triple[1]
-            result = self.db.search(subject)
+        response = self.client.chat_with_model_context_injection(context, query)
 
-            for row in result:
-                context_triples += f"{row['subject']} {row['predicate']} {row['object']}, "
-            
-            result = self.db.search(object)
-
-            for row in result:
-                context_triples += f"{row['subject']} {row['predicate']} {row['object']}, "
-
-        return self.client.chat_with_model_triples(context_triples, query)
-    '''
+        return response
 
     def register_routes(self, app: Flask) -> None:
         @app.route('/chat', methods=['POST'])
