@@ -19,7 +19,13 @@ This project is open-source. It was initally developeed as a part of Monash FIT3
 
 ### 2.2 Epics
 
-- Add here table with each epic, its description and status
+| Epic      | Description | Status     |
+| :---        |    :----:   |          ---: |
+| Chatbot     | Take user queries and get reponses based on project files | Complete  |
+| Database | Process and Store Transcription data | Complete |
+| Transcription  | Process audio files into transcriptions | Complete |
+| File Management | File upload, storage and project management | Complete            |
+| Text Editor | Allow transcripts to be edited, with highlights indicating important information to the chatbot | Complete |
 
 ## 3. Set-up Guide
 
@@ -41,14 +47,19 @@ This project uses **Docker** (required) to containerise all dependencies, includ
 
 ### 3.3 Installation
 
-1. Clone the repository
+#### 1. Clone the repository
 
 ```bash
 git clone https://github.com/Monash-FIT3170/2025W1-QualAI.git
 cd 2025W1-QualAI
 ```
 
-2. Environment variables
+#### 2. Environment variables 
+For testing purposes, Gemini can be used as the llm services instead of deepseek-r1. Get a key from [here](https://aistudio.google.com/welcome?utm_source=PMAX&utm_medium=display&utm_campaign=FY25-global-DR-pmax-1710442&utm_content=pmax&gclsrc=aw.ds&gad_source=1&gad_campaignid=22307839331&gbraid=0AAAAACn9t6721xgZNnu1SSTjH-BfdOo6o&gclid=CjwKCAjwup3HBhAAEiwA7euZuu8O75ix20wZg-3fFa8p-pOAE2WSyR_spFzWOhWMoH_IZkYBA8TQ7RoC3toQAvD_BwE). \
+No other environment variables are required.
+```.env
+GEMINI_API_KEY="YOUR GEMINI KEY"
+```
 
 ### 3.4 Usage
 
@@ -72,7 +83,7 @@ http://localhost:5173
 
 ## 5. Additional Notes for Developers
 
-### 5.1 Source Coded
+### 5.1 Source Code
 
 Git repository found [here](https://github.com/Monash-FIT3170/2025W1-QualAI/).
 
@@ -86,26 +97,22 @@ Git repository found [here](https://github.com/Monash-FIT3170/2025W1-QualAI/).
   - **/chat** – Chatbot functionality & DeepSeek integration
   - **/database_client** – Manages Neo4j connection
 
-### 5.3 Technical Documentation
+### 5.3  Documentation
+- A User Guide is avaliable [this link doesnt work](link)
+- Technical Documentation is provided within the source code
 
-- where to find technical documentation
+### 5.4 Outstanding / Future Development Plans
 
-### 5.4 Outstanding tasks
+- Improve quality of qualitative analysis through more rigorous data analysis processing: [5-steps deductive inductive analysis](https://journals.sagepub.com/doi/full/10.1177/16094069231183620) and [thematic analysis](https://delvetool.com/blog/thematicanalysis)
+- Improved organisation of analysis, using gudied qualitative research [example] (https://www.covidence.org/ )
+- Improve speed and quality of offline chatbot 
 
-### 5.5 Future Development Plans
+### 5.5 Testing
 
-- Multiple project support
-- Live file updating
-- Chatbot history
-- In application user guides
-- Improved Qualitative Analysis
+- CI/CD pipeline is set up with Github Actions to run on each Pull Request
+- Tests are placed in test/backend_tests (unittest) and test/frontend_tests (mocha)
 
-### 5.6 Testing
-
-- set up of CI/CD
-- Test files are located in the test folder
-
-### 5.7 Security and Privacy Compliance
+### 5.6 Security and Privacy Compliance
 
 A security and privacy audit has been completed for the project. This document can be found [here](https://drive.google.com/file/d/1Yc7g50En0GwmHXwVwVaX5X9ZgGpk5ELg/view?usp=sharing)
 
@@ -113,18 +120,17 @@ A security and privacy audit has been completed for the project. This document c
 
 ### 6.1 Main Contact Person
 
-Any enquiries should be referred to Felix Chung at fchu0006@student.monash.edu
-
+Any enquiries should be referred to Terence Bai at tbai0012@student.monash.edu
 ### 6.2 Developers
 
+Duleesha Gunaratne: dgun0024@student.monash.edu \
 Felix Chung: fchu0006@student.monash.edu\
-Terence Bai: tbai0012@student.monash.edu\
-Jonathan Farrand: jfar0026@student.monash.edu\
-Kays Beslen: kbes0005@student.monash.edu\
-Kade Lucy: kluc0006@student.monash.edu\
-Luka Boskovic: lbos0001@student.monash.edu\
-Rohan Shetty: rshe0040@student.monash.edu\
-Duleesha Gunaratne: dgun0024@student.monash.edu\
-Rachana Devi: rdev0023@student.monash.edu\
+Gunni Singh: gsin0055@student.monash.edu\
 Jaemin Park: jpar0073@student.monash.edu\
-Gunni Singh: gsin0055@student.monash.edu
+Jonathan Farrand: jfar0026@student.monash.edu\
+Kade Lucy: kluc0006@student.monash.edu\
+Kays Beslen: kbes0005@student.monash.edu\
+Luka Boskovic: lbos0001@student.monash.edu\
+Rachana Devi: rdev0023@student.monash.edu\
+Rohan Shetty: rshe0040@student.monash.edu\
+Terence Bai: tbai0012@student.monash.edu
