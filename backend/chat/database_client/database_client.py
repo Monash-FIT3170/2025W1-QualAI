@@ -8,7 +8,7 @@ class DatabaseClient(ABC):
     :author: Felix Chung
     """
     @abstractmethod
-    def store_entries(self, entries: list, file_id):
+    def store_entries(self, entries: str, file_id):
         """
         Stores entries into database
         
