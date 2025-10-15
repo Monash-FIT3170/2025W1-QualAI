@@ -154,7 +154,7 @@ class GraphDatabase(DatabaseClient):
 
     def search(self, entity): 
         # todo : find entity to search
-        results = self.__deepseek_client.chat_extract_triples_entities(entity)
+        results = self.__llm_client.extract_entities(entity)
         subject_query = """
         MATCH (s:Entity)-[r]->(o:Entity)
         WHERE s.name = $subject
@@ -164,6 +164,35 @@ class GraphDatabase(DatabaseClient):
 
         subject_results = self.run_cypher_query(subject_query, subject_params)
         return subject_results
+    
+    def get_triple_from_entities(self, entities: list[str]) -> list[dict]:
+        query = """
+        UNWIND $entities AS entity_name
+        MATCH (s:Entity {name: entity_name})
+        MATCH (s)-[r]-(o)
+        RETURN s.name AS subject, type(r) AS predicate, o.name AS object
+        """
+        
+        with self._driver.session() as session:
+            result = session.run(query, entities=entities)
+            return [record.data() for record in result]
+        
+    def format_triples_as_context(triples: list[dict]) -> str:
+        """
+        Formats a list of triple dictionaries into a single string for an LLM prompt.
+        """
+        if not triples:
+            return "No information found in the knowledge graph."
+
+        context_lines = set()
+        for triple in triples:
+            subject = triple['subject']
+            predicate = triple['predicate'].replace('_', ' ').lower()
+            obj = triple['object']
+            context_lines.add(f"{subject} {predicate} {obj}.")
+        
+        return "Here is some context from the knowledge graph:\n- " + "\n- ".join(sorted(list(context_lines)))
+
             
     def run_cypher_query(self, query: str, params: dict = None):
         """
