@@ -6,6 +6,8 @@ from chat.database_client.database_client import DatabaseClient
 from chat.database_client.vector_database import VectorDatabase
 from chat.database_client.graph_database import GraphDatabase
 
+from chat.llm_client.gemini_client import GeminiClient
+
 from mongodb.DocumentStore import DocumentStore
 from mongodb.ChatStore import ChatStore
 from project.ProjectManager import ProjectManager
@@ -26,7 +28,7 @@ def initialise_collection() -> tuple[DocumentStore.Collection, DocumentStore.Dat
 
 
 def initialise_database() -> DatabaseClient:
-    return GraphDatabase()
+    return GraphDatabase(GeminiClient())
 
 def initialise_chat_history():
     ds: ChatStore = ChatStore()

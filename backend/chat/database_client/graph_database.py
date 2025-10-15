@@ -152,6 +152,9 @@ class GraphDatabase(DatabaseClient):
         with self._driver.session() as session:
             session.run("MATCH (n) DETACH DELETE n")
 
+    def store_entries(self, entry, file_id):
+        return None
+
     def search(self, entity): 
         # todo : find entity to search
         results = self.__llm_client.extract_entities(entity)
