@@ -26,6 +26,16 @@ class LLMClient(ABC):
         pass 
 
     @abstractmethod
+    def extract_entities(self, text: str) -> list[str]:
+        """
+        Extracts entities from the input text in the format:
+        [Entity, Entity, ..., Entity]
+
+        :param text: The input text
+        :return: A list of entities within the given text
+        """
+
+    @abstractmethod
     def chat_with_model_context_injection(self, context_text: str, message: str):
         """
         Sends a message to the google gemini API with additional context injected as a system message
