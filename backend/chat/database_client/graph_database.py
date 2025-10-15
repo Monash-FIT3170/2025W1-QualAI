@@ -165,6 +165,17 @@ class GraphDatabase(DatabaseClient):
         subject_results = self.run_cypher_query(subject_query, subject_params)
         return subject_results
     
+    def get_KG_context(self, query: str) -> str:
+        entities = self.client.extract_entities(query)
+        print(f"Extracted entities: {entities}")
+
+        triples = self.db.get_triples_from_entities(entities)
+        print(f"Found relevant triples: {triples}")
+
+        context = self.db.format_triples_as_context(triples)
+
+        return context
+    
     def get_triples_from_entities(self, entities: list[str]) -> list[dict]:
         query = """
         UNWIND $entities AS entity_name
