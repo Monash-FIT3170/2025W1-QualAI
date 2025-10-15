@@ -11,7 +11,7 @@ from flask import request, jsonify
 
 from chat.llm_client.gemini_client import GeminiClient
 from chat.llm_client.deepseek_client import DeepSeekClient
-
+import logging
 
 class Chatbot:
     """
@@ -24,7 +24,7 @@ class Chatbot:
         """
         Initializes the Chatbot class by with instances of the DeepSeekClient, TextVectoriser, and Neo4JInteractor classes.
         """
-        self.deepseek_client = DeepSeekClient()
+        self.client = DeepSeekClient()
         self.collection = collection
         self.db = db
 
@@ -102,6 +102,7 @@ class Chatbot:
                 return jsonify({'response': response}), 200
 
             except Exception as e:
+                logging.exception("Error in /chat route")
                 traceback.print_exc()
                 return jsonify({'error': str(e)}), 500
             
