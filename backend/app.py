@@ -28,6 +28,7 @@ def initialise_collection() -> tuple[DocumentStore.Collection, DocumentStore.Dat
 def initialise_database() -> DatabaseClient:
     return VectorDatabase()
 
+
 def initialise_chat_history():
     ds: ChatStore = ChatStore()
     db: ChatStore.Database = ds.create_database("Chat_History")
@@ -36,17 +37,16 @@ def initialise_chat_history():
 
 
 def register_upload_routes(app: Flask) -> None:
-    collection, mongodb = initialise_collection()
+    _, mongo_database = initialise_collection()
     chat_collection, chat_mongodb = initialise_chat_history()
     db = initialise_database()
 
-    document_uploader = DocumentUploader(collection, db)
     chat_bot = Chatbot(db, chat_collection)
-
-    document_retriever = DocumentRetriever(collection)
-    document_editor = DocumentEditor(collection, db)
-    document_remover = DocumentRemover(collection, db)
-    project_manager = ProjectManager(mongodb)
+    document_uploader = DocumentUploader(mongo_database, db)
+    document_retriever = DocumentRetriever(mongo_database)
+    document_editor = DocumentEditor(mongo_database, db)
+    document_remover = DocumentRemover(mongo_database, db)
+    project_manager = ProjectManager(mongo_database)
 
     chat_retriever = ChatRetriever(chat_collection)
     chat_remover = ChatRemover(chat_collection)
