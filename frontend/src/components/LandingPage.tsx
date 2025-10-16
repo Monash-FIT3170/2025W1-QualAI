@@ -97,26 +97,27 @@ const LandingPage = () => {
           </div>
 
           <div className="flex-1 bg-white shadow rounded-xl p-6">
-            <h3 className="text-lg font-semibold mb-4">Open Project</h3>
+            <h3 className="text-lg font-semibold mb-4 text-center">Open Project</h3>
 
             <div className="relative">
               <Command>
                 <CommandInput placeholder="Search projects..." />
                 <CommandList className="absolute z-10 w-full bg-white border rounded shadow mt-1 max-h-60 overflow-auto">
-                  <CommandEmpty>No projects found.</CommandEmpty>
-                  <CommandGroup heading="Projects">
-                    {projects.map((p) => (
-                        <CommandItem
-                            key={p}
-                            onSelect={() =>
-                                navigate(`/project/${encodeURIComponent(p)}`)
-                            }
-                        >
-                          <FolderOpen className="mr-2 h-4 w-4" />
-                          {p}
-                        </CommandItem>
-                    ))}
-                  </CommandGroup>
+                  {projects.length === 0 ? (
+                      <CommandEmpty>No projects found.</CommandEmpty>
+                  ) : (
+                      <CommandGroup heading="Projects">
+                        {projects.map((p) => (
+                            <CommandItem
+                                key={p}
+                                onSelect={() => navigate(`/project/${encodeURIComponent(p)}`)}
+                            >
+                              <FolderOpen className="mr-2 h-4 w-4" />
+                              {p}
+                            </CommandItem>
+                        ))}
+                      </CommandGroup>
+                  )}
                 </CommandList>
               </Command>
             </div>
