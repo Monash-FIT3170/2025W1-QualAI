@@ -75,7 +75,7 @@ class Chatbot:
                 return jsonify({'error': 'No message provided'}), 400
 
             try:
-                response = self.chat_with_model(message)
+                response = self.chat_with_model_triples(message)
 
                 messageTime = data.get('key')
                 content = {
