@@ -81,28 +81,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <MenuBar editor={editor} fileKey={fileKey ?? ""}/>
         <div className="flex-grow">
           <EditorContent editor={editor}/>
-          {/*<div className="border-t border-gray-700 p-2 flex justify-between mt-1">*/}
-          {/*  <button*/}
-          {/*      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"*/}
-          {/*      onClick={() => {*/}
-          {/*        const htmlContent = editor.getHTML();*/}
-          {/*        console.log("Editor HTML content:", htmlContent);*/}
-          {/*        // Add actual save logic here*/}
-          {/*      }}*/}
-          {/*  >*/}
-          {/*    Save Changes*/}
-          {/*  </button>*/}
-          {/*  <button*/}
-          {/*      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"*/}
-          {/*      onClick={() => {*/}
-          {/*        editor.commands.setContent("<p>Content discarded.</p>");*/}
-          {/*        // Add actual discard logic here*/}
-          {/*      }}*/}
-          {/*  >*/}
-          {/*    Discard*/}
-          {/*  </button>*/}
-          {/*</div>*/}
-
         </div>
       </div>
   );
