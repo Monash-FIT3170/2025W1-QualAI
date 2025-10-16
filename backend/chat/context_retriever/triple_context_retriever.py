@@ -1,5 +1,5 @@
 from chat.context_retriever.context_retriever import ContextRetriever
-from chat.deepseek_client import DeepSeekClient
+from chat.llm_client.deepseek_client import DeepSeekClient
 from chat.text_transformer.neo4j_interactor import Neo4JInteractor
 
 class TripleContextRetriever(ContextRetriever):
@@ -15,7 +15,7 @@ class TripleContextRetriever(ContextRetriever):
         :param str message: The message to send to the model. 
         :return: The JSON response from the API 
         """ 
-        triples = self.deepseek_client.chat_extract_triples(query)
+        triples = self.deepseek_client.extract_triples(query)
         
         context_triples = ""
 

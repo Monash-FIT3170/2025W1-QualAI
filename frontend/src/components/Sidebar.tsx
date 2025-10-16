@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Upload } from 'lucide-react';
 import UploadFileButton from './UploadFileButton';
 import React, { useState, useEffect } from "react";
@@ -21,6 +21,7 @@ type UploadItem = {
 const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: SidebarProps) => {
     const navigate = useNavigate();
 
+    const { projectName } = useParams<{ projectName: string }>();
     const [editingFileKey, setEditingFileKey] = useState<string | null>(null);
     const [editingFileType, setEditingFileType] = useState<NodeType | null>(null);
     const [newFileKey, setNewFileKey] = useState("");
@@ -51,7 +52,9 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
         onFileDelete(fileKey);
         try {
             const response = await fetch(`http://localhost:5001/` + (type === "file" ? "delete/" : "delete-dir/") + fileKey, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ project: projectName }),
             });
             if (response.ok) onRefreshFiles?.();
         } catch (err) {
@@ -66,6 +69,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
                 method: 'PATCH',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                    project: projectName,
                     content: type === "file"
                         ? fileKey.replace(fileKey.split("/").pop() ?? "", newFileKey)
                         : newFileKey,
@@ -185,6 +189,8 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
                     formData.append("files[]", item.file);
                 }
             }
+
+            formData.append("project", projectName as string);
             try {
                 const response = await fetch("http://localhost:5001/upload", {
                     method: "POST",

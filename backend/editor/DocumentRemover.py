@@ -1,6 +1,6 @@
 from chat.database_client.database_client import DatabaseClient
 import re
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 from mongodb.DocumentStore import DocumentStore
 
@@ -17,15 +17,15 @@ class DocumentRemover:
     """
   
     def __init__(
-        self, collection: DocumentStore.Collection, database: DatabaseClient
+        self, mongo_database: DocumentStore.Database, database: DatabaseClient
     ) -> None:
         """
         Is defined using the two used database types for the system
         
-        :param collection: Mongodb database collection
+        :param mongo_database: Mongodb database collection
         :param vector_database: Neo4J vector database
         """
-        self.__collection = collection
+        self.__mongo_database = mongo_database
         self.__database = database
 
     def register_routes(self, app: Flask) -> None:
@@ -44,7 +44,9 @@ class DocumentRemover:
             :param file_key: file_key associated with a document in each database
             """
             try:
-                self.__collection.remove_document(file_key)
+                project = request.get_json().get("project")
+                collection = self.__mongo_database.get_collection(project)
+                collection.remove_document(file_key)
                 self.__database.remove_node_by_file_id(file_key)
             
                 return jsonify({"message": f"{file_key} successfully removed"}), 200
@@ -60,10 +62,12 @@ class DocumentRemover:
             :param file_key: file_key associated with a document in each database
             """
             try:
-                docs = self.__collection.matching_documents(f"^{re.escape(dir)}/")
+                project = request.get_json().get("project")
+                collection = self.__mongo_database.get_collection(project)
+                docs = collection.matching_documents(f"^{re.escape(dir)}/")
                 for doc in docs:
                     key = doc.get("key")
-                    self.__collection.remove_document(key)
+                    collection.remove_document(key)
                     self.__database.remove_node_by_file_id(key)
 
                 return jsonify({"message": f"{dir} successfully removed"}), 200
