@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, current_app
 from typing import Any, Optional
 
 from chat.database_client.database_client import DatabaseClient
@@ -51,6 +51,22 @@ class DocumentUploader:
                     print("Error during file upload:", err)
                     return jsonify({"error": str(err)}), 500
             return jsonify({"status": "ok"}), 200
+        
+        @app.route('/toggle_state', methods=['POST'])
+        def toggle_state() -> tuple[Any, int]:
+            """
+            Called when the React 'Assign Speakers' toggle is clicked.
+            Updates the internal toggle state.
+            """
+            try:
+                data = request.get_json()
+                active = data.get('active', False)
+                app.config["UPLOAD_TOGGLE_ACTIVE"] = active 
+                return jsonify({"status": "success", "active": active}), 200
+
+            except Exception as e:
+                print("Error processing toggle:", e)
+                return jsonify({"success": False, "error": str(e)}), 500
 
     @staticmethod
     def __filepath_and_filename(collection: DocumentStore.Collection, file, folder_mapping) -> tuple[Optional[FilePathInfo], Optional[Exception]]:
@@ -96,6 +112,7 @@ class DocumentUploader:
         :return: TEMPORARY, outputs the file length, the mp3 won't need to be saved in the future.
         """
         audio_transcriber = AudioTranscriber()
+        audio_transcriber.set_assign_speakers(current_app.config.get("UPLOAD_TOGGLE_ACTIVE", False))
         transcribed_text = audio_transcriber.transcribe(path)
         name = collection.update_document_name(name)
         collection.add_document(name, transcribed_text)

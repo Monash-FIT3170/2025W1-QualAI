@@ -23,6 +23,7 @@ class AudioTranscriber:
         # Path to whisper-diarization model
         self.diarize_path = "./upload/whisper-diarization/diarize.py"
         self.model = whisper.load_model("base")
+        self.assign_speakers = False # Initialise transcription to not assign speakers
 
     def transcribe(self, audio_filepath: str):
         """
@@ -41,8 +42,8 @@ class AudioTranscriber:
         # Convert audio file to mp3
         filepath_mp3 = convert_media(audio_filepath)
 
-        # Use default whisper for short clips (Less than 10 seconds)
-        if (AudioFileClip(filepath_mp3).duration < 10):
+        # Use default whisper for short clips (Less than 10 seconds) and when assign speakers is false
+        if (AudioFileClip(filepath_mp3).duration < 10 or self.assign_speakers is False):
             audio = whisper.load_audio(filepath_mp3)
             result = whisper.transcribe(model = self.model, audio = audio)
 
@@ -75,6 +76,14 @@ class AudioTranscriber:
                 print(f'Error: {filepath_srt}: {e.strerror}')
 
         return transcript.read()
+    
+    def set_assign_speakers(self, assign_speakers: bool):
+        """
+        Method to change the upload method by changing whether
+        speakers are assigned, when turned off, the upload
+        method will not assign speakers and transcribe faster.
+        """
+        self.assign_speakers = assign_speakers
  
 if __name__ == "__main__":
     transcriber = AudioTranscriber()
