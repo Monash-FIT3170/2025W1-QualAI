@@ -15,6 +15,7 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
     const [ isFolderUploading, setIsFolderUploading ] = useState(false);
     const [ isUploading, setIsUploading ] = useState(false);
     const [ dotCount, setDotCount ] = useState(1);
+    const [ uploadToggled, setUploadToggled ] = useState<boolean>(false);
 
     useEffect(() => {
         let interval : NodeJS.Timeout;
@@ -68,6 +69,27 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
 
     };
 
+    const uploadToggle = async () => {
+        const newState = !uploadToggled;
+        setUploadToggled(newState);
+
+        try {
+            const response = await fetch("http://localhost:5001/toggle_state", {
+                method: "POST",
+                headers: {
+                "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ active: newState }), 
+            });
+
+        if (!response.ok) throw new Error("Network response was not ok");
+            const data = await response.json();
+                // console.log("Toggle response:", data);
+            } catch (error) {
+                console.error("Failed to send toggle:", error);
+            }
+        };
+
     const effectiveUploading = isUploading || externalUploading;
     const effectiveFolderUploading = isFolderUploading || externalFolderUploading;
 
@@ -101,7 +123,21 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
               { effectiveFolderUploading ? `Uploading${ '.'.repeat(dotCount) }` : 'Select Folder' }
             </button>
 
+            <div className="flex items-center justify-between w-full mt-3">
+                <span className="mx-auto mb-2">Assign Speakers</span>
 
+                <button
+                    onClick={uploadToggle}
+                    className={`relative w-12 h-6 flex items-center rounded-full transition-colors duration-300 ${
+                    uploadToggled ? "bg-green-500" : "bg-gray-400"}`}
+                    style={{ top: "-0.1rem" }}>
+                <span
+                    className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transform transition-transform duration-300 ${
+                    uploadToggled ? "translate-x-6" : "translate-x-0"}`}
+                    />
+                </button>
+                </div>
+                
             <input
                 type="file"
                 ref={ fileInputRef }
