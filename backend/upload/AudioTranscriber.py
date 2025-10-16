@@ -43,8 +43,8 @@ class AudioTranscriber:
         # Convert audio file to mp3
         filepath_mp3 = convert_media(audio_filepath)
 
-        # Use default whisper for short clips (Less than 10 seconds)
-        if (AudioFileClip(filepath_mp3).duration < 10):
+        # Use default whisper for short clips (Less than 50 seconds)
+        if (AudioFileClip(filepath_mp3).duration < 50):
             audio = whisper.load_audio(filepath_mp3)
             result = whisper.transcribe(model = self.model, audio = audio)
 

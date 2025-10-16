@@ -4,6 +4,7 @@ import { Upload } from "lucide-react";
 import UploadFileButton from "./UploadFileButton";
 
 type DropZoneProps = {
+  projectName?: string;
   onRefreshFiles?: () => void;
 };
 
@@ -14,7 +15,7 @@ type UploadItem = {
   entry?: FileSystemEntry;
 };
 
-const DropZone: React.FC<DropZoneProps> = ({ onRefreshFiles }) => {
+const DropZone: React.FC<DropZoneProps> = ({ projectName, onRefreshFiles }) => {
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
   const [isUploadingFolder, setIsUploadingFolder] = useState(false);
@@ -127,7 +128,6 @@ const DropZone: React.FC<DropZoneProps> = ({ onRefreshFiles }) => {
       }
 
       const hasFolder = items.some((item) => item.entry?.isDirectory);
-
       if (hasFolder) setIsUploadingFolder(true);
       else setIsUploadingFile(true);
 
@@ -135,7 +135,6 @@ const DropZone: React.FC<DropZoneProps> = ({ onRefreshFiles }) => {
 
       for (const item of items) {
         if (item.entry?.isDirectory) {
-          // Fully flatten the folder(s)
           const files = await readAllFilesFromEntry(item.entry);
           for (const { file, path } of files) {
             formData.append("files[]", file, path);
@@ -145,12 +144,14 @@ const DropZone: React.FC<DropZoneProps> = ({ onRefreshFiles }) => {
         }
       }
 
+      // ✅ restore missing field
+      if (projectName) formData.append("project", projectName);
+
       try {
         const response = await fetch("http://localhost:5001/upload", {
           method: "POST",
           body: formData,
         });
-
         if (response.ok) onRefreshFiles?.();
       } catch (err) {
         console.error("Error while uploading", err);
