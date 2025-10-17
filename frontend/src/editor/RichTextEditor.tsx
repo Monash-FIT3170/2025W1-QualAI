@@ -11,6 +11,7 @@ import MenuBar from './MenuBar';
 // import { Color } from "@tiptap/extension-color";
 
 
+
 interface RichTextEditorProps {
   initialContent?: string;
   fileKey?: string;
@@ -55,7 +56,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     content: initialContent,
     editorProps: {
       attributes: {
-        class: 'min-h-[156px] border rounded-md bg-slate-50 py-2 px-3 focus:outline-none',
+        class: 'min-h-[156px] border rounded-md bg-[#D9D9D9] py-2 px-3 focus:outline-none',
       },
     },
     onUpdate: ({editor}) => {
@@ -75,34 +76,50 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     }
   }, [initialContent, editor]);
 
+  const handleFileUpdate = () => {
+    if (!editor || !fileKey) {
+    console.warn("Cannot save: missing editor or fileKey");
+    return;
+  }
+    const content = editor.getHTML();
+    console.log('Saving fileKey:', fileKey);
+    console.log('Saving content:', content);
+    fetch(`http://localhost:5001/edit/${fileKey}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ content }),
+    })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to save document');
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log('Save successful:', data);
+      })
+      .catch(err => {
+        console.error('Save error:', err);
+      });
+  };
+
   return (
       <div className={`flex flex-col h-full ${className}`}>
-        <MenuBar editor={editor} fileKey={fileKey ?? ""}/>
+        <MenuBar editor={editor}/>
         <div className="flex-grow">
           <EditorContent editor={editor}/>
-          {/*<div className="border-t border-gray-700 p-2 flex justify-between mt-1">*/}
-          {/*  <button*/}
-          {/*      className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"*/}
-          {/*      onClick={() => {*/}
-          {/*        const htmlContent = editor.getHTML();*/}
-          {/*        console.log("Editor HTML content:", htmlContent);*/}
-          {/*        // Add actual save logic here*/}
-          {/*      }}*/}
-          {/*  >*/}
-          {/*    Save Changes*/}
-          {/*  </button>*/}
-          {/*  <button*/}
-          {/*      className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"*/}
-          {/*      onClick={() => {*/}
-          {/*        editor.commands.setContent("<p>Content discarded.</p>");*/}
-          {/*        // Add actual discard logic here*/}
-          {/*      }}*/}
-          {/*  >*/}
-          {/*    Discard*/}
-          {/*  </button>*/}
-          {/*</div>*/}
-
         </div>
+        <div className="mt-3 pb-4 flex justify-center">
+        <button 
+          onClick={handleFileUpdate}
+          className="cursor-pointer px-8 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg font-medium hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+        >
+          Save Changes
+        </button>
+      </div>
+        
       </div>
   );
 }
