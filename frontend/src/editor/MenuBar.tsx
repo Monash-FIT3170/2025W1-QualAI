@@ -438,13 +438,13 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               
               <button
                 onClick={() => {
-                  handleHighlight('MEDIUM');
+                  handleHighlight('LOW');
                   setShowHighlightDropdown(false);
                 }}
                 className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700"
               >
-                <div className="w-4 h-4 rounded" style={{ backgroundColor: HIGHLIGHT_COLORS.MEDIUM }}></div>
-                <span>Medium Priority</span>
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: HIGHLIGHT_COLORS.LOW }}></div>
+                <span>Low Priority</span>
               </button>
               
               <button
