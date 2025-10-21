@@ -54,20 +54,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
     };
 
     return (
-        <div className="w-64 bg-secondary/50 p-4 flex flex-col">
-            {/* Header */}
-            <div className="flex items-center gap-2 mb-8 cursor-pointer" onClick={() => navigate('/')}>
-                <div className="w-8 h-8">
-                    <svg viewBox="0 0 100 100" className="w-full h-full text-gray-400">
-                        <circle cx="50" cy="50" r="45" fill="currentColor" />
-                        <circle cx="35" cy="40" r="8" fill="black" />
-                        <circle cx="65" cy="40" r="8" fill="black" />
-                        <circle cx="50" cy="60" r="10" fill="black" />
-                    </svg>
-                </div>
-                <span className="text-xl font-bold">QualAI</span>
-            </div>
-
+        <div className="w-64 bg-gray-800 border-r border-gray-700 p-4 flex flex-col">
             {/* File tree */}
             <div className="flex-1">
                 <FileTree
@@ -89,18 +76,18 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
             {/* Rename modal */}
             {editingFileKey && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-                        <h2 className="text-lg font-bold mb-4">Rename {editingFileType}</h2>
+                    <div className="bg-gray-800 border border-gray-600 p-6 rounded-lg shadow-lg w-96">
+                        <h2 className="text-lg font-bold text-white mb-4">Rename {editingFileType}</h2>
                         <input
                             type="text"
                             value={newFileKey.split("/").pop() || ""}
                             onChange={(e) => setNewFileKey(e.target.value)}
-                            className="w-full px-3 py-2 border rounded mb-4"
+                            className="w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                         <div className="flex justify-end gap-2">
                             <button
                                 onClick={() => setEditingFileKey(null)}
-                                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                                className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors"
                             >
                                 Cancel
                             </button>
@@ -109,7 +96,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
                                     await handleRename(editingFileKey)(newFileKey, editingFileType);
                                     setEditingFileKey(null);
                                 }}
-                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
                             >
                                 Rename
                             </button>
