@@ -54,18 +54,17 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
     };
 
     return (
-        <div className="w-64 bg-secondary/50 p-4 flex flex-col">
+        <div className="w-64 bg-[#1A1A1A] p-4 flex flex-col text-white">
             {/* Header */}
             <div className="flex items-center gap-2 mb-8 cursor-pointer" onClick={() => navigate('/')}>
                 <div className="w-8 h-8">
-                    <svg viewBox="0 0 100 100" className="w-full h-full text-gray-400">
-                        <circle cx="50" cy="50" r="45" fill="currentColor" />
-                        <circle cx="35" cy="40" r="8" fill="black" />
-                        <circle cx="65" cy="40" r="8" fill="black" />
-                        <circle cx="50" cy="60" r="10" fill="black" />
-                    </svg>
+                    <img
+                        src="/Logo.png"
+                        alt="QualAI Logo"
+                        className="w-full h-full object-cover"
+                    />
                 </div>
-                <span className="text-xl font-bold">QualAI</span>
+                <span className="text-xl font-bold" >QualAI</span>
             </div>
 
             {/* File tree */}
@@ -80,12 +79,13 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
                         setEditingFileType(type);
                     }}
                 />
-            </div>
+            </div
 
             {/* Dropzone now modular */}
             <DropZone projectName={projectName} onRefreshFiles={onRefreshFiles} />
 
 
+              
             {/* Rename modal */}
             {editingFileKey && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">

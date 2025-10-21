@@ -53,11 +53,11 @@ const LandingPage = () => {
   return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6 space-y-10">
         <div className="text-center space-y-4">
-          <h2 className="text-2xl font-light text-gray-400">
+          <h2 className="text-2xl text-white italic">
             Analyze Interviews with AI
           </h2>
 
-          <div className="w-24 h-24 mx-auto">
+          <div className="w-30 h-30 mx-auto">
             <img
                 src="/Logo.png"
                 alt="QualAI Logo"
@@ -65,28 +65,29 @@ const LandingPage = () => {
             />
           </div>
 
-          <h1 className="text-5xl font-bold mb-2">QualAI</h1>
-          <p className="text-gray-400 text-xl">
+          <h1 className="font-jersey text-5xl font-bold mb-2 text-[#D9D9D9]">QualAI</h1>
+          <br></br>
+          <b className="text-[#A89F94] text-xl">
             Transcribe and thematically analyze qualitative interview data
-          </p>
+          </b>
         </div>
 
-        <div className="flex flex-row gap-8 w-full max-w-2xl">
-          <div className="flex-1 bg-white shadow rounded-xl p-6 text-center">
-            <h3 className="text-lg font-semibold mb-4">Create New Project</h3>
+        <div className="flex flex-row gap-10 w-full max-w-2xl">
+          <div className="flex-1 bg-[#577557] shadow rounded-xl p-6 text-center">
+            <h3 className="text-[#D9D9D9] font-semibold mb-4">Create New Project</h3>
 
             <input
                 type="text"
                 placeholder="Project name"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
-                className="px-3 py-2 border rounded w-full mb-4 text-center"
+                className="text-[#D9D9D9] px-3 py-2 border rounded w-full mb-4 text-center focus:outline-[#7CAF7C]"
                 disabled={loading}
             />
 
             <button
                 onClick={handleCreateProject}
-                className={`btn-primary w-full flex items-center justify-center gap-2 ${
+                className={`btn-primary bg-[#7CAF7C] w-full flex items-center justify-center gap-2 ${
                     loading ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 disabled={loading}
@@ -96,28 +97,28 @@ const LandingPage = () => {
             </button>
           </div>
 
-          <div className="flex-1 bg-white shadow rounded-xl p-6">
-            <h3 className="text-lg font-semibold mb-4 text-center">Open Project</h3>
+          <div className="flex-1 bg-[#363B3D] shadow rounded-xl p-6 text-center">
+            <h3 className="text-lg font-semibold mb-4">Open Project</h3>
 
             <div className="relative">
               <Command>
                 <CommandInput placeholder="Search projects..." />
-                <CommandList className="absolute z-10 w-full bg-white border rounded shadow mt-1 max-h-60 overflow-auto">
-                  {projects.length === 0 ? (
-                      <CommandEmpty>No projects found.</CommandEmpty>
-                  ) : (
-                      <CommandGroup heading="Projects">
-                        {projects.map((p) => (
-                            <CommandItem
-                                key={p}
-                                onSelect={() => navigate(`/project/${encodeURIComponent(p)}`)}
-                            >
-                              <FolderOpen className="mr-2 h-4 w-4" />
-                              {p}
-                            </CommandItem>
-                        ))}
-                      </CommandGroup>
-                  )}
+                <CommandList className="absolute z-10 w-full bg-[#7e7e7e] border rounded shadow mt-1 max-h-60 overflow-auto">
+                {projects.length === 0 ? (
+                  <CommandEmpty>No projects found.</CommandEmpty>
+                ) : (
+                  <CommandGroup heading="Projects">
+                    {projects.map((p) => (
+                        <CommandItem
+                            key={p}
+                            onSelect={() => navigate(`/project/${encodeURIComponent(p)}`)}
+                        >
+                          <FolderOpen className="mr-2 h-4 w-4" />
+                          {p}
+                        </CommandItem>
+                    ))}
+                  </CommandGroup>
+                )}
                 </CommandList>
               </Command>
             </div>
