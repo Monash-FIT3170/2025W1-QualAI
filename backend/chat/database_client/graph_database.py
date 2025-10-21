@@ -21,9 +21,9 @@ class GraphDatabase(DatabaseClient):
         """
             Initialises NEO4JInteractor with driver to be used
         """
-        #self._driver = Neo4jGraphDatabase.driver("neo4j://localhost:7687", auth=("neo4j", "password"))
+        self._driver = Neo4jGraphDatabase.driver("neo4j://localhost:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
-        self._driver = Neo4jGraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
+        # self._driver = Neo4jGraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
 
         self.__create_vector_index()
         self.__llm_client = llm_client
@@ -169,13 +169,13 @@ class GraphDatabase(DatabaseClient):
         return subject_results
     
     def get_KG_context(self, query: str) -> str:
-        entities = self.client.extract_entities(query)
+        entities = self.__llm_client.extract_entities(query)
         print(f"Extracted entities: {entities}")
 
-        triples = self.db.get_triples_from_entities(entities)
+        triples = self.get_triples_from_entities(entities)
         print(f"Found relevant triples: {triples}")
 
-        context = self.db.format_triples_as_context(triples)
+        context = self.format_triples_as_context(triples)
 
         return context
     
@@ -191,7 +191,7 @@ class GraphDatabase(DatabaseClient):
             result = session.run(query, entities=entities)
             return [record.data() for record in result]
         
-    def format_triples_as_context(triples: list[dict]) -> str:
+    def format_triples_as_context(self, triples: list[dict]) -> str:
         """
         Formats a list of triple dictionaries into a single string for an LLM prompt.
         """
