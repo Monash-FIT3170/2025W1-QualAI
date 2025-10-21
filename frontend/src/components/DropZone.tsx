@@ -166,15 +166,15 @@ const DropZone: React.FC<DropZoneProps> = ({ projectName, onRefreshFiles }) => {
     <div className="mt-4">
       <div
         className={`dropzone border-2 border-dashed rounded-lg p-4 text-center transition ${
-          isDraggingOver ? "border-blue-500 bg-blue-500/10" : "border-gray-500 hover:border-gray-400"
+          isDraggingOver ? "border-blue-500 bg-blue-50" : "border-gray-400 hover:bg-gray-100"
         }`}
         onDragOver={handleDragOver}
         onDragEnter={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={(e) => handleFileUpload()(e)}
       >
-        <Upload className="mx-auto mb-2 text-white" size={24} />
-        <p className="text-white mb-2">Drop files or folders here</p>
+        <Upload className="mx-auto mb-2" />
+        <p style={{ marginBottom: "5px" }}>Drop files or folders here</p>
         <div className="flex flex-col gap-1">
           <UploadFileButton
             onUploadComplete={onRefreshFiles}

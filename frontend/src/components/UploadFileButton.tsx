@@ -83,25 +83,23 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
     return (
         <>
             <button
-                onClick={ handleButtonClick() }  
-                disabled={fileButtonDisabled}
-                className={`w-full py-2 px-4 rounded transition-all duration-200 ${
-                    fileButtonInactive 
-                        ? 'bg-gray-600 cursor-not-allowed opacity-60' 
-                        : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
-                } text-white font-medium`}
+                onClick={ handleButtonClick() }  disabled={fileButtonDisabled}
+                style={ {
+                    backgroundColor: "blue", width: "100%", color : 'white', padding: "5px 0px", borderRadius: "4px",
+                    cursor: fileButtonInactive ? "not-allowed" : "pointer",
+                    opacity: fileButtonInactive ? 0.6 : 1
+                } }
             >
               { effectiveUploading ? `Uploading${ '.'.repeat(dotCount) }` : 'Select File' }
             </button>
 
             <button
-                onClick={ handleButtonClick(true) } 
-                disabled={folderButtonDisabled}
-                className={`w-full py-2 px-4 rounded transition-all duration-200 ${
-                    folderButtonInactive 
-                        ? 'bg-gray-600 cursor-not-allowed opacity-60' 
-                        : 'bg-blue-600 hover:bg-blue-700 cursor-pointer'
-                } text-white font-medium`}
+                onClick={ handleButtonClick(true) } disabled={folderButtonDisabled}
+                style={ {
+                    backgroundColor: "blue", width: "100%", color : 'white', padding: "5px 0px", borderRadius: "4px",
+                    cursor: folderButtonInactive ? "not-allowed" : "pointer",
+                    opacity: folderButtonInactive ? 0.6 : 1
+                } }
             >
               { effectiveFolderUploading ? `Uploading${ '.'.repeat(dotCount) }` : 'Select Folder' }
             </button>

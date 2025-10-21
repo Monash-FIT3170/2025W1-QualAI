@@ -96,42 +96,42 @@ const Chatbot: FC = () => {
   }
 
   return (
-    <div className="fixed right-8 bottom-8 w-96 h-[600px] flex flex-col rounded-2xl overflow-hidden shadow-xl z-50 bg-gray-800 border border-gray-700">
-      <div className="bg-gray-900 text-white p-4 flex-shrink-0 relative">
+    <div className="fixed right-8 bottom-8 w-96 h-[600px] flex flex-col rounded-2xl overflow-hidden shadow-xl z-50">
+      <div className="bg-[#474646] text-white p-4 flex-shrink-0 relative">
         <div className="flex items-center justify-center">
           <img src={robotIcon} alt="AI Assistant" className="w-10 h-10 mr-2 absolute left-4" />
-          <h2 className="text-xl font-semibold text-center">Chatbot</h2>
+          <h2 className="text-3xl font-semibold text-center">Chatbot</h2>
         </div>
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white bg-transparent border-none p-0 transition-colors"
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white bg-transparent border-none p-0"
           aria-label="Close chat"
         >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
 
-      <div className="flex-1 bg-gray-900 overflow-y-auto p-4">
+      <div className="flex-1 bg-[#D9D9D9] overflow-y-auto p-4">
         {messages.map((msg, index) => (
           <div key={index} className={`mb-3 ${msg.isUser ? 'text-right' : 'text-left'}`}>
             {!msg.isUser && (
               <div className="flex items-center mb-1">
                 <img src={robotIcon} alt="AI" className="w-5 h-5 mr-2" />
-                <span className="text-sm text-gray-400">AI</span>
+                <span className="text-sm text-gray-600">AI</span>
               </div>
             )}
             <div
               className={`inline-block px-4 py-2 max-w-[80%] shadow-md ${msg.isUser
-                  ? 'bg-blue-600 text-white rounded-2xl rounded-tr-none'
-                  : 'bg-gray-700 text-white rounded-2xl rounded-tl-none'
+                  ? 'bg-white text-gray-800 rounded-2xl rounded-tr-none'
+                  : 'bg-[#CDE5FF] text-gray-800 rounded-2xl rounded-tl-none'
                 }`}
             >
               {msg.content}
               {msg.isUser && (
                 <Trash
-                  className="inline-block w-4 h-4 ml-2 cursor-pointer text-gray-300 hover:text-red-400 transition-colors"
+                  className="inline-block w-4 h-4 ml-2 cursor-pointer text-gray-500 hover:text-red-600"
                   onClick={() => {
                     removeChat(msg.key);
                     setMessages(prev => prev.filter(m => m.key !== msg.key));
@@ -162,7 +162,7 @@ const Chatbot: FC = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="bg-gray-800 p-4 border-t border-gray-700 flex-shrink-0">
+      <div className="bg-white p-4 border-t border-gray-300 flex-shrink-0">
         <div className="flex items-center">
           <input
             ref={inputRef}
@@ -170,7 +170,7 @@ const Chatbot: FC = () => {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-            className="flex-1 bg-gray-700 border border-gray-600 text-white rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none placeholder-[#737373] text-gray-800"
             placeholder="Type a message..."
             disabled={isLoading}
             autoFocus
@@ -178,7 +178,7 @@ const Chatbot: FC = () => {
           <button
             onClick={handleSendMessage}
             disabled={!inputValue.trim() || isLoading}
-            className={`bg-blue-600 text-white p-2 rounded-full ml-2 transition-colors ${(!inputValue.trim() || isLoading) ? 'opacity-50' : 'hover:bg-blue-700'
+            className={`bg-[#4467FB] text-white p-2 rounded-full ml-2 ${(!inputValue.trim() || isLoading) ? 'opacity-50' : 'hover:bg-blue-600'
               }`}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

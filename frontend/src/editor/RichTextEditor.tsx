@@ -8,13 +8,12 @@ import Highlight from '@tiptap/extension-highlight';
 import CommentMark from '../tiptap-extensions/CommentMark';
 import FontSize from './FontSize';
 import MenuBar from './MenuBar';
-import { Color } from "@tiptap/extension-color";
+// import { Color } from "@tiptap/extension-color";
 
 
 interface RichTextEditorProps {
   initialContent?: string;
   fileKey?: string;
-  projectName?: string;
   onChange?: (content: { html: string; text: string }) => void;
   className?: string;
 }
@@ -24,7 +23,6 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   onChange,
   className = '',
   fileKey,
-  projectName,
 }) => {
   const editor = useEditor({
     extensions: [
@@ -44,7 +42,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         types: ['paragraph'],
       }),
       TextStyle,
-      Color,
+//      Color,
       Highlight.configure({
         multicolor: true,
       }),
@@ -78,8 +76,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [initialContent, editor]);
 
   return (
-      <div className={`flex flex-col h-full bg-white rounded-lg ${className}`}>
-        <MenuBar editor={editor} fileKey={fileKey ?? ""} projectName={projectName ?? ""}/>
+      <div className={`flex flex-col h-full ${className}`}>
+        <MenuBar editor={editor} fileKey={fileKey ?? ""}/>
         <div className="flex-grow">
           <EditorContent editor={editor}/>
           {/*<div className="border-t border-gray-700 p-2 flex justify-between mt-1">*/}

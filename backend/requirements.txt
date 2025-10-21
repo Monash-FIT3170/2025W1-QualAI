@@ -32,7 +32,7 @@ networkx==3.4.2
 nltk==3.9.1
 numpy==2.2.5
 packaging==25.0
-pillow==10.4.0
+pillow==11.2.1
 preshed==3.0.9
 pyarrow==14.0.2
 pydantic==2.11.3
@@ -74,9 +74,4 @@ Werkzeug==2.2.3
 flask-cors==3.0.10
 openai-whisper
 dotenv
-
-# Document export dependencies
-weasyprint==62.3
-beautifulsoup4==4.12.3
-lxml==5.3.0
 

@@ -29,7 +29,7 @@ const NodeContent: React.FC<NodeContentProps> = ({ node, onEdit, onDelete }) => 
                         e.stopPropagation();
                         onEdit(node.name, node.type);
                     }}
-                    className="size-6 p-1 rounded-md hover:bg-gray-600 cursor-pointer text-gray-400 hover:text-white"
+                    className="size-6 p-1 rounded-md hover:bg-gray-200 cursor-pointer"
                 />
             </div>
             <div className = "opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -38,7 +38,7 @@ const NodeContent: React.FC<NodeContentProps> = ({ node, onEdit, onDelete }) => 
                         e.stopPropagation();
                         onDelete(node.name, node.type);
                     }}
-                    className="size-6 p-1 rounded-md hover:bg-gray-600 cursor-pointer text-gray-400 hover:text-red-400"
+                    className="size-6 p-1 rounded-md hover:bg-gray-200 curser-pointer"
                 />
             </div>
         </div>
@@ -49,25 +49,21 @@ const FileNode: React.FC<FileNodeProps> = ({ node, onSelect, onEdit, onDelete })
     const [isOpen, setIsOpen] = useState(false);
 
     if (node.type === "file") {
-        return <div onClick={() => onSelect(node.name)} style={{ paddingLeft: 20 }}  className="flex-1 group cursor-pointer text-white hover:text-gray-300" >
-            <span style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                <span className="text-white">📄 {node.name}</span>
-                <NodeContent node={node} onEdit={onEdit} onDelete={onDelete} />
-            </span>
+        return <div onClick={() => onSelect(node.name)} style={{ paddingLeft: 20 }}  className="flex-1 group cursor-pointer" >
+            📄 {node.relativeName}
+            <NodeContent node={node} onDelete={onDelete} onEdit={onEdit} />
         </div>
     }
 
     return (
         <div style={{ paddingLeft: 20 }}>
-                        <div
+            <div
                 style={{ cursor: "pointer", userSelect: "none" }}
-                className="flex-1 group cursor-pointer text-white hover:text-gray-300"
+                className="flex-1 group cursor-pointer"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <span style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                    <span className="text-white">{isOpen ? "📂" : "📁"} {node.name}</span>
-                    <NodeContent node={node} onEdit={onEdit} onDelete={onDelete} />
-                </span>
+                {isOpen ? "📂" : "📁"} {node.relativeName}
+                <NodeContent node={node} onEdit={onEdit} onDelete={onDelete} />
             </div>
             {isOpen &&
                 node.children?.map((child, i) => <FileNode onEdit={onEdit} onDelete={onDelete} onSelect={onSelect} key={i} node={child} />)}

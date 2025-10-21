@@ -16,9 +16,7 @@ import {
   MessageSquarePlus, // For comments
   ChevronDown,
   Minus,
-  Plus,
-  Download,        // For export functionality
-  FileDown         // Alternative export icon
+  Plus
 } from 'lucide-react';
 import Toggle from './Toggle';
 import { useParams } from "react-router-dom";
@@ -36,26 +34,8 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   const { projectName } = useParams<{ projectName: string }>();
   const [currentFontSize, setCurrentFontSize] = useState(16);
   const [showFontSizes, setShowFontSizes] = useState(false);
-  const [showExportMenu, setShowExportMenu] = useState(false);
   
-    const fontSizeOptions = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 64, 72];
-
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (showFontSizes && !(event.target as Element).closest('.font-size-dropdown')) {
-        setShowFontSizes(false);
-      }
-      if (showExportMenu && !(event.target as Element).closest('.export-dropdown')) {
-        setShowExportMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showFontSizes, showExportMenu]);
+  const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
   useEffect(() => {
     if (!editor) return;
@@ -146,63 +126,6 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     setFontSize(newSize);
   };
 
-  // Export functions
-  const handleExport = async (format: 'html' | 'pdf') => {
-    console.log('Export triggered:', { fileKey, projectName, format });
-    
-    if (!projectName) {
-      alert('Error: Project not found. Please refresh the page.');
-      return;
-    }
-    
-    if (!fileKey || fileKey.trim() === '') {
-      alert('Please select a file from the sidebar before exporting.\n\nTip: Click on a file in the left sidebar to open it, then you can export it.');
-      return;
-    }
-
-    try {
-      const response = await fetch(`http://localhost:5001/export/${projectName}/${fileKey}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ format }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Export failed');
-      }
-
-      // Create download link
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      
-      // Get filename from response headers or generate one
-      const contentDisposition = response.headers.get('Content-Disposition');
-      let filename = `${fileKey.replace(/[\/\\]/g, '_')}.${format}`;
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-        if (filenameMatch) {
-          filename = filenameMatch[1];
-        }
-      }
-      
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      setShowExportMenu(false);
-    } catch (error) {
-      console.error('Export error:', error);
-      alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  };
-
   // Original options array - we'll remove the generic highlight toggle later
   const existingOptions = [
     {
@@ -272,7 +195,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               <Minus className="size-4" />
             </button>
             
-            <div className="relative font-size-dropdown">
+            <div className="relative">
               <button
                 onClick={() => setShowFontSizes(!showFontSizes)}
                 className="flex items-center space-x-1 px-2 py-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 min-w-[50px]"
@@ -283,7 +206,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               
               {showFontSizes && (
                 <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
-                  {fontSizeOptions.map((size) => (
+                  {fontSizes.map((size) => (
                     <button
                       key={size}
                       onClick={() => setFontSize(size)}
@@ -351,14 +274,14 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               <Paintbrush className="size-4 mr-1 text-slate-700 dark:text-slate-300"/>
               <input
                   type="color"
-                  onInput={(event) => editor.chain().focus().setColor((event.target as HTMLInputElement).value).run()}
+                  onInput={() => editor.chain().focus().run()}
                   value={editor.getAttributes('textStyle').color || (document.documentElement.classList.contains('dark') ? '#FFFFFF' : '#000000')}
                   className="w-5 h-5 border-none bg-transparent cursor-pointer p-0 m-0"
                   title="Pick text color"
               />
           </div>
           <Toggle
-              onPressedChange={() => editor.chain().focus().unsetColor().run()}
+              onPressedChange={() => editor.chain().focus().run()}
               pressed={false} // Not a toggle state
               disabled={!editor.getAttributes('textStyle').color}
               title="Remove Text Color"
@@ -376,43 +299,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
           >
               <MessageSquarePlus className="size-4 text-slate-700 dark:text-slate-300"/>
           </Toggle>
-          <button onClick={handleFileUpdate} className="rounded-md px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors">Save Changes</button>
-          
-          {/* Export Button */}
-          <div className="relative export-dropdown">
-            <button 
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className={`flex items-center space-x-1 rounded-md px-3 py-2 font-medium transition-colors ${
-                fileKey && fileKey.trim() !== '' 
-                  ? 'bg-green-600 hover:bg-green-700 text-white' 
-                  : 'cursor-not-allowed opacity-60'
-              }`}
-              style={fileKey && fileKey.trim() !== '' ? {} : { backgroundColor: '#D9D9D9', color: '#666' }}
-              title={fileKey && fileKey.trim() !== '' ? "Export Document" : "Select a file to export"}
-              disabled={!(fileKey && fileKey.trim() !== '')}
-            >
-              <Download className="size-4" />
-              <span className="text-sm">Export</span>
-              <ChevronDown className="size-3" />
-            </button>
-            
-            {showExportMenu && fileKey && fileKey.trim() !== '' && (
-              <div className="absolute top-full right-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-50 min-w-32">
-                <button
-                  onClick={() => handleExport('html')}
-                  className="block w-full text-left px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 first:rounded-t-md"
-                >
-                  HTML
-                </button>
-                <button
-                  onClick={() => handleExport('pdf')}
-                  className="block w-full text-left px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 last:rounded-b-md"
-                >
-                  PDF
-                </button>
-              </div>
-            )}
-          </div>
+          <button onClick={handleFileUpdate} className="rounded-md px-2 hover:bg-gray-200">Save Changes</button>
 
       </div>
   );
