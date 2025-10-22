@@ -1,6 +1,7 @@
 from pathlib import Path
 from moviepy import VideoFileClip
 
+
 def convert_media(file_path : str) -> str:
     """
     Accepts a file path as an input and converts it to an mp3.
@@ -15,7 +16,7 @@ def convert_media(file_path : str) -> str:
     
     output_path = input_path.with_suffix('.mp3')
 
-    video =  VideoFileClip(str(input_path))
+    video = VideoFileClip(str(input_path))
     if video.audio:
         video.audio.write_audiofile(str(output_path))
     else:
