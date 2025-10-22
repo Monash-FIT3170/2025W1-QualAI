@@ -51,7 +51,7 @@ const FileNode: React.FC<FileNodeProps> = ({ node, onSelect, onEdit, onDelete })
     if (node.type === "file") {
         return <div onClick={() => onSelect(node.name)} style={{ paddingLeft: 20 }}  className="flex-1 group cursor-pointer text-white hover:text-gray-300" >
             <span style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                <span className="text-white">📄 {node.name}</span>
+                <span className="text-white">📄 {node.relativeName}</span>
                 <NodeContent node={node} onEdit={onEdit} onDelete={onDelete} />
             </span>
         </div>
@@ -65,7 +65,7 @@ const FileNode: React.FC<FileNodeProps> = ({ node, onSelect, onEdit, onDelete })
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                    <span className="text-white">{isOpen ? "📂" : "📁"} {node.name}</span>
+                    <span className="text-white">{isOpen ? "📂" : "📁"} {node.relativeName}</span>
                     <NodeContent node={node} onEdit={onEdit} onDelete={onDelete} />
                 </span>
             </div>
