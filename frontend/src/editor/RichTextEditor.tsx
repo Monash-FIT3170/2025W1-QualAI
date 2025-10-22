@@ -8,6 +8,7 @@ import Highlight from '@tiptap/extension-highlight';
 import CommentMark from '../tiptap-extensions/CommentMark';
 import FontSize from './FontSize';
 import MenuBar from './MenuBar';
+// import { Color } from "@tiptap/extension-color";
 import { useParams } from "react-router-dom";
 // import { Color } from "@tiptap/extension-color";
 
@@ -110,19 +111,19 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
       <div className={`flex flex-col h-full ${className}`}>
-        <MenuBar editor={editor}/>
+        <MenuBar editor={editor} fileKey={fileKey ?? ""}/>
         <div className="flex-grow">
           <EditorContent editor={editor}/>
         </div>
         <div className="mt-3 pb-4 flex justify-center">
-        <button 
+        <button
           onClick={handleFileUpdate}
           className="cursor-pointer px-8 py-2.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg font-medium hover:shadow-xl transform hover:scale-105 transition-all duration-200"
         >
           Save Changes
         </button>
       </div>
-        
+
       </div>
   );
 }

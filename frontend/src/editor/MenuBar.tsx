@@ -18,24 +18,45 @@ import {
   Minus,
   Plus,
   Download,        // For export functionality
-  FileDown         // Alternative export icon
 } from 'lucide-react';
 import Toggle from './Toggle';
+import { useParams } from "react-router-dom";
 
 interface MenuBarProps {
   editor: Editor | null;
+  fileKey: string,
 }
 
-const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
+const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   if (!editor) {
     return null;
   }
+
+  const { projectName } = useParams<{ projectName: string }>();
 
   const [currentFontSize, setCurrentFontSize] = useState(16);
   const [showFontSizes, setShowFontSizes] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
 
-    const fontSizeOptions = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 64, 72];
+  const fontSizeOptions = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 64, 72];
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showFontSizes && !(event.target as Element).closest('.font-size-dropdown')) {
+        setShowFontSizes(false);
+      }
+      if (showExportMenu && !(event.target as Element).closest('.export-dropdown')) {
+        setShowExportMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showFontSizes, showExportMenu]);
+
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -320,14 +341,14 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
               <Paintbrush className="size-4 mr-1 menubar-icon"/>
               <input
                   type="color"
-                  onInput={(event) => editor.chain().focus().setColor((event.target as HTMLInputElement).value).run()}
+                  onInput={() => editor.chain().focus().run()}
                   value={editor.getAttributes('textStyle').color || (document.documentElement.classList.contains('dark') ? '#FFFFFF' : '#000000')}
                   className="w-5 h-5 border-none bg-transparent cursor-pointer p-0 m-0"
                   title="Pick text color"
               />
           </div>
           <Toggle
-              onPressedChange={() => editor.chain().focus().unsetColor().run()}
+              onPressedChange={() => editor.chain().focus().run()}
               pressed={false} // Not a toggle state
               disabled={!editor.getAttributes('textStyle').color}
               title="Remove Text Color"
@@ -345,7 +366,6 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
           >
               <MessageSquarePlus className="size-4 menubar-icon"/>
           </Toggle>
-          <button onClick={handleFileUpdate} className="rounded-md px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors">Save Changes</button>
 
           {/* Export Button */}
           <div className="relative export-dropdown">
