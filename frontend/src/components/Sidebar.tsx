@@ -54,7 +54,19 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
     };
 
     return (
-        <div className="w-64 bg-gray-800 border-r border-gray-700 p-4 flex flex-col">
+        <div className="w-64 bg-[#1A1A1A] p-4 flex flex-col text-white">
+            {/* Header */}
+            <div className="flex items-center gap-2 mb-8 cursor-pointer" onClick={() => navigate('/')}>
+                <div className="w-8 h-8">
+                    <img
+                        src="/Logo.png"
+                        alt="QualAI Logo"
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+                <span className="text-xl font-bold" >QualAI</span>
+            </div>
+
             {/* File tree */}
             <div className="flex-1">
                 <FileTree
@@ -71,6 +83,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
 
             {/* Dropzone now modular */}
             <DropZone projectName={projectName} onRefreshFiles={onRefreshFiles} />
+
 
 
             {/* Rename modal */}
