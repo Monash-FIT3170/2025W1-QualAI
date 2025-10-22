@@ -19,7 +19,6 @@ import {
   Plus
 } from 'lucide-react';
 import Toggle from './Toggle';
-import { useParams } from "react-router-dom";
 
 interface MenuBarProps {
   editor: Editor | null;
@@ -30,7 +29,6 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
     return null;
   }
 
-  const { projectName } = useParams<{ projectName: string }>();
   const [currentFontSize, setCurrentFontSize] = useState(16);
   const [showFontSizes, setShowFontSizes] = useState(false);
   
