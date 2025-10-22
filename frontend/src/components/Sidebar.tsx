@@ -1,5 +1,5 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import React, { useState } from "react";
+import { useParams } from 'react-router-dom';
+import { useState } from "react";
 import FileTree, { buildTree, NodeType } from "@/components/FileTree.tsx";
 import DropZone from "@/components/DropZone.tsx";
 
@@ -11,7 +11,6 @@ type SidebarProps = {
 };
 
 const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: SidebarProps) => {
-    const navigate = useNavigate();
     const { projectName } = useParams<{ projectName: string }>();
 
     const [editingFileKey, setEditingFileKey] = useState<string | null>(null);
@@ -55,18 +54,6 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
 
     return (
         <div className="w-64 bg-[#1A1A1A] p-4 flex flex-col text-white">
-            {/* Header */}
-            <div className="flex items-center gap-2 mb-8 cursor-pointer" onClick={() => navigate('/')}>
-                <div className="w-8 h-8">
-                    <img
-                        src="/Logo.png"
-                        alt="QualAI Logo"
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-                <span className="text-xl font-bold" >QualAI</span>
-            </div>
-
             {/* File tree */}
             <div className="flex-1">
                 <FileTree
