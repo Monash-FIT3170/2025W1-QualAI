@@ -111,10 +111,17 @@ class DocumentUploader:
 
         :return: TEMPORARY, outputs the file length, the mp3 won't need to be saved in the future.
         """
-        audio_transcriber = AudioTranscriber()
-        audio_transcriber.set_assign_speakers(current_app.config.get("UPLOAD_TOGGLE_ACTIVE", False))
-        transcribed_text = audio_transcriber.transcribe(path)
-        name = collection.update_document_name(name)
-        collection.add_document(name, transcribed_text)
-        self.__database.store_entries(transcribed_text, name)
-        return jsonify({"status": "ok"}), 200
+        allowed_file_ext = (".mp3", ".m4a", ".wav", ".wma", ".mp4", ".mov", ".avi", ".wmv", ".txt")
+
+        if path.endswith(allowed_file_ext):
+            audio_transcriber = AudioTranscriber()
+            audio_transcriber.set_assign_speakers(current_app.config.get("UPLOAD_TOGGLE_ACTIVE", False))
+            transcribed_text = audio_transcriber.transcribe(path)
+            name = collection.update_document_name(name)
+            collection.add_document(name, transcribed_text)
+            self.__database.store_entries(transcribed_text, name)
+            return jsonify({"status": "ok"}), 200
+        else:
+            return jsonify({"error": "Invalid file format given"}), 415
+
+
