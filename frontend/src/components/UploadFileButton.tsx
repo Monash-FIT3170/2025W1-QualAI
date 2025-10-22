@@ -1,4 +1,5 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
+import { useParams } from "react-router-dom";
 
 type UploadFileButtonProps = {
     onFileSelected? : (file : File) => void;
@@ -12,6 +13,7 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
     const fileInputRef = useRef<HTMLInputElement>(null);
     const folderInputRef = useRef<HTMLInputElement>(null);
 
+    const { projectName } = useParams<{ projectName : string }>();
     const [ isFolderUploading, setIsFolderUploading ] = useState(false);
     const [ isUploading, setIsUploading ] = useState(false);
     const [ dotCount, setDotCount ] = useState(1);
@@ -49,6 +51,7 @@ const UploadFileButton : FC<UploadFileButtonProps> = ({ onFileSelected, onUpload
         }
 
         folder ? setIsFolderUploading(true) : setIsUploading(true);
+        formData.append("project", projectName as string);
 
         try {
             const response = await fetch("http://localhost:5001/upload", {
