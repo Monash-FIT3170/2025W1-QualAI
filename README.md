@@ -79,8 +79,6 @@ http://localhost:5173
 - Slow first build: First build may take upwards of 30 minutes due to large image dependencies
 - Local dependency issues: Dependencies can be hard to manage due to the large number within the project. Utilising Docker can reduce these issues.
 
-### 4.2 Known Bugs
-
 ## 5. Additional Notes for Developers
 
 ### 5.1 Source Code
@@ -98,14 +96,24 @@ Git repository found [here](https://github.com/Monash-FIT3170/2025W1-QualAI/).
   - **/database_client** – Manages Neo4j connection
 
 ### 5.3  Documentation
-- A User Guide is avaliable [this link doesnt work](link)
+- A User Guide is avaliable [here](https://docs.google.com/document/d/1ZnqOr4aI1vuje8bjLdGMrfCbKOOaCvsFtdIqtkkn0WE/edit?usp=sharing)
 - Technical Documentation is provided within the source code
 
 ### 5.4 Outstanding / Future Development Plans
+#### 5.4.1 General Developement 
 
 - Improve quality of qualitative analysis through more rigorous data analysis processing: [5-steps deductive inductive analysis](https://journals.sagepub.com/doi/full/10.1177/16094069231183620) and [thematic analysis](https://delvetool.com/blog/thematicanalysis)
 - Improved organisation of analysis, using gudied qualitative research [example] (https://www.covidence.org/ )
 - Improve speed and quality of offline chatbot 
+
+#### 5.4.2 User Testing Feedback 
+- Add visual confirmation for key actions 
+- Ammend file renaming logic to prevent overly long names 
+- Enable multi-line chatbot input 
+- Review and unify status indicators for better coherence
+
+#### 5.4.3 Maintenance Plan 
+- A maintenance plan is avaliable [here](https://docs.google.com/document/d/1dOaXmz3y54IazEmvqmO1KGKGpu5_7n5Nws1__UzMbgA/edit?usp=sharing)
 
 ### 5.5 Testing
 
