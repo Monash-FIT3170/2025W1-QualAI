@@ -8,6 +8,7 @@ import Highlight from '@tiptap/extension-highlight';
 import CommentMark from '../tiptap-extensions/CommentMark';
 import FontSize from './FontSize';
 import MenuBar from './MenuBar';
+import { useParams } from "react-router-dom";
 // import { Color } from "@tiptap/extension-color";
 
 
@@ -25,6 +26,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   className = '',
   fileKey,
 }) => {
+  const { projectName } = useParams<{ projectName: string }>();
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -89,7 +92,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ content }),
+      body: JSON.stringify({ content, project: projectName }),
     })
       .then(res => {
         if (!res.ok) {
