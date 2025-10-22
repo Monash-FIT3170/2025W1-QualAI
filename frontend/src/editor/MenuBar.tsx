@@ -12,7 +12,6 @@ import {
   ListOrdered,
   Strikethrough,
   Palette,         // For multi-color highlight picker
-  Paintbrush,      // For text color picker
   MessageSquarePlus, // For comments
   ChevronDown,
   Minus,
@@ -249,7 +248,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   ];
 
   return (
-      <div className="menubar menubar-icon border rounded-md p-1 mb-1] dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center">
+      <div className="border rounded-md p-1 mb-1 bg-white dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center shadow-sm">
           {/* Font Size Controls */}
           <div className="flex items-center space-x-1 border-r pr-2 mr-2">
             <button
@@ -295,7 +294,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
             </button>
           </div>
           
-          <div className='menubar-icon'>
+          <div className='flex items-center space-x-1'>
             {existingOptions.map((option, index) => (
                 <Toggle
                     key={index}
@@ -303,7 +302,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
                     onPressedChange={option.onClick}
                     disabled={option.disabled}
                     title={option.title}
-                    className="p-2 hover:bg-slate-700 rounded"
+                    className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                 >
                     {option.icon}
                 </Toggle>
@@ -314,9 +313,9 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
           <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2"/>
 
           {/* Highlight Color Section */}
-          <div className="menbar-icon flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
+          <div className="flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
                title="Highlight Color">
-              <Palette className="size-4 mr-1 menubar-icon dark:text-slate-300"/>
+              <Palette className="size-4 mr-1 text-slate-600 dark:text-slate-300"/>
               <input
                   type="color"
                   onInput={(event) => editor.chain().focus().toggleHighlight({color: (event.target as HTMLInputElement).value}).run()}
@@ -330,31 +329,10 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               pressed={false} // Not a toggle state, just an action
               disabled={!editor.isActive('highlight')}
               title="Remove Highlight"
-              className="p-2 menubar-icon rounded"
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
           >
               {/* Using Highlighter icon with different styling to signify "remove" */}
-              <Highlighter className="size-4 menubar-icon opacity-60"/>
-          </Toggle>
-
-          {/* Text Color Section */}
-          <div className="flex items-center p-1 rounded menubar-icon" title="Text Color">
-              <Paintbrush className="size-4 mr-1 menubar-icon"/>
-              <input
-                  type="color"
-                  onInput={() => editor.chain().focus().run()}
-                  value={editor.getAttributes('textStyle').color || (document.documentElement.classList.contains('dark') ? '#FFFFFF' : '#000000')}
-                  className="w-5 h-5 border-none bg-transparent cursor-pointer p-0 m-0"
-                  title="Pick text color"
-              />
-          </div>
-          <Toggle
-              onPressedChange={() => editor.chain().focus().run()}
-              pressed={false} // Not a toggle state
-              disabled={!editor.getAttributes('textStyle').color}
-              title="Remove Text Color"
-              className="p-2 menubar-icon dark:hover:bg-slate-700 rounded"
-          >
-              <Paintbrush className="menubar-icon size-4 0 opacity-60"/>
+              <Highlighter className="size-4 opacity-60 text-slate-600 dark:text-slate-300"/>
           </Toggle>
 
           {/* Comment Section */}
@@ -362,9 +340,9 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               pressed={editor.isActive('comment')} // This will be true if any part of selection is a comment
               onPressedChange={handleComment}
               title="Add Comment"
-              className="p-2 menubar-icon dark:hover:bg-slate-700 rounded"
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
           >
-              <MessageSquarePlus className="size-4 menubar-icon"/>
+              <MessageSquarePlus className="size-4 text-slate-600 dark:text-slate-300"/>
           </Toggle>
 
           {/* Export Button */}
@@ -373,10 +351,9 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               onClick={() => setShowExportMenu(!showExportMenu)}
               className={`flex items-center space-x-1 rounded-md px-3 py-2 font-medium transition-colors ${
                 fileKey && fileKey.trim() !== ''
-                  ? 'bg-green-600 hover:bg-green-700 text-white'
-                  : 'cursor-not-allowed opacity-60'
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                  : 'bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 cursor-not-allowed'
               }`}
-              style={fileKey && fileKey.trim() !== '' ? {} : { backgroundColor: '#D9D9D9', color: '#666' }}
               title={fileKey && fileKey.trim() !== '' ? "Export Document" : "Select a file to export"}
               disabled={!(fileKey && fileKey.trim() !== '')}
             >
@@ -389,13 +366,13 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
               <div className="absolute top-full right-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-50 min-w-32">
                 <button
                   onClick={() => handleExport('html')}
-                  className="block w-full text-left px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 first:rounded-t-md"
+                  className="block w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-slate-700 dark:hover:text-blue-300 first:rounded-t-md transition-colors"
                 >
                   HTML
                 </button>
                 <button
                   onClick={() => handleExport('pdf')}
-                  className="block w-full text-left px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 last:rounded-b-md"
+                  className="block w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-slate-700 dark:hover:text-blue-300 last:rounded-b-md transition-colors"
                 >
                   PDF
                 </button>
