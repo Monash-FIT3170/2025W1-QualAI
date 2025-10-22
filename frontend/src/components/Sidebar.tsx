@@ -79,7 +79,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
                         setEditingFileType(type);
                     }}
                 />
-            </div
+            </div>
 
             {/* Dropzone now modular */}
             <DropZone projectName={projectName} onRefreshFiles={onRefreshFiles} />
