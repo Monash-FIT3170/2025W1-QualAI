@@ -76,7 +76,6 @@ const ProjectPage = () => {
                     <RichTextEditor 
                         initialContent={ selectedFileContent } 
                         fileKey={ selectedFileKey ?? undefined }
-                        projectName={ projectName ?? undefined }
                     />
                 </main>
                 <Chatbot/>
