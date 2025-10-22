@@ -21,9 +21,9 @@ class GraphDatabase(DatabaseClient):
         """
             Initialises NEO4JInteractor with driver to be used
         """
-        self._driver = Neo4jGraphDatabase.driver("neo4j://localhost:7687", auth=("neo4j", "password"))
+        # self._driver = Neo4jGraphDatabase.driver("neo4j://localhost:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
-        # self._driver = Neo4jGraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
+        self._driver = Neo4jGraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
 
         self.__create_vector_index()
         self.__llm_client = llm_client
@@ -153,7 +153,8 @@ class GraphDatabase(DatabaseClient):
             session.run("MATCH (n) DETACH DELETE n")
 
     def store_entries(self, entry, file_id):
-        return None
+        print(f"Storing entries {entry}")
+        self.store_triples(entry, file_id)
 
     def search(self, entity): 
         # todo : find entity to search
