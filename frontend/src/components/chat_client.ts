@@ -22,6 +22,8 @@ const instance = axios.create({
     timeout: 1000000, // 1000 seconds timeout
   });
 
+  
+
   /**
    * Sends a user message to the chatbot API and returns the AI response
    * 
@@ -32,16 +34,55 @@ const instance = axios.create({
    * @throws {Error} When the API request fails or returns an error
    * 
    */
-  export const fetchChat = async (message: string): Promise<string> => {
+  export const fetchChat = async (message: string, key: number): Promise<string> => {
     try {
       const response = await instance.post('/chat',
         {
           message: message,
+          key: key
         },
       );
+      console.log(response)
       return response.data.response;
     } catch (error: any) {
       console.error('Error getting chat response: ', error);
       throw error;
     }
   };
+
+  /**
+   * Obtains all of the users previous chat messages
+   * @async
+   * @function fetchHistory
+   * @returns 
+   * @throws {Error} When the API request fails or returns an error
+   */
+  export const fetchHistory = async (): Promise<{key: number; content: string; isUser: boolean }[]> => {
+  try {
+    const response = await instance.get('/chathistory'); // use GET, history is retrieval not mutation
+    return response.data.history;
+  } catch (error: any) {
+    console.error('Error getting chat history: ', error);
+    throw error;
+  }
+};
+
+  /** 
+   * Removes chat message from history
+   */
+  export const removeChat = async (key: number): Promise<string> => {
+  try {
+    console.log('Deleting chat message with key:', key);
+    
+    const response = await instance.delete(`/chatdelete/${encodeURIComponent(key)}`);
+
+    
+    return response.data.message; // your Flask returns `{"message": "..."}`
+  } catch (error: any) {
+    console.error('Failed to delete chat:', error);
+    throw new Error(error.response?.data?.error || 'Unknown error');
+  }
+};
+
+  
+    

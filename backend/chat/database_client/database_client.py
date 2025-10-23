@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod 
 
+
 class DatabaseClient(ABC):
     """
     At interface for database upload and connection to handle file processing, upload and queries 

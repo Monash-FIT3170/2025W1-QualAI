@@ -1,6 +1,6 @@
 // MenuBar.tsx
-import React, { useState, useEffect, useRef } from 'react';
-import { Editor } from '@tiptap/react';
+import React, { useState, useEffect, useRef } from "react";
+import { Editor } from "@tiptap/react";
 import {
   AlignCenter,
   AlignLeft,
@@ -16,16 +16,19 @@ import {
   ChevronDown,
   Minus,
   Plus
-} from 'lucide-react';
-import Toggle from './Toggle';
-import { HighlightData, HighlightPriority, HIGHLIGHT_COLORS } from '../types/highlight';
+} from "lucide-react";
+import Toggle from "./Toggle";
+import {
+  HighlightData,
+  HighlightPriority,
+  HIGHLIGHT_COLORS
+} from "../types/highlight";
 
 interface MenuBarProps {
   editor: Editor | null;
-  fileKey: string;
 }
 
-const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
+const MenuBar: React.FC<MenuBarProps> = ({ editor }) => {
   if (!editor) {
     return null;
   }
@@ -35,8 +38,10 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   const [highlights, setHighlights] = useState<HighlightData[]>([]);
   const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
   const [showHighlightDropdown, setShowHighlightDropdown] = useState(false);
-  const previousTextRef = useRef<string>('');
-  const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
+  const previousTextRef = useRef<string>("");
+  const fontSizes = [
+    8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96
+  ];
 
   // Load highlights when fileKey changes
   useEffect(() => {
@@ -45,20 +50,22 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     const loadHighlights = async () => {
       setIsLoadingHighlights(true);
       try {
-        const response = await fetch(`http://localhost:5001/documents/${fileKey}`);
+        const response = await fetch(
+          `http://localhost:5001/documents/${fileKey}`
+        );
         if (!response.ok) {
-          console.error('Failed to load highlights');
+          console.error("Failed to load highlights");
           return;
         }
 
         const data = await response.json();
         const loadedHighlights: HighlightData[] = data.highlights || [];
-        
+
         setHighlights(loadedHighlights);
         applyHighlightsToEditor(loadedHighlights);
         previousTextRef.current = editor.getText();
       } catch (error) {
-        console.error('Error loading highlights:', error);
+        console.error("Error loading highlights:", error);
       } finally {
         setIsLoadingHighlights(false);
       }
@@ -86,7 +93,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
           .setHighlight({ color })
           .run();
       } catch (error) {
-        console.error('Error applying highlight:', error, highlight);
+        console.error("Error applying highlight:", error, highlight);
       }
     });
 
@@ -112,17 +119,21 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
         // Update state only if highlights were removed
         if (validHighlights.length !== highlights.length) {
           setHighlights(validHighlights);
-          console.log(`Removed ${highlights.length - validHighlights.length} invalid highlights due to text changes`);
+          console.log(
+            `Removed ${
+              highlights.length - validHighlights.length
+            } invalid highlights due to text changes`
+          );
         }
       }
 
       previousTextRef.current = currentText;
     };
 
-    editor.on('update', handleUpdate);
+    editor.on("update", handleUpdate);
 
     return () => {
-      editor.off('update', handleUpdate);
+      editor.off("update", handleUpdate);
     };
   }, [editor, highlights]);
 
@@ -131,37 +142,40 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     if (!editor) return;
 
     const updateFontSize = () => {
-      const attributes = editor.getAttributes('textStyle');
+      const attributes = editor.getAttributes("textStyle");
       if (attributes.fontSize) {
-        const numericSize = parseInt(attributes.fontSize.replace('px', ''));
+        const numericSize = parseInt(attributes.fontSize.replace("px", ""));
         setCurrentFontSize(numericSize);
       } else {
         setCurrentFontSize(16);
       }
     };
 
-    editor.on('selectionUpdate', updateFontSize);
-    editor.on('transaction', updateFontSize);
+    editor.on("selectionUpdate", updateFontSize);
+    editor.on("transaction", updateFontSize);
 
     return () => {
-      editor.off('selectionUpdate', updateFontSize);
-      editor.off('transaction', updateFontSize);
+      editor.off("selectionUpdate", updateFontSize);
+      editor.off("transaction", updateFontSize);
     };
   }, [editor]);
 
   // Get plain text selection positions
-  const getTextSelection = (): { index_start: number; index_end: number } | null => {
+  const getTextSelection = (): {
+    index_start: number;
+    index_end: number;
+  } | null => {
     if (!editor) return null;
 
     const { from, to } = editor.state.selection;
-    
+
     if (from === to) {
-      console.warn('No text selected');
+      console.warn("No text selected");
       return null;
     }
 
     return {
-      index_start: from - 1,  // TipTap uses 1-based indexing
+      index_start: from - 1, // TipTap uses 1-based indexing
       index_end: to - 1
     };
   };
@@ -194,7 +208,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     };
 
     setHighlights([...nonOverlappingHighlights, newHighlight]);
-    console.log('Highlight added:', newHighlight);
+    console.log("Highlight added:", newHighlight);
   };
 
   // Remove highlight at selection
@@ -219,7 +233,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     });
 
     setHighlights(updatedHighlights);
-    console.log('Highlight removed at:', selection);
+    console.log("Highlight removed at:", selection);
   };
 
   // Save document with highlights
@@ -230,46 +244,51 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     }
 
     const content = editor.getHTML();
-    console.log('Saving fileKey:', fileKey);
-    console.log('Saving content:', content);
-    console.log('Saving highlights:', highlights);
+    console.log("Saving fileKey:", fileKey);
+    console.log("Saving content:", content);
+    console.log("Saving highlights:", highlights);
 
     fetch(`http://localhost:5001/edit/${fileKey}`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         content,
-        highlights: highlights.map(h => ({  //can be used to update highlights in backend
+        highlights: highlights.map((h) => ({
+          //can be used to update highlights in backend
           indexes: h.indexes,
           priority: h.priority
         }))
-      }),
+      })
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) {
-          throw new Error('Failed to save document');
+          throw new Error("Failed to save document");
         }
         return res.json();
       })
-      .then(data => {
-        console.log('Save successful:', data);
-        alert('Document saved successfully!');
+      .then((data) => {
+        console.log("Save successful:", data);
+        alert("Document saved successfully!");
       })
-      .catch(err => {
-        console.error('Save error:', err);
-        alert('Failed to save document. Please try again.');
+      .catch((err) => {
+        console.error("Save error:", err);
+        alert("Failed to save document. Please try again.");
       });
   };
 
   // Handle comment
   const handleComment = () => {
-    const commentId = `comment-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const commentId = `comment-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 9)}`;
     const commentText = prompt("Enter your comment:");
 
     if (commentText) {
-      console.log(`Comment to save: ID=${commentId}, Text=${commentText}, User: rachana-barak, Timestamp: ${new Date().toISOString()}`);
+      console.log(
+        `Comment to save: ID=${commentId}, Text=${commentText}, User: rachana-barak, Timestamp: ${new Date().toISOString()}`
+      );
       editor.chain().focus().setComment({ commentId }).run();
     }
   };
@@ -295,59 +314,58 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     {
       icon: <Bold className="size-4" />,
       onClick: () => editor.chain().focus().toggleBold().run(),
-      pressed: editor.isActive('bold'),
+      pressed: editor.isActive("bold"),
       title: "Bold",
-      disabled: !editor.can().chain().focus().toggleBold().run(),
+      disabled: !editor.can().chain().focus().toggleBold().run()
     },
     {
       icon: <Italic className="size-4" />,
       onClick: () => editor.chain().focus().toggleItalic().run(),
-      pressed: editor.isActive('italic'),
+      pressed: editor.isActive("italic"),
       title: "Italic",
-      disabled: !editor.can().chain().focus().toggleItalic().run(),
+      disabled: !editor.can().chain().focus().toggleItalic().run()
     },
     {
       icon: <Strikethrough className="size-4" />,
       onClick: () => editor.chain().focus().toggleStrike().run(),
-      pressed: editor.isActive('strike'),
+      pressed: editor.isActive("strike"),
       title: "Strikethrough",
-      disabled: !editor.can().chain().focus().toggleStrike().run(),
+      disabled: !editor.can().chain().focus().toggleStrike().run()
     },
     {
       icon: <AlignLeft className="size-4" />,
-      onClick: () => editor.chain().focus().setTextAlign('left').run(),
-      pressed: editor.isActive({ textAlign: 'left' }),
-      title: "Align Left",
+      onClick: () => editor.chain().focus().setTextAlign("left").run(),
+      pressed: editor.isActive({ textAlign: "left" }),
+      title: "Align Left"
     },
     {
       icon: <AlignCenter className="size-4" />,
-      onClick: () => editor.chain().focus().setTextAlign('center').run(),
-      pressed: editor.isActive({ textAlign: 'center' }),
-      title: "Align Center",
+      onClick: () => editor.chain().focus().setTextAlign("center").run(),
+      pressed: editor.isActive({ textAlign: "center" }),
+      title: "Align Center"
     },
     {
       icon: <AlignRight className="size-4" />,
-      onClick: () => editor.chain().focus().setTextAlign('right').run(),
-      pressed: editor.isActive({ textAlign: 'right' }),
-      title: "Align Right",
+      onClick: () => editor.chain().focus().setTextAlign("right").run(),
+      pressed: editor.isActive({ textAlign: "right" }),
+      title: "Align Right"
     },
     {
       icon: <List className="size-4" />,
       onClick: () => editor.chain().focus().toggleBulletList().run(),
-      pressed: editor.isActive('bulletList'),
-      title: "Bullet List",
+      pressed: editor.isActive("bulletList"),
+      title: "Bullet List"
     },
     {
       icon: <ListOrdered className="size-4" />,
       onClick: () => editor.chain().focus().toggleOrderedList().run(),
-      pressed: editor.isActive('orderedList'),
-      title: "Ordered List",
-    },
+      pressed: editor.isActive("orderedList"),
+      title: "Ordered List"
+    }
   ];
 
   return (
-    <div className="border rounded-md p-1 mb-1 bg-slate-50 dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center">
-      
+    <div className="menubar menubar-icon border rounded-md p-1 mb-1] dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center">
       {/* Font Size Controls */}
       <div className="flex items-center space-x-1 border-r pr-2 mr-2">
         <button
@@ -357,7 +375,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
         >
           <Minus className="size-4" />
         </button>
-        
+
         <div className="relative">
           <button
             onClick={() => setShowFontSizes(!showFontSizes)}
@@ -366,7 +384,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
             <span className="text-sm font-medium">{currentFontSize}</span>
             <ChevronDown className="size-3" />
           </button>
-          
+
           {showFontSizes && (
             <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
               {fontSizes.map((size) => (
@@ -374,7 +392,9 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
                   key={size}
                   onClick={() => setFontSize(size)}
                   className={`block w-full text-left px-3 py-1 text-sm hover:bg-gray-100 dark:hover:bg-slate-700 ${
-                    currentFontSize === size ? 'bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-300' : ''
+                    currentFontSize === size
+                      ? "bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-300"
+                      : ""
                   }`}
                 >
                   {size}
@@ -383,7 +403,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
             </div>
           )}
         </div>
-        
+
         <button
           onClick={increaseFontSize}
           className="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -392,19 +412,21 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
           <Plus className="size-4" />
         </button>
       </div>
-      
-      {existingOptions.map((option, index) => (
-        <Toggle
-          key={index}
-          pressed={option.pressed}
-          onPressedChange={option.onClick}
-          disabled={option.disabled}
-          title={option.title}
-          className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
-        >
-          {option.icon}
-        </Toggle>
-      ))}
+
+      <div className="menubar-icon">
+        {existingOptions.map((option, index) => (
+          <Toggle
+            key={index}
+            pressed={option.pressed}
+            onPressedChange={option.onClick}
+            disabled={option.disabled}
+            title={option.title}
+            className="p-2 hover:bg-slate-700 rounded"
+          >
+            {option.icon}
+          </Toggle>
+        ))}
+      </div>
 
       {/* Separator */}
       <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2" />
@@ -422,39 +444,48 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
             <Highlighter className="size-4" />
             <ChevronDown className="size-3" />
           </button>
-          
+
           {showHighlightDropdown && (
             <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-10 min-w-[150px]">
               <button
                 onClick={() => {
-                  handleHighlight('HIGH');
+                  handleHighlight("HIGH");
                   setShowHighlightDropdown(false);
                 }}
                 className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700"
               >
-                <div className="w-4 h-4 rounded" style={{ backgroundColor: HIGHLIGHT_COLORS.HIGH }}></div>
+                <div
+                  className="w-4 h-4 rounded"
+                  style={{ backgroundColor: HIGHLIGHT_COLORS.HIGH }}
+                ></div>
                 <span>High Priority</span>
               </button>
-              
+
               <button
                 onClick={() => {
-                  handleHighlight('LOW');
+                  handleHighlight("LOW");
                   setShowHighlightDropdown(false);
                 }}
                 className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700"
               >
-                <div className="w-4 h-4 rounded" style={{ backgroundColor: HIGHLIGHT_COLORS.LOW }}></div>
+                <div
+                  className="w-4 h-4 rounded"
+                  style={{ backgroundColor: HIGHLIGHT_COLORS.LOW }}
+                ></div>
                 <span>Low Priority</span>
               </button>
-              
+
               <button
                 onClick={() => {
-                  handleHighlight('IGNORE');
+                  handleHighlight("IGNORE");
                   setShowHighlightDropdown(false);
                 }}
                 className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700"
               >
-                <div className="w-4 h-4 rounded" style={{ backgroundColor: HIGHLIGHT_COLORS.IGNORE }}></div>
+                <div
+                  className="w-4 h-4 rounded"
+                  style={{ backgroundColor: HIGHLIGHT_COLORS.IGNORE }}
+                ></div>
                 <span>Ignore</span>
               </button>
             </div>
@@ -464,7 +495,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
         {/* Remove Highlight Button */}
         <button
           onClick={handleRemoveHighlight}
-          disabled={!editor.isActive('highlight') || isLoadingHighlights}
+          disabled={!editor.isActive("highlight") || isLoadingHighlights}
           title="Remove Highlight"
           className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -476,12 +507,26 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
       <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2" />
 
       {/* Text Color Section */}
-      <div className="flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700" title="Text Color">
+      <div
+        className="flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
+        title="Text Color"
+      >
         <Paintbrush className="size-4 mr-1 text-slate-700 dark:text-slate-300" />
         <input
           type="color"
-          onInput={(event) => editor.chain().focus().setColor((event.target as HTMLInputElement).value).run()}
-          value={editor.getAttributes('textStyle').color || (document.documentElement.classList.contains('dark') ? '#FFFFFF' : '#000000')}
+          onInput={(event) =>
+            editor
+              .chain()
+              .focus()
+              .setColor((event.target as HTMLInputElement).value)
+              .run()
+          }
+          value={
+            editor.getAttributes("textStyle").color ||
+            (document.documentElement.classList.contains("dark")
+              ? "#FFFFFF"
+              : "#000000")
+          }
           className="w-5 h-5 border-none bg-transparent cursor-pointer p-0 m-0"
           title="Pick text color"
         />
@@ -489,7 +534,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
       <Toggle
         onPressedChange={() => editor.chain().focus().unsetColor().run()}
         pressed={false}
-        disabled={!editor.getAttributes('textStyle').color}
+        disabled={!editor.getAttributes("textStyle").color}
         title="Remove Text Color"
         className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
       >
@@ -498,21 +543,13 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
 
       {/* Comment Section */}
       <Toggle
-        pressed={editor.isActive('comment')}
+        pressed={editor.isActive("comment")} // This will be true if any part of selection is a comment
         onPressedChange={handleComment}
         title="Add Comment"
-        className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
+        className="p-2 menubar-icon dark:hover:bg-slate-700 rounded"
       >
-        <MessageSquarePlus className="size-4 text-slate-700 dark:text-slate-300" />
+        <MessageSquarePlus className="size-4 menubar-icon" />
       </Toggle>
-      
-      <button 
-        onClick={handleFileUpdate} 
-        className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-slate-700 font-medium"
-        disabled={isLoadingHighlights}
-      >
-        Save Changes
-      </button>
     </div>
   );
 };

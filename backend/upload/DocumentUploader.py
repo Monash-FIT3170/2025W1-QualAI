@@ -1,6 +1,6 @@
 import os
 from dataclasses import dataclass
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, current_app
 from typing import Any, Optional
 
 from chat.database_client.database_client import DatabaseClient
@@ -17,9 +17,9 @@ class FilePathInfo:
 class DocumentUploader:
   
     def __init__(
-        self, collection: DocumentStore.Collection, database: DatabaseClient
+        self, mongo_database: DocumentStore.Database, database: DatabaseClient
     ) -> None:
-        self.__collection = collection
+        self.__mongo_database = mongo_database
         self.__database = database
 
     def register_routes(self, app: Flask) -> None:
@@ -32,23 +32,44 @@ class DocumentUploader:
             :return: Whether was a success or if there was an error.
             """
             uploaded_files = request.files.getlist("files[]")
+
+            collection_name = request.form.get("project")
+            collection = self.__mongo_database.get_collection(collection_name)
+
             if not uploaded_files:
                 return jsonify({"error": "No file uploaded"}), 400
 
             folder_mapping = {}
             for file in uploaded_files:
-                fpi, err = self.__filepath_and_filename(file, folder_mapping)
+                fpi, err = self.__filepath_and_filename(collection, file, folder_mapping)
                 if not fpi:
                     print("Error during file upload:", err)
                     return jsonify({"error": str(err)}), 500
 
-                result, err = self.__save_file(file, fpi)
+                result, err = self.__save_file(collection, file, fpi)
                 if not result:
                     print("Error during file upload:", err)
                     return jsonify({"error": str(err)}), 500
             return jsonify({"status": "ok"}), 200
+        
+        @app.route('/toggle_state', methods=['POST'])
+        def toggle_state() -> tuple[Any, int]:
+            """
+            Called when the React 'Assign Speakers' toggle is clicked.
+            Updates the internal toggle state.
+            """
+            try:
+                data = request.get_json()
+                active = data.get('active', False)
+                app.config["UPLOAD_TOGGLE_ACTIVE"] = active 
+                return jsonify({"status": "success", "active": active}), 200
 
-    def __filepath_and_filename(self, file, folder_mapping) -> tuple[Optional[FilePathInfo], Optional[Exception]]:
+            except Exception as e:
+                print("Error processing toggle:", e)
+                return jsonify({"success": False, "error": str(e)}), 500
+
+    @staticmethod
+    def __filepath_and_filename(collection: DocumentStore.Collection, file, folder_mapping) -> tuple[Optional[FilePathInfo], Optional[Exception]]:
         try:
             filename = file.filename
             parts = filename.split("/")
@@ -57,7 +78,7 @@ class DocumentUploader:
             is_dir = len(rest) > 0
             if is_dir:
                 if root not in folder_mapping:
-                    folder_mapping[root] = self.__collection.update_dir_name(root)
+                    folder_mapping[root] = collection.update_dir_name(root)
                 root = folder_mapping[root]
 
                 joined_rest = "/".join(rest)
@@ -70,12 +91,12 @@ class DocumentUploader:
         except Exception as e:
             return None, e
 
-    def __save_file(self, file, fpi: FilePathInfo):
+    def __save_file(self, collection: DocumentStore.Collection, file, fpi: FilePathInfo):
         try:
             os.makedirs(os.path.dirname(fpi.filepath), exist_ok=True)
             file.save(fpi.filepath)
 
-            self.__process_file(fpi.filepath, fpi.filename)
+            self.__process_file(collection, fpi.filepath, fpi.filename)
 
             return True, None
 
@@ -84,15 +105,23 @@ class DocumentUploader:
             # return jsonify({"error": str(e)}), 500
             return False, e
 
-    def __process_file(self, path: str, name: str):
+    def __process_file(self, collection: DocumentStore.Collection, path: str, name: str):
         """
         Accepts a file path as an input to be sent to the transcriber.
 
         :return: TEMPORARY, outputs the file length, the mp3 won't need to be saved in the future.
         """
-        audio_transcriber = AudioTranscriber()
-        transcribed_text = audio_transcriber.transcribe(path)
-        name = self.__collection.update_document_name(name)
-        self.__collection.add_document(name, transcribed_text)
-        self.__database.store_entries(transcribed_text, name)
-        return jsonify({"status": "ok"}), 200
+        allowed_file_ext = (".mp3", ".m4a", ".wav", ".wma", ".mp4", ".mov", ".avi", ".wmv", ".txt")
+
+        if path.endswith(allowed_file_ext):
+            audio_transcriber = AudioTranscriber()
+            audio_transcriber.set_assign_speakers(current_app.config.get("UPLOAD_TOGGLE_ACTIVE", False))
+            transcribed_text = audio_transcriber.transcribe(path)
+            name = collection.update_document_name(name)
+            collection.add_document(name, transcribed_text)
+            self.__database.store_entries(transcribed_text, name)
+            return jsonify({"status": "ok"}), 200
+        else:
+            return jsonify({"error": "Invalid file format given"}), 415
+
+

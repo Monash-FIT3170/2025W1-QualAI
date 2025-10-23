@@ -26,7 +26,7 @@ export const Toggle: React.FC<ToggleProps> = ({
         transition-colors hover:bg-gray-200 dark:hover:bg-slate-700
         focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
         disabled:pointer-events-none disabled:opacity-50
-        ${pressed ? 'bg-gray-200 text-gray-900 dark:bg-slate-700 dark:text-slate-100' : 'bg-transparent text-gray-700 dark:text-slate-300'}
+        ${pressed ? 'bg-gray-200 dark:bg-slate-700' : 'bg-transparent'}
         ${className}
       `}
       onClick={onPressedChange}
