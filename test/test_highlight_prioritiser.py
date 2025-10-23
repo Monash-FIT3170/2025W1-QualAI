@@ -1,4 +1,9 @@
-from backend.chat.highlighting.highlight_prioritiser import HighlightPrioritiser
+
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
+
+from chat.highlighting.highlight_prioritiser import HighlightPrioritiser
 
 
 def test_manual_prioritisation():
