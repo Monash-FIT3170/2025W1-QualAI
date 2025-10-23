@@ -1,39 +1,43 @@
 // MenuBar.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Editor } from '@tiptap/react';
 import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
-  Bold,
-  Highlighter,
-  Italic,
-  List,
-  ListOrdered,
-  Strikethrough,
-  Palette,         // For multi-color highlight picker
-  Paintbrush,      // For text color picker
-  MessageSquarePlus, // For comments
-  ChevronDown,
-  Minus,
-  Plus
+    AlignCenter,
+    AlignLeft,
+    AlignRight,
+    Bold,
+    ChevronDown,
+    Highlighter,
+    Italic,
+    List,
+    ListOrdered,
+    MessageSquarePlus,
+    Minus,
+    Paintbrush,
+    Plus,
+    Strikethrough
 } from 'lucide-react';
 import Toggle from './Toggle';
+import { HIGHLIGHT_COLORS, HighlightData, HighlightPriority } from '../types/highlight';
 
 interface MenuBarProps {
   editor: Editor | null;
+  hl: HighlightData[];
+  fileKey: string | null;
+  loading: boolean;
 }
 
-const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
+const MenuBar: React.FC<MenuBarProps> = ({ editor, hl, fileKey, loading }) => {
   if (!editor) {
     return null;
   }
 
   const [currentFontSize, setCurrentFontSize] = useState(16);
   const [showFontSizes, setShowFontSizes] = useState(false);
-  
+  const [showHighlightDropdown, setShowHighlightDropdown] = useState(false);
   const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
+  // Font size tracking
   useEffect(() => {
     if (!editor) return;
 
@@ -58,7 +62,83 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
     };
   }, [editor]);
 
-  // Handler for adding a comment
+  // Get plain text selection positions
+  const getTextSelection = (): { index_start: number; index_end: number } | null => {
+    if (!editor) return null;
+
+    const { from, to } = editor.state.selection;
+
+    if (from === to) {
+      console.warn('No text selected');
+      return null;
+    }
+
+    return {
+      index_start: from - 1,  // TipTap uses 1-based indexing
+      index_end: to - 1
+    };
+  };
+
+  // Handle highlight with priority
+  const handleHighlight = (priority: HighlightPriority) => {
+    const selection = getTextSelection();
+    if (!selection) {
+      return;
+    }
+
+    const color = HIGHLIGHT_COLORS[priority];
+
+    // Check for overlapping highlights and remove them
+    const nonOverlappingHighlights = hl.filter((h) => {
+      const overlaps = !(
+        h.indexes.index_end <= selection.index_start ||
+        h.indexes.index_start >= selection.index_end
+      );
+      return !overlaps;
+    });
+
+    // Apply highlight in editor
+    editor.chain().focus().setHighlight({ color }).run();
+
+    // Add new highlight to state
+    const newHighlight: HighlightData = {
+      indexes: selection,
+      priority
+    };
+
+    hl.splice(0, hl.length);
+    nonOverlappingHighlights.forEach(h => hl.push(h));
+    hl.push(newHighlight);
+    console.log('Highlight added:', newHighlight);
+  };
+
+  // Remove highlight at selection
+  const handleRemoveHighlight = () => {
+    const selection = getTextSelection();
+    if (!selection) {
+      // If no selection, remove highlight at cursor position
+      editor.chain().focus().unsetHighlight().run();
+      return;
+    }
+
+    // Remove highlight from editor
+    editor.chain().focus().unsetHighlight().run();
+
+    // Remove from state - find any highlight that overlaps with selection
+    const updatedHighlights = hl.filter((h) => {
+      const overlaps = !(
+        h.indexes.index_end <= selection.index_start ||
+        h.indexes.index_start >= selection.index_end
+      );
+      return !overlaps;
+    });
+
+    hl.splice(0, hl.length);
+    updatedHighlights.forEach(h => hl.push(h));
+    console.log('Highlight removed at:', selection);
+  };
+
+  // Handle comment
   const handleComment = () => {
     // 1. Generate a unique ID for the comment
     // A more robust ID generation might be needed in a production app
@@ -91,7 +171,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
   };
 
   const decreaseFontSize = () => {
-    const newSize = Math.max(8, currentFontSize - 1); 
+    const newSize = Math.max(8, currentFontSize - 1);
     setFontSize(newSize);
   };
 
@@ -161,7 +241,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
             >
               <Minus className="size-4" />
             </button>
-            
+
             <div className="relative">
               <button
                 onClick={() => setShowFontSizes(!showFontSizes)}
@@ -170,7 +250,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
                 <span className="text-sm font-medium">{currentFontSize}</span>
                 <ChevronDown className="size-3" />
               </button>
-              
+
               {showFontSizes && (
                 <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
                   {fontSizes.map((size) => (
@@ -187,7 +267,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
                 </div>
               )}
             </div>
-            
+
             <button
               onClick={increaseFontSize}
               className="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-slate-700"
@@ -196,7 +276,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
               <Plus className="size-4" />
             </button>
           </div>
-          
+
           <div className='menubar-icon'>
             {existingOptions.map((option, index) => (
                 <Toggle
@@ -205,38 +285,81 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
                     onPressedChange={option.onClick}
                     disabled={option.disabled}
                     title={option.title}
-                    className="p-2 hover:bg-slate-700 rounded" 
+                    className="p-2 hover:bg-slate-700 rounded"
                 >
                     {option.icon}
                 </Toggle>
             ))}
           </div>
 
-          {/* Separator */}
-          <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2"/>
+      {/* Separator */}
+      <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2" />
 
-          {/* Highlight Color Section */}
-          <div className="menbar-icon flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
-               title="Highlight Color">
-              <Palette className="size-4 mr-1 menubar-icon dark:text-slate-300"/>
-              <input
-                  type="color"
-                  onInput={(event) => editor.chain().focus().toggleHighlight({color: (event.target as HTMLInputElement).value}).run()}
-                  value={editor.getAttributes('highlight')?.color || '#FFFF00'} // Default to yellow if no highlight or get current
-                  className="w-5 h-5 border-none bg-transparent cursor-pointer p-0 m-0"
-                  title="Pick highlight color"
-              />
-          </div>
-          <Toggle
-              onPressedChange={() => editor.chain().focus().unsetHighlight().run()}
-              pressed={false} // Not a toggle state, just an action
-              disabled={!editor.isActive('highlight')}
-              title="Remove Highlight"
-              className="p-2 menubar-icon rounded"
+      {/* Priority-Based Highlight Section - DROPDOWN STYLE */}
+      <div className="flex items-center space-x-1">
+        {/* Highlight Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowHighlightDropdown(!showHighlightDropdown)}
+            className="flex items-center space-x-1 px-2 py-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700"
+            title="Highlight Priority"
+            disabled={loading}
           >
-              {/* Using Highlighter icon with different styling to signify "remove" */}
-              <Highlighter className="size-4 menubar-icon opacity-60"/>
-          </Toggle>
+            <Highlighter className="size-4" />
+            <ChevronDown className="size-3" />
+          </button>
+
+          {showHighlightDropdown && (
+            <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-10 min-w-[150px]">
+              <button
+                onClick={() => {
+                  handleHighlight('HIGH');
+                  setShowHighlightDropdown(false);
+                }}
+                className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700"
+              >
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: HIGHLIGHT_COLORS.HIGH }}></div>
+                <span>High Priority</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  handleHighlight('LOW');
+                  setShowHighlightDropdown(false);
+                }}
+                className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700"
+              >
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: HIGHLIGHT_COLORS.LOW }}></div>
+                <span>Low Priority</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  handleHighlight('IGNORE');
+                  setShowHighlightDropdown(false);
+                }}
+                className="flex items-center space-x-2 w-full px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-slate-700"
+              >
+                <div className="w-4 h-4 rounded" style={{ backgroundColor: HIGHLIGHT_COLORS.IGNORE }}></div>
+                <span>Ignore</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Remove Highlight Button */}
+        <button
+          onClick={handleRemoveHighlight}
+          disabled={!editor.isActive('highlight') || loading}
+          title="Remove Highlight"
+          className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Highlighter className="size-4 text-slate-700 dark:text-slate-300" />
+        </button>
+      </div>
+
+      {/* Separator */}
+      <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2" />
 
           {/* Text Color Section */}
           <div className="flex items-center p-1 rounded menubar-icon" title="Text Color">

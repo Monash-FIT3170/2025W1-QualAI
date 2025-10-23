@@ -1,6 +1,8 @@
 from chat.database_client.database_client import DatabaseClient
 from chat.text_transformer.text_vectoriser import TextVectoriser
 
+from chat.highlighting.highlight_prioritiser import HighlightPrioritiser
+
 from neo4j import GraphDatabase
 from torch import Tensor
 import re
@@ -42,17 +44,67 @@ class VectorDatabase(DatabaseClient):
         rel_type = re.sub(r'[^a-z0-9]+', '_', rel_type)
         return rel_type.upper()
     
-    def store_entries(self, entries, file_id):
+    def store_entries(self, entries, file_id, highlights):
         """
             Stores multiple vectors in the Neo4j database.
 
                 :param list[tuple[str, list[float]]] vectors: A list containing the tuple pair of string and its corresponding vector
         """
-        vectors = self.__vectoriser.chunk_and_embed_text(entries)
-        for vector_data in vectors:
-            text_chunk = vector_data[0]
-            vector = vector_data[1]
-            self.store_vector(text_chunk, file_id, vector)
+        PRIORITY_MAP = {
+            "IGNORE": -1,
+            "LOW": 0,
+            "HIGH": 1
+        }
+        entries = re.sub(r"<.*?>", "", entries)
+
+        normalized_highlights = []
+        for h in highlights:
+            if "indexes" in h and isinstance(h["indexes"], dict):
+                start = h["indexes"].get("index_start", 0)
+                end = h["indexes"].get("index_end", 0)
+
+                # Clamp indices to transcript length
+                start = max(0, min(len(entries), start))
+                end = max(start, min(len(entries), end))
+
+                # Map priority string to number
+                priority_str = h.get("priority", "").upper()  # make sure uppercase
+                priority_num = PRIORITY_MAP.get(priority_str, 0)  # default to 0 if missing/unknown
+
+                normalized_highlights.append({
+                    "index_start": start,
+                    "index_end": end,
+                    "priority": priority_num
+                })
+
+        prioritiser = HighlightPrioritiser(transcript=entries, highlights=normalized_highlights)
+        segments = prioritiser.priority_map
+
+        for seg in segments:
+            text= seg["text"]
+            priority = seg["priority"]
+
+            vectors = self.__vectoriser.chunk_and_embed_text(text)
+            for text_chunk, vector in vectors: 
+                self.store_vector_priority(text_chunk, file_id, vector, priority)
+
+    def store_vector_priority(self, text_chunk, file_id, vector, priority) -> None:
+        # Flatten and convert to float
+        if isinstance(vector[0], Tensor):  # if it's a list of Tensors
+            vector = [float(x) for x in vector[0]]
+
+        client = self._driver
+        with client.session() as session:
+            session.run(
+                """
+                CREATE (e:Embedding {
+                    text_chunk: $text_chunk, 
+                    file_id: $file_id, 
+                    vector: $vector, 
+                    priority:$priority})
+                """,
+                text_chunk=text_chunk, vector=vector, file_id=file_id , priority=priority
+            )
 
     def store_vector(self, text_chunk: str, file_id: str, vector: list[Tensor]) -> None:
         """
@@ -95,30 +147,60 @@ class VectorDatabase(DatabaseClient):
             }
             """, dims=vector_dimension)
 
-    def search(self, query) -> list[str]:
-        """
-            Searches the Neo4j database for the vectors nearest to the one provided, using the cosine metric.
-
-                :param list[Tensor] vector: the search query vector
-                :param int limit:           the maximum number of results to return
-
-                :return list[str]: the text chunks of the nearest vectors to the one provided
-        """
+    def search(self, query):
         limit = 3
-        client = self._driver
+        client = self._driver 
         vector = self.__vectoriser.chunk_and_embed_text(query)[0][1]
-        with client.session() as session:
+
+        alpha = 1.0  # similarity weight
+        beta = 0.5   # priority weight
+
+        with self._driver.session() as session:
             result = session.run(
                 """
                 MATCH (e:Embedding)
-                RETURN e.text_chunk
-                ORDER BY vector.similarity.cosine(e.vector, $vector) DESC
+                WHERE e.priority IS NULL OR e.priority <> -1
+                WITH e,
+                    COALESCE(e.priority, 0) AS prio,
+                    vector.similarity.cosine(e.vector, $vector) AS sim
+                WITH e, sim, prio,
+                    sim * $alpha + prio * $beta AS final_score
+                RETURN e.text_chunk AS text, prio, sim, final_score
+                ORDER BY final_score DESC
                 LIMIT $limit
                 """,
-                vector=vector, limit=limit
+                vector=vector,
+                alpha=alpha,
+                beta=beta,
+                limit=limit
             )
 
-            return [datum['e.text_chunk'] for datum in result.data()]
+            return [record["text"] for record in result]
+
+    # def search(self, query) -> list[str]:
+    #     """
+    #         Searches the Neo4j database for the vectors nearest to the one provided, using the cosine metric.
+
+    #             :param list[Tensor] vector: the search query vector
+    #             :param int limit:           the maximum number of results to return
+
+    #             :return list[str]: the text chunks of the nearest vectors to the one provided
+    #     """
+    #     limit = 3
+    #     client = self._driver
+    #     vector = self.__vectoriser.chunk_and_embed_text(query)[0][1]
+    #     with client.session() as session:
+    #         result = session.run(
+    #             """
+    #             MATCH (e:Embedding)
+    #             RETURN e.text_chunk
+    #             ORDER BY vector.similarity.cosine(e.vector, $vector) DESC
+    #             LIMIT $limit
+    #             """,
+    #             vector=vector, limit=limit
+    #         )
+
+    #         return [datum['e.text_chunk'] for datum in result.data()]
         
     def remove_node_by_file_id(self, file_id: str) -> None:
         """

@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import React, { useState } from "react";
+import { useState } from "react";
 import FileTree, { buildTree, NodeType } from "@/components/FileTree.tsx";
 import DropZone from "@/components/DropZone.tsx";
 
