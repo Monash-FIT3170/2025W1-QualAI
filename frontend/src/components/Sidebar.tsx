@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from 'react-router-dom';
-import React, { useState } from "react";
+import { useState } from "react";
 import FileTree, { buildTree, NodeType } from "@/components/FileTree.tsx";
 import DropZone from "@/components/DropZone.tsx";
 
@@ -89,7 +89,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
             {/* Rename modal */}
             {editingFileKey && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+                    <div className="bg-black/50 p-6 rounded-lg shadow-lg w-96">
                         <h2 className="text-lg font-bold mb-4">Rename {editingFileType}</h2>
                         <input
                             type="text"
@@ -100,7 +100,7 @@ const Sidebar = ({ files = [], onFileSelect, onFileDelete, onRefreshFiles }: Sid
                         <div className="flex justify-end gap-2">
                             <button
                                 onClick={() => setEditingFileKey(null)}
-                                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                                className="px-4 py-2 bg-red-300 rounded hover:bg-gray-300"
                             >
                                 Cancel
                             </button>
