@@ -18,9 +18,9 @@ class VectorDatabase(DatabaseClient):
         """
             Initialises NEO4JInteractor with driver to be used
         """
-        self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+        # self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
-        # self._driver = GraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
+        self._driver = GraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
 
         self.__vectoriser = TextVectoriser()
 
@@ -50,7 +50,34 @@ class VectorDatabase(DatabaseClient):
 
                 :param list[tuple[str, list[float]]] vectors: A list containing the tuple pair of string and its corresponding vector
         """
-        prioritiser = HighlightPrioritiser(transcript=entries, highlights=highlights) 
+        PRIORITY_MAP = {
+            "IGNORE": -1,
+            "LOW": 0,
+            "HIGH": 1
+        }
+        entries = re.sub(r"<.*?>", "", entries)
+
+        normalized_highlights = []
+        for h in highlights:
+            if "indexes" in h and isinstance(h["indexes"], dict):
+                start = h["indexes"].get("index_start", 0)
+                end = h["indexes"].get("index_end", 0)
+
+                # Clamp indices to transcript length
+                start = max(0, min(len(entries), start))
+                end = max(start, min(len(entries), end))
+
+                # Map priority string to number
+                priority_str = h.get("priority", "").upper()  # make sure uppercase
+                priority_num = PRIORITY_MAP.get(priority_str, 0)  # default to 0 if missing/unknown
+
+                normalized_highlights.append({
+                    "index_start": start,
+                    "index_end": end,
+                    "priority": priority_num
+                })
+
+        prioritiser = HighlightPrioritiser(transcript=entries, highlights=normalized_highlights)
         segments = prioritiser.priority_map
 
         for seg in segments:
@@ -120,8 +147,8 @@ class VectorDatabase(DatabaseClient):
             }
             """, dims=vector_dimension)
 
-    def search_priority(self, query):
-        limit = 2
+    def search(self, query):
+        limit = 3
         client = self._driver 
         vector = self.__vectoriser.chunk_and_embed_text(query)[0][1]
 
@@ -150,30 +177,30 @@ class VectorDatabase(DatabaseClient):
 
             return [record["text"] for record in result]
 
-    def search(self, query) -> list[str]:
-        """
-            Searches the Neo4j database for the vectors nearest to the one provided, using the cosine metric.
+    # def search(self, query) -> list[str]:
+    #     """
+    #         Searches the Neo4j database for the vectors nearest to the one provided, using the cosine metric.
 
-                :param list[Tensor] vector: the search query vector
-                :param int limit:           the maximum number of results to return
+    #             :param list[Tensor] vector: the search query vector
+    #             :param int limit:           the maximum number of results to return
 
-                :return list[str]: the text chunks of the nearest vectors to the one provided
-        """
-        limit = 3
-        client = self._driver
-        vector = self.__vectoriser.chunk_and_embed_text(query)[0][1]
-        with client.session() as session:
-            result = session.run(
-                """
-                MATCH (e:Embedding)
-                RETURN e.text_chunk
-                ORDER BY vector.similarity.cosine(e.vector, $vector) DESC
-                LIMIT $limit
-                """,
-                vector=vector, limit=limit
-            )
+    #             :return list[str]: the text chunks of the nearest vectors to the one provided
+    #     """
+    #     limit = 3
+    #     client = self._driver
+    #     vector = self.__vectoriser.chunk_and_embed_text(query)[0][1]
+    #     with client.session() as session:
+    #         result = session.run(
+    #             """
+    #             MATCH (e:Embedding)
+    #             RETURN e.text_chunk
+    #             ORDER BY vector.similarity.cosine(e.vector, $vector) DESC
+    #             LIMIT $limit
+    #             """,
+    #             vector=vector, limit=limit
+    #         )
 
-            return [datum['e.text_chunk'] for datum in result.data()]
+    #         return [datum['e.text_chunk'] for datum in result.data()]
         
     def remove_node_by_file_id(self, file_id: str) -> None:
         """

@@ -23,10 +23,10 @@ class HighlightPrioritiser:
         transcript_len = len(self.transcript)
         last_end = 0
 
-        highlights_sorted = sorted(self.highlights, key=lambda h: h["start"])
+        highlights_sorted = sorted(self.highlights, key=lambda h: h["index_start"])
 
         for h in highlights_sorted:
-            start, end, priority = h["start"], h["end"], h["priority"]
+            start, end, priority = h["index_start"], h["index_end"], h["priority"]
 
             # Add non-highlighted text before this segment
             if start > last_end:

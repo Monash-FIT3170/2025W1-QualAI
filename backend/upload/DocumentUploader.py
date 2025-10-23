@@ -119,7 +119,7 @@ class DocumentUploader:
             transcribed_text = audio_transcriber.transcribe(path)
             name = collection.update_document_name(name)
             collection.add_document(name, transcribed_text)
-            self.__database.store_entries(transcribed_text, name)
+            self.__database.store_entries(transcribed_text, name, [])
             return jsonify({"status": "ok"}), 200
         else:
             return jsonify({"error": "Invalid file format given"}), 415

@@ -32,8 +32,12 @@ class DocumentEditor:
 
         self.__database.remove_node_by_file_id(key)
 
+        highlights = request.json.get("highlights", [])
+
         self.__database.store_entries(
-            content, key
+            content,
+            key,
+            highlights
         )
 
         return jsonify({"message": "Document updated successfully"}), 200
