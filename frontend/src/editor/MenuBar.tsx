@@ -1,145 +1,58 @@
 // MenuBar.tsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Editor } from '@tiptap/react';
 import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
-  Bold,
-  Highlighter,
-  Italic,
-  List,
-  ListOrdered,
-  Strikethrough,
-  Paintbrush, // for text colour
-  MessageSquarePlus, // comments
-  ChevronDown,
-  Minus,
-  Plus
+    AlignCenter,
+    AlignLeft,
+    AlignRight,
+    Bold,
+    ChevronDown,
+    Highlighter,
+    Italic,
+    List,
+    ListOrdered,
+    MessageSquarePlus,
+    Minus,
+    Paintbrush,
+    Plus,
+    Strikethrough
 } from 'lucide-react';
 import Toggle from './Toggle';
-import { HighlightData, HighlightPriority, HIGHLIGHT_COLORS } from '../types/highlight';
+import { HIGHLIGHT_COLORS, HighlightData, HighlightPriority } from '../types/highlight';
 
 interface MenuBarProps {
   editor: Editor | null;
-  fileKey: string;
+  hl: HighlightData[];
+  fileKey: string | null;
+  loading: boolean;
 }
 
-const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
+const MenuBar: React.FC<MenuBarProps> = ({ editor, hl, fileKey, loading }) => {
   if (!editor) {
     return null;
   }
 
   const [currentFontSize, setCurrentFontSize] = useState(16);
   const [showFontSizes, setShowFontSizes] = useState(false);
-  const [highlights, setHighlights] = useState<HighlightData[]>([]);
-  const [isLoadingHighlights, setIsLoadingHighlights] = useState(false);
   const [showHighlightDropdown, setShowHighlightDropdown] = useState(false);
-  const previousTextRef = useRef<string>('');
   const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
-
-  // Load highlights when fileKey changes
-  useEffect(() => {
-    if (!fileKey || !editor) return;
-
-    const loadHighlights = async () => {
-      setIsLoadingHighlights(true);
-      try {
-        const response = await fetch(`http://localhost:5001/documents/${fileKey}`);
-        if (!response.ok) {
-          console.error('Failed to load highlights');
-          return;
-        }
-
-        const data = await response.json();
-        const loadedHighlights: HighlightData[] = data.highlights || [];
-        
-        setHighlights(loadedHighlights);
-        applyHighlightsToEditor(loadedHighlights);
-        previousTextRef.current = editor.getText();
-      } catch (error) {
-        console.error('Error loading highlights:', error);
-      } finally {
-        setIsLoadingHighlights(false);
-      }
-    };
-
-    loadHighlights();
-  }, [fileKey, editor]);
-
-  // Apply highlights to editor
-  const applyHighlightsToEditor = (highlightsToApply: HighlightData[]) => {
-    if (!editor) return;
-
-    // Clear all existing highlights first
-    editor.chain().focus().unsetHighlight().run();
-
-    // Apply each highlight
-    highlightsToApply.forEach((highlight) => {
-      const { index_start, index_end } = highlight.indexes;
-      const color = HIGHLIGHT_COLORS[highlight.priority];
-
-      try {
-        editor
-          .chain()
-          .setTextSelection({ from: index_start + 1, to: index_end + 1 })
-          .setHighlight({ color })
-          .run();
-      } catch (error) {
-        console.error('Error applying highlight:', error, highlight);
-      }
-    });
-
-    // Reset selection
-    editor.commands.focus();
-  };
-
-  // Monitor text changes and invalidate affected highlights
-  useEffect(() => {
-    if (!editor) return;
-
-    const handleUpdate = () => {
-      const currentText = editor.getText();
-      const previousText = previousTextRef.current;
-
-      // If text length changed significantly, we need to validate highlights
-      if (currentText.length !== previousText.length) {
-        const validHighlights = highlights.filter((highlight) => {
-          const { index_start, index_end } = highlight.indexes;
-          return index_end <= currentText.length;
-        });
-
-        // Update state only if highlights were removed
-        if (validHighlights.length !== highlights.length) {
-          setHighlights(validHighlights);
-          console.log(`Removed ${highlights.length - validHighlights.length} invalid highlights due to text changes`);
-        }
-      }
-
-      previousTextRef.current = currentText;
-    };
-
-    editor.on('update', handleUpdate);
-
-    return () => {
-      editor.off('update', handleUpdate);
-    };
-  }, [editor, highlights]);
 
   // Font size tracking
   useEffect(() => {
     if (!editor) return;
 
     const updateFontSize = () => {
+      // Try to get the current font size from the selection
       const attributes = editor.getAttributes('textStyle');
       if (attributes.fontSize) {
         const numericSize = parseInt(attributes.fontSize.replace('px', ''));
         setCurrentFontSize(numericSize);
       } else {
-        setCurrentFontSize(16);
+        setCurrentFontSize(16); // default size
       }
     };
 
+    // Update font size when selection changes
     editor.on('selectionUpdate', updateFontSize);
     editor.on('transaction', updateFontSize);
 
@@ -154,7 +67,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     if (!editor) return null;
 
     const { from, to } = editor.state.selection;
-    
+
     if (from === to) {
       console.warn('No text selected');
       return null;
@@ -176,7 +89,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     const color = HIGHLIGHT_COLORS[priority];
 
     // Check for overlapping highlights and remove them
-    const nonOverlappingHighlights = highlights.filter((h) => {
+    const nonOverlappingHighlights = hl.filter((h) => {
       const overlaps = !(
         h.indexes.index_end <= selection.index_start ||
         h.indexes.index_start >= selection.index_end
@@ -193,7 +106,9 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
       priority
     };
 
-    setHighlights([...nonOverlappingHighlights, newHighlight]);
+    hl.splice(0, hl.length);
+    nonOverlappingHighlights.forEach(h => hl.push(h));
+    hl.push(newHighlight);
     console.log('Highlight added:', newHighlight);
   };
 
@@ -210,7 +125,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     editor.chain().focus().unsetHighlight().run();
 
     // Remove from state - find any highlight that overlaps with selection
-    const updatedHighlights = highlights.filter((h) => {
+    const updatedHighlights = hl.filter((h) => {
       const overlaps = !(
         h.indexes.index_end <= selection.index_start ||
         h.indexes.index_start >= selection.index_end
@@ -218,60 +133,29 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
       return !overlaps;
     });
 
-    setHighlights(updatedHighlights);
+    hl.splice(0, hl.length);
+    updatedHighlights.forEach(h => hl.push(h));
     console.log('Highlight removed at:', selection);
-  };
-
-  // Save document with highlights
-  const handleFileUpdate = () => {
-    if (!editor || !fileKey) {
-      console.warn("Cannot save: missing editor or fileKey");
-      return;
-    }
-
-    const content = editor.getHTML();
-    console.log('Saving fileKey:', fileKey);
-    console.log('Saving content:', content);
-    console.log('Saving highlights:', highlights);
-
-    fetch(`http://localhost:5001/edit/${fileKey}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        content,
-        highlights: highlights.map(h => ({  //can be used to update highlights in backend
-          indexes: h.indexes,
-          priority: h.priority
-        }))
-      }),
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error('Failed to save document');
-        }
-        return res.json();
-      })
-      .then(data => {
-        console.log('Save successful:', data);
-        alert('Document saved successfully!');
-      })
-      .catch(err => {
-        console.error('Save error:', err);
-        alert('Failed to save document. Please try again.');
-      });
   };
 
   // Handle comment
   const handleComment = () => {
+    // 1. Generate a unique ID for the comment
+    // A more robust ID generation might be needed in a production app
     const commentId = `comment-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+    // 2. Prompt for comment text (Placeholder for a real UI)
+    // In a real application, you would open a modal, sidebar, or inline input here.
     const commentText = prompt("Enter your comment:");
 
     if (commentText) {
+      // If the user entered text, apply the comment mark.
+      // You would also save `commentText` associated with `commentId`
+      // in your application's state or send it to a backend.
       console.log(`Comment to save: ID=${commentId}, Text=${commentText}, User: rachana-barak, Timestamp: ${new Date().toISOString()}`);
       editor.chain().focus().setComment({ commentId }).run();
     }
+    // If commentText is null (user cancelled), do nothing or handle as needed.
   };
 
   // Font size controls
@@ -291,6 +175,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
     setFontSize(newSize);
   };
 
+  // Original options array - we'll remove the generic highlight toggle later
   const existingOptions = [
     {
       icon: <Bold className="size-4" />,
@@ -346,65 +231,66 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   ];
 
   return (
-    <div className="border rounded-md p-1 mb-1 bg-slate-50 dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center">
-      
-      {/* Font Size Controls */}
-      <div className="flex items-center space-x-1 border-r pr-2 mr-2">
-        <button
-          onClick={decreaseFontSize}
-          className="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-slate-700"
-          title="Decrease font size"
-        >
-          <Minus className="size-4" />
-        </button>
-        
-        <div className="relative">
-          <button
-            onClick={() => setShowFontSizes(!showFontSizes)}
-            className="flex items-center space-x-1 px-2 py-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 min-w-[50px]"
-          >
-            <span className="text-sm font-medium">{currentFontSize}</span>
-            <ChevronDown className="size-3" />
-          </button>
-          
-          {showFontSizes && (
-            <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
-              {fontSizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setFontSize(size)}
-                  className={`block w-full text-left px-3 py-1 text-sm hover:bg-gray-100 dark:hover:bg-slate-700 ${
-                    currentFontSize === size ? 'bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-300' : ''
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
+      <div className="menubar menubar-icon border rounded-md p-1 mb-1] dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center">
+          {/* Font Size Controls */}
+          <div className="flex items-center space-x-1 border-r pr-2 mr-2">
+            <button
+              onClick={decreaseFontSize}
+              className="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-slate-700"
+              title="Decrease font size"
+            >
+              <Minus className="size-4" />
+            </button>
+
+            <div className="relative">
+              <button
+                onClick={() => setShowFontSizes(!showFontSizes)}
+                className="flex items-center space-x-1 px-2 py-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 min-w-[50px]"
+              >
+                <span className="text-sm font-medium">{currentFontSize}</span>
+                <ChevronDown className="size-3" />
+              </button>
+
+              {showFontSizes && (
+                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
+                  {fontSizes.map((size) => (
+                    <button
+                      key={size}
+                      onClick={() => setFontSize(size)}
+                      className={`block w-full text-left px-3 py-1 text-sm hover:bg-gray-100 dark:hover:bg-slate-700 ${
+                        currentFontSize === size ? 'bg-blue-50 text-blue-600 dark:bg-blue-900 dark:text-blue-300' : ''
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        
-        <button
-          onClick={increaseFontSize}
-          className="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-slate-700"
-          title="Increase font size"
-        >
-          <Plus className="size-4" />
-        </button>
-      </div>
-      
-      {existingOptions.map((option, index) => (
-        <Toggle
-          key={index}
-          pressed={option.pressed}
-          onPressedChange={option.onClick}
-          disabled={option.disabled}
-          title={option.title}
-          className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
-        >
-          {option.icon}
-        </Toggle>
-      ))}
+
+            <button
+              onClick={increaseFontSize}
+              className="rounded-md p-1 hover:bg-slate-200 dark:hover:bg-slate-700"
+              title="Increase font size"
+            >
+              <Plus className="size-4" />
+            </button>
+          </div>
+
+          <div className='menubar-icon'>
+            {existingOptions.map((option, index) => (
+                <Toggle
+                    key={index}
+                    pressed={option.pressed}
+                    onPressedChange={option.onClick}
+                    disabled={option.disabled}
+                    title={option.title}
+                    className="p-2 hover:bg-slate-700 rounded"
+                >
+                    {option.icon}
+                </Toggle>
+            ))}
+          </div>
 
       {/* Separator */}
       <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2" />
@@ -417,12 +303,12 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
             onClick={() => setShowHighlightDropdown(!showHighlightDropdown)}
             className="flex items-center space-x-1 px-2 py-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700"
             title="Highlight Priority"
-            disabled={isLoadingHighlights}
+            disabled={loading}
           >
             <Highlighter className="size-4" />
             <ChevronDown className="size-3" />
           </button>
-          
+
           {showHighlightDropdown && (
             <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-10 min-w-[150px]">
               <button
@@ -435,7 +321,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: HIGHLIGHT_COLORS.HIGH }}></div>
                 <span>High Priority</span>
               </button>
-              
+
               <button
                 onClick={() => {
                   handleHighlight('LOW');
@@ -446,7 +332,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
                 <div className="w-4 h-4 rounded" style={{ backgroundColor: HIGHLIGHT_COLORS.LOW }}></div>
                 <span>Low Priority</span>
               </button>
-              
+
               <button
                 onClick={() => {
                   handleHighlight('IGNORE');
@@ -464,7 +350,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
         {/* Remove Highlight Button */}
         <button
           onClick={handleRemoveHighlight}
-          disabled={!editor.isActive('highlight') || isLoadingHighlights}
+          disabled={!editor.isActive('highlight') || loading}
           title="Remove Highlight"
           className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -475,44 +361,36 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
       {/* Separator */}
       <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2" />
 
-      {/* Text Color Section */}
-      <div className="flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700" title="Text Color">
-        <Paintbrush className="size-4 mr-1 text-slate-700 dark:text-slate-300" />
-        <input
-          type="color"
-          onInput={(event) => editor.chain().focus().setColor((event.target as HTMLInputElement).value).run()}
-          value={editor.getAttributes('textStyle').color || (document.documentElement.classList.contains('dark') ? '#FFFFFF' : '#000000')}
-          className="w-5 h-5 border-none bg-transparent cursor-pointer p-0 m-0"
-          title="Pick text color"
-        />
-      </div>
-      <Toggle
-        onPressedChange={() => editor.chain().focus().unsetColor().run()}
-        pressed={false}
-        disabled={!editor.getAttributes('textStyle').color}
-        title="Remove Text Color"
-        className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
-      >
-        <Paintbrush className="size-4 text-slate-700 dark:text-slate-300 opacity-60" />
-      </Toggle>
+          {/* Text Color Section */}
+          <div className="flex items-center p-1 rounded menubar-icon" title="Text Color">
+              <Paintbrush className="size-4 mr-1 menubar-icon"/>
+              <input
+                  type="color"
+                  onInput={() => editor.chain().focus().run()}
+                  value={editor.getAttributes('textStyle').color || (document.documentElement.classList.contains('dark') ? '#FFFFFF' : '#000000')}
+                  className="w-5 h-5 border-none bg-transparent cursor-pointer p-0 m-0"
+                  title="Pick text color"
+              />
+          </div>
+          <Toggle
+              onPressedChange={() => editor.chain().focus().run()}
+              pressed={false} // Not a toggle state
+              disabled={!editor.getAttributes('textStyle').color}
+              title="Remove Text Color"
+              className="p-2 menubar-icon dark:hover:bg-slate-700 rounded"
+          >
+              <Paintbrush className="menubar-icon size-4 0 opacity-60"/>
+          </Toggle>
 
-      {/* Comment Section */}
-      <Toggle
-        pressed={editor.isActive('comment')}
-        onPressedChange={handleComment}
-        title="Add Comment"
-        className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
-      >
-        <MessageSquarePlus className="size-4 text-slate-700 dark:text-slate-300" />
-      </Toggle>
-      
-      <button 
-        onClick={handleFileUpdate} 
-        className="rounded-md px-2 py-1 hover:bg-gray-200 dark:hover:bg-slate-700 font-medium"
-        disabled={isLoadingHighlights}
-      >
-        Save Changes
-      </button>
+          {/* Comment Section */}
+          <Toggle
+              pressed={editor.isActive('comment')} // This will be true if any part of selection is a comment
+              onPressedChange={handleComment}
+              title="Add Comment"
+              className="p-2 menubar-icon dark:hover:bg-slate-700 rounded"
+          >
+              <MessageSquarePlus className="size-4 menubar-icon"/>
+          </Toggle>
     </div>
   );
 };
