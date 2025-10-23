@@ -166,7 +166,7 @@ const DropZone: React.FC<DropZoneProps> = ({ projectName, onRefreshFiles }) => {
     <div className="mt-4">
       <div
         className={`dropzone border-2 border-dashed rounded-lg p-4 text-center transition ${
-          isDraggingOver ? "border-blue-500 bg-blue-50" : "border-gray-400 hover:bg-gray-100"
+          isDraggingOver ? "border-blue-500 bg-blue-50" : "border-gray-400 hover:bg-gray-600"
         }`}
         onDragOver={handleDragOver}
         onDragEnter={handleDragOver}
