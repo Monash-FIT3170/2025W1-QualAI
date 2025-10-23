@@ -1,6 +1,8 @@
 from chat.database_client.database_client import DatabaseClient
 from chat.text_transformer.text_vectoriser import TextVectoriser
 
+from chat.highlighting.highlight_prioritiser import HighlightPrioritiser
+
 from neo4j import GraphDatabase
 from torch import Tensor
 import re
@@ -16,9 +18,9 @@ class VectorDatabase(DatabaseClient):
         """
             Initialises NEO4JInteractor with driver to be used
         """
-        # self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+        self._driver = GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
         # using one below for testing, top one isn't working for me - Rohan
-        self._driver = GraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
+        # self._driver = GraphDatabase.driver("bolt://neo4j:7687", auth=("neo4j", "password"))
 
         self.__vectoriser = TextVectoriser()
 
@@ -42,17 +44,40 @@ class VectorDatabase(DatabaseClient):
         rel_type = re.sub(r'[^a-z0-9]+', '_', rel_type)
         return rel_type.upper()
     
-    def store_entries(self, entries, file_id):
+    def store_entries(self, entries, file_id, highlights):
         """
             Stores multiple vectors in the Neo4j database.
 
                 :param list[tuple[str, list[float]]] vectors: A list containing the tuple pair of string and its corresponding vector
         """
-        vectors = self.__vectoriser.chunk_and_embed_text(entries)
-        for vector_data in vectors:
-            text_chunk = vector_data[0]
-            vector = vector_data[1]
-            self.store_vector(text_chunk, file_id, vector)
+        prioritiser = HighlightPrioritiser(transcript=entries, highlights=highlights) 
+        segments = prioritiser.priority_map
+
+        for seg in segments:
+            text= seg["text"]
+            priority = seg["priority"]
+
+            vectors = self.__vectoriser.chunk_and_embed_text(text)
+            for text_chunk, vector in vectors: 
+                self.store_vector_priority(text_chunk, file_id, vector, priority)
+
+    def store_vector_priority(self, text_chunk, file_id, vector, priority) -> None:
+        # Flatten and convert to float
+        if isinstance(vector[0], Tensor):  # if it's a list of Tensors
+            vector = [float(x) for x in vector[0]]
+
+        client = self._driver
+        with client.session() as session:
+            session.run(
+                """
+                CREATE (e:Embedding {
+                    text_chunk: $text_chunk, 
+                    file_id: $file_id, 
+                    vector: $vector, 
+                    priority:$priority})
+                """,
+                text_chunk=text_chunk, vector=vector, file_id=file_id , priority=priority
+            )
 
     def store_vector(self, text_chunk: str, file_id: str, vector: list[Tensor]) -> None:
         """
@@ -94,6 +119,36 @@ class VectorDatabase(DatabaseClient):
                 }
             }
             """, dims=vector_dimension)
+
+    def search_priority(self, query):
+        limit = 2
+        client = self._driver 
+        vector = self.__vectoriser.chunk_and_embed_text(query)[0][1]
+
+        alpha = 1.0  # similarity weight
+        beta = 0.5   # priority weight
+
+        with self._driver.session() as session:
+            result = session.run(
+                """
+                MATCH (e:Embedding)
+                WHERE e.priority IS NULL OR e.priority <> -1
+                WITH e,
+                    COALESCE(e.priority, 0) AS prio,
+                    vector.similarity.cosine(e.vector, $vector) AS sim
+                WITH e, sim, prio,
+                    sim * $alpha + prio * $beta AS final_score
+                RETURN e.text_chunk AS text, prio, sim, final_score
+                ORDER BY final_score DESC
+                LIMIT $limit
+                """,
+                vector=vector,
+                alpha=alpha,
+                beta=beta,
+                limit=limit
+            )
+
+            return [record["text"] for record in result]
 
     def search(self, query) -> list[str]:
         """
