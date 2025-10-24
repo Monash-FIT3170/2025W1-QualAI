@@ -6,7 +6,7 @@ QualAI is an AI-Powered Qualitative Research Assistant, augmenting human analysi
 
 The tool streamlines the research workflow by automating transcriptions, facilitating in-depth analysis and enabling the extraction of insights from interview data. It does this using speech-to-text transcription, semantic analysis, and live text editing.
 
-This project is open-source. It was initally developed as a part of Monash FIT3170 - "Software Engineering Practice".
+This project is open-source. It was initially developed as a part of Monash FIT3170 - "Software Engineering Practice".
 
 ## 2. Features
 
@@ -21,7 +21,7 @@ This project is open-source. It was initally developed as a part of Monash FIT31
 
 | Epic      | Description | Status     |
 | :---        |    :----:   |          ---: |
-| Chatbot     | Take user queries and get reponses based on project files | Complete  |
+| Chatbot     | Take user queries and get responses based on project files | Complete  |
 | Database | Process and Store Transcription data | Complete |
 | Transcription  | Process audio files into transcriptions | Complete |
 | File Management | File upload, storage and project management | Complete            |
@@ -100,7 +100,7 @@ Git repository found [here](https://github.com/Monash-FIT3170/2025W1-QualAI/).
 - Technical Documentation is provided within the source code
 
 ### 5.4 Outstanding / Future Development Plans
-#### 5.4.1 General Developement 
+#### 5.4.1 General Development 
 
 - Improve quality of qualitative analysis through more rigorous data analysis processing: [5-steps deductive inductive analysis](https://journals.sagepub.com/doi/full/10.1177/16094069231183620) and [thematic analysis](https://delvetool.com/blog/thematicanalysis)
 - Improved organisation of analysis, using guided qualitative research [example] (https://www.covidence.org/ )
@@ -108,7 +108,7 @@ Git repository found [here](https://github.com/Monash-FIT3170/2025W1-QualAI/).
 
 #### 5.4.2 User Testing Feedback 
 - Add visual confirmation for key actions 
-- Ammend file renaming logic to prevent overly long names 
+- Amend file renaming logic to prevent overly long names 
 - Enable multi-line chatbot input 
 - Review and unify status indicators for better coherence
 
