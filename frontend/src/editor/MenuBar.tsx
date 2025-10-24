@@ -12,27 +12,67 @@ import {
   ListOrdered,
   Strikethrough,
   Palette,         // For multi-color highlight picker
-  Paintbrush,      // For text color picker
   MessageSquarePlus, // For comments
   ChevronDown,
   Minus,
-  Plus
+  Plus,
+  Download,        // For export functionality
 } from 'lucide-react';
 import Toggle from './Toggle';
+import { useParams } from "react-router-dom";
 
 interface MenuBarProps {
   editor: Editor | null;
+  fileKey: string,
 }
 
-const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
+const MenuBar: React.FC<MenuBarProps> = ({ editor, fileKey }) => {
   if (!editor) {
     return null;
   }
 
+  const { projectName } = useParams<{ projectName: string }>();
+
   const [currentFontSize, setCurrentFontSize] = useState(16);
   const [showFontSizes, setShowFontSizes] = useState(false);
-  
-  const fontSizes = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
+  const fontSizeOptions = [8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 64, 72];
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showFontSizes && !(event.target as Element).closest('.font-size-dropdown')) {
+        setShowFontSizes(false);
+      }
+      if (showExportMenu && !(event.target as Element).closest('.export-dropdown')) {
+        setShowExportMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showFontSizes, showExportMenu]);
+
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showFontSizes && !(event.target as Element).closest('.font-size-dropdown')) {
+        setShowFontSizes(false);
+      }
+      if (showExportMenu && !(event.target as Element).closest('.export-dropdown')) {
+        setShowExportMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showFontSizes, showExportMenu]);
 
   useEffect(() => {
     if (!editor) return;
@@ -95,6 +135,63 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
     setFontSize(newSize);
   };
 
+  // Export functions
+  const handleExport = async (format: 'html' | 'pdf') => {
+    console.log('Export triggered:', { fileKey, projectName, format });
+
+    if (!projectName) {
+      alert('Error: Project not found. Please refresh the page.');
+      return;
+    }
+
+    if (!fileKey || fileKey.trim() === '') {
+      alert('Please select a file from the sidebar before exporting.\n\nTip: Click on a file in the left sidebar to open it, then you can export it.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5001/export/${projectName}/${fileKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ format }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Export failed');
+      }
+
+      // Create download link
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+
+      // Get filename from response headers or generate one
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = `${fileKey.replace(/[\/\\]/g, '_')}.${format}`;
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      setShowExportMenu(false);
+    } catch (error) {
+      console.error('Export error:', error);
+      alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
   // Original options array - we'll remove the generic highlight toggle later
   const existingOptions = [
     {
@@ -151,7 +248,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
   ];
 
   return (
-      <div className="menubar menubar-icon border rounded-md p-1 mb-1] dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center">
+      <div className="border rounded-md p-1 mb-1 bg-white dark:bg-slate-800 space-x-0.5 md:space-x-1 z-50 flex flex-wrap items-center shadow-sm">
           {/* Font Size Controls */}
           <div className="flex items-center space-x-1 border-r pr-2 mr-2">
             <button
@@ -162,7 +259,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
               <Minus className="size-4" />
             </button>
             
-            <div className="relative">
+            <div className="relative font-size-dropdown">
               <button
                 onClick={() => setShowFontSizes(!showFontSizes)}
                 className="flex items-center space-x-1 px-2 py-1 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 min-w-[50px]"
@@ -173,7 +270,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
               
               {showFontSizes && (
                 <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
-                  {fontSizes.map((size) => (
+                  {fontSizeOptions.map((size) => (
                     <button
                       key={size}
                       onClick={() => setFontSize(size)}
@@ -197,7 +294,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
             </button>
           </div>
           
-          <div className='menubar-icon'>
+          <div className='flex items-center space-x-1'>
             {existingOptions.map((option, index) => (
                 <Toggle
                     key={index}
@@ -205,7 +302,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
                     onPressedChange={option.onClick}
                     disabled={option.disabled}
                     title={option.title}
-                    className="p-2 hover:bg-slate-700 rounded" 
+                    className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
                 >
                     {option.icon}
                 </Toggle>
@@ -216,9 +313,9 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
           <div className="h-6 w-px bg-slate-300 dark:bg-slate-600 mx-1 md:mx-2"/>
 
           {/* Highlight Color Section */}
-          <div className="menbar-icon flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
+          <div className="flex items-center p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700"
                title="Highlight Color">
-              <Palette className="size-4 mr-1 menubar-icon dark:text-slate-300"/>
+              <Palette className="size-4 mr-1 text-slate-600 dark:text-slate-300"/>
               <input
                   type="color"
                   onInput={(event) => editor.chain().focus().toggleHighlight({color: (event.target as HTMLInputElement).value}).run()}
@@ -232,31 +329,10 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
               pressed={false} // Not a toggle state, just an action
               disabled={!editor.isActive('highlight')}
               title="Remove Highlight"
-              className="p-2 menubar-icon rounded"
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
           >
               {/* Using Highlighter icon with different styling to signify "remove" */}
-              <Highlighter className="size-4 menubar-icon opacity-60"/>
-          </Toggle>
-
-          {/* Text Color Section */}
-          <div className="flex items-center p-1 rounded menubar-icon" title="Text Color">
-              <Paintbrush className="size-4 mr-1 menubar-icon"/>
-              <input
-                  type="color"
-                  onInput={() => editor.chain().focus().run()}
-                  value={editor.getAttributes('textStyle').color || (document.documentElement.classList.contains('dark') ? '#FFFFFF' : '#000000')}
-                  className="w-5 h-5 border-none bg-transparent cursor-pointer p-0 m-0"
-                  title="Pick text color"
-              />
-          </div>
-          <Toggle
-              onPressedChange={() => editor.chain().focus().run()}
-              pressed={false} // Not a toggle state
-              disabled={!editor.getAttributes('textStyle').color}
-              title="Remove Text Color"
-              className="p-2 menubar-icon dark:hover:bg-slate-700 rounded"
-          >
-              <Paintbrush className="menubar-icon size-4 0 opacity-60"/>
+              <Highlighter className="size-4 opacity-60 text-slate-600 dark:text-slate-300"/>
           </Toggle>
 
           {/* Comment Section */}
@@ -264,11 +340,47 @@ const MenuBar: React.FC<MenuBarProps> = ({ editor}) => {
               pressed={editor.isActive('comment')} // This will be true if any part of selection is a comment
               onPressedChange={handleComment}
               title="Add Comment"
-              className="p-2 menubar-icon dark:hover:bg-slate-700 rounded"
+              className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded"
           >
-              <MessageSquarePlus className="size-4 menubar-icon"/>
+              <MessageSquarePlus className="size-4 text-slate-600 dark:text-slate-300"/>
           </Toggle>
-    </div>
+
+          {/* Export Button */}
+          <div className="relative export-dropdown">
+            <button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className={`flex items-center space-x-1 rounded-md px-3 py-2 font-medium transition-colors ${
+                fileKey && fileKey.trim() !== ''
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                  : 'bg-slate-300 dark:bg-slate-600 text-slate-500 dark:text-slate-400 cursor-not-allowed'
+              }`}
+              title={fileKey && fileKey.trim() !== '' ? "Export Document" : "Select a file to export"}
+              disabled={!(fileKey && fileKey.trim() !== '')}
+            >
+              <Download className="size-4" />
+              <span className="text-sm">Export</span>
+              <ChevronDown className="size-3" />
+            </button>
+
+            {showExportMenu && fileKey && fileKey.trim() !== '' && (
+              <div className="absolute top-full right-0 mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg z-50 min-w-32">
+                <button
+                  onClick={() => handleExport('html')}
+                  className="block w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-slate-700 dark:hover:text-blue-300 first:rounded-t-md transition-colors"
+                >
+                  HTML
+                </button>
+                <button
+                  onClick={() => handleExport('pdf')}
+                  className="block w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-slate-700 dark:hover:text-blue-300 last:rounded-b-md transition-colors"
+                >
+                  PDF
+                </button>
+              </div>
+            )}
+          </div>
+
+      </div>
   );
 };
 

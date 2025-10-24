@@ -13,6 +13,7 @@ from upload.DocumentUploader import DocumentUploader
 from editor.DocumentRetriever import DocumentRetriever
 from editor.DocumentEditor import DocumentEditor
 from editor.DocumentRemover import DocumentRemover
+from editor.DocumentExporter import DocumentExporter
 
 from chat_history.ChatRemover import ChatRemover
 from chat_history.ChatRetriever import ChatRetriever
@@ -46,6 +47,7 @@ def register_upload_routes(app: Flask) -> None:
     document_retriever = DocumentRetriever(mongo_database)
     document_editor = DocumentEditor(mongo_database, db)
     document_remover = DocumentRemover(mongo_database, db)
+    document_exporter = DocumentExporter(mongo_database)
     project_manager = ProjectManager(mongo_database)
 
     chat_retriever = ChatRetriever(chat_collection)
@@ -56,6 +58,7 @@ def register_upload_routes(app: Flask) -> None:
     document_retriever.register_routes(app)
     document_editor.register_routes(app)
     document_remover.register_routes(app)
+    document_exporter.register_routes(app)
     project_manager.register_routes(app)
     chat_retriever.register_routes(app)
     chat_remover.register_routes(app)
