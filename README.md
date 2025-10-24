@@ -113,7 +113,7 @@ Git repository found [here](https://github.com/Monash-FIT3170/2025W1-QualAI/).
 - Review and unify status indicators for better coherence
 
 #### 5.4.3 Maintenance Plan 
-- A maintenance plan is avaliable [here](https://docs.google.com/document/d/1dOaXmz3y54IazEmvqmO1KGKGpu5_7n5Nws1__UzMbgA/edit?usp=sharing)
+- A maintenance plan is avaliable [here](https://docs.google.com/document/d/1gpLXqx9yWqGSeoHzpxceqwXzphaRsZB96KXw_zKlTnA/edit?usp=sharing)
 
 ### 5.5 Testing
 
