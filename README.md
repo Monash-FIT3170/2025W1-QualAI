@@ -6,7 +6,7 @@ QualAI is an AI-Powered Qualitative Research Assistant, augmenting human analysi
 
 The tool streamlines the research workflow by automating transcriptions, facilitating in-depth analysis and enabling the extraction of insights from interview data. It does this using speech-to-text transcription, semantic analysis, and live text editing.
 
-This project is open-source. It was initally developeed as a part of Monash FIT3170 - "Software Engineering Practice".
+This project is open-source. It was initally developed as a part of Monash FIT3170 - "Software Engineering Practice".
 
 ## 2. Features
 
@@ -96,14 +96,14 @@ Git repository found [here](https://github.com/Monash-FIT3170/2025W1-QualAI/).
   - **/database_client** – Manages Neo4j connection
 
 ### 5.3  Documentation
-- A User Guide is avaliable [here](https://docs.google.com/document/d/1ZnqOr4aI1vuje8bjLdGMrfCbKOOaCvsFtdIqtkkn0WE/edit?usp=sharing)
+- A User Guide is available [here](https://docs.google.com/document/d/1ZnqOr4aI1vuje8bjLdGMrfCbKOOaCvsFtdIqtkkn0WE/edit?usp=sharing)
 - Technical Documentation is provided within the source code
 
 ### 5.4 Outstanding / Future Development Plans
 #### 5.4.1 General Developement 
 
 - Improve quality of qualitative analysis through more rigorous data analysis processing: [5-steps deductive inductive analysis](https://journals.sagepub.com/doi/full/10.1177/16094069231183620) and [thematic analysis](https://delvetool.com/blog/thematicanalysis)
-- Improved organisation of analysis, using gudied qualitative research [example] (https://www.covidence.org/ )
+- Improved organisation of analysis, using guided qualitative research [example] (https://www.covidence.org/ )
 - Improve speed and quality of offline chatbot 
 
 #### 5.4.2 User Testing Feedback 
@@ -113,7 +113,7 @@ Git repository found [here](https://github.com/Monash-FIT3170/2025W1-QualAI/).
 - Review and unify status indicators for better coherence
 
 #### 5.4.3 Maintenance Plan 
-- A maintenance plan is avaliable [here](https://docs.google.com/document/d/1gpLXqx9yWqGSeoHzpxceqwXzphaRsZB96KXw_zKlTnA/edit?usp=sharing)
+- A maintenance plan is available [here](https://docs.google.com/document/d/1gpLXqx9yWqGSeoHzpxceqwXzphaRsZB96KXw_zKlTnA/edit?usp=sharing)
 
 ### 5.5 Testing
 
@@ -123,6 +123,23 @@ Git repository found [here](https://github.com/Monash-FIT3170/2025W1-QualAI/).
 ### 5.6 Security and Privacy Compliance
 
 A security and privacy audit has been completed for the project. This document can be found [here](https://drive.google.com/file/d/1Yc7g50En0GwmHXwVwVaX5X9ZgGpk5ELg/view?usp=sharing)
+
+### 5.7 Versioning Strategy
+Versioning follows the strategy outlined below.
+
+The version number is given MAJOR.MINOR.PATCH, where 
+- A Major version update indicates significant overhaul, where a change alters the user experience and will require users to re-learn aspects of the application 
+- A Minor version update indicates a new feature or functionality addition that is backward-compatible with the current user experience
+- A Patch version update indicates bug fixes, performance improvements, or other internal changes that do not introduce features
+
+### 5.8 Pull Request Strategy
+Pull Requests should follow the following steps 
+1. Branch from main using the branch naming feature/<description> or fix/<description>
+2. Use small, atomic commits with clear messages indicating the changes made
+3. To submit, open a PR to main and describe what the change does, why its needed, and link to any related issues 
+4. Pass all Github Action checks
+5. Gain at least one code review from another contributor
+6. Squash and merge the PR, then delete branch 
 
 ## 6. Contributors
 
